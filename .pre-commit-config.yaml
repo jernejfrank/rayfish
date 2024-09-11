@@ -24,6 +24,6 @@ repos:
     rev: "v0.6.4"
     hooks:
       - id: ruff
-        args: [--exit-non-zero-on-fix]
+        args: [--fix]
       - id: ruff-format
         types_or: [ python, pyi, jupyter ]

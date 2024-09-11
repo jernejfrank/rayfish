@@ -1,4 +1,4 @@
-'''Here for defining whole test directory wide things
+"""Here for defining whole test directory wide things.
 
 Conftest is used in pytest for things like:
     - Serve fixtures to tests (no matter the fixture scope)
@@ -11,4 +11,4 @@ Conftest is used in pytest for things like:
     - Serve and share Hooks
 
 For a more comprehensive overview: https://stackoverflow.com/questions/34466027/what-is-conftest-py-for-in-pytest
-'''
+"""

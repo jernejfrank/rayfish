@@ -1,6 +1,7 @@
-"""Template module file
+"""Template module file.
 
-Functions should be specified in the public API and imported via root where appropriate. Using google python coding style.
+Functions should be specified in the public API and imported via root where appropriate.
+Using google python coding style.
 """
 
 # Public API
@@ -18,7 +19,6 @@ def foo(bar: str) -> str:
     Returns:
         Description of return value
     """
-
     return bar
 
 
