@@ -7,12 +7,16 @@ readme = "README.md"
 keywords = ['python']
 requires-python = ">=3.9,<4.0"
 dependencies = [
+    "beartype >= 0.18.0",
+    "click",
+    "dash",
+    "loguru",
     "numpy",
     "pandas",
     "pandera",
     "pyarrow",
     "pydantic",
-    "beartype >= 0.18.0",
+    "scipy",
     "typing_extensions > 4.0.0",
     "typing_inspect",
 ]
