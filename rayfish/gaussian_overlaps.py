@@ -39,7 +39,7 @@ def delta(
     k: float,
     zr: float,
 ) -> float:
-    """Calculating the overlap of two displaced Gaussian Beams.
+    """Calculating the overlap of two displaced Gaussian beams.
 
     Args:
         s1: displacing first Gaussian on x-axis by x+s1
@@ -65,3 +65,33 @@ def delta(
         - 1j * 4 * k * zr * (p1 - p2)
     )
     return prefactor * np.exp(exp_factor)
+
+
+def gamma(
+    s1: float,
+    s2: float,
+    t1: float,
+    t2: float,
+    p1: float,
+    p2: float,
+    k: float,
+    zr: float,
+) -> float:
+    """Calculating the overlap of a Gaussian beam and derivative of a gaussian beam.
+
+    Args:
+       s1: displacing first Gaussian on x-axis by x+s1
+       s2: displacing second Gaussian on x-axis by x+s2
+       t1: displacing first Gaussian on y-axis by y+t1
+       t2: displacing second Gaussian on y-axis by y+t2
+       p1: displacing first Gaussian on z-axis by z+p1
+       p2: displacing second Gaussian on z-axis by z+p2
+       k: wave vector = 2 pi / wavelength the point source emits in
+       zr: Rayleigh length. It is the distance along the propagation
+           direction of a beam from the waist to the place where the area of
+           1the cross section is doubled.
+
+    Returns:
+      In general a complex number. The integral has a closed form expression
+      that we hard-code here for improved performance and accuracy.
+    """
