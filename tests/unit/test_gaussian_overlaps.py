@@ -129,6 +129,26 @@ def test_gamma_s_general() -> None:
     assert abs(np.imag(actual) - expected_imag) < TOLERANCE
 
 
+def test_gamma_s_conjugate() -> None:
+    """Test derivative on first beam results in a complex conjugate."""
+    expected_real = 0.264597
+    expected_imag = -0.046375
+    actual = np.conj(
+        gaussian_overlaps.gamma_s(
+            s1=TESTSTING_CONSTANTS["s1"],
+            s2=TESTSTING_CONSTANTS["s2"],
+            t1=TESTSTING_CONSTANTS["t1"],
+            t2=TESTSTING_CONSTANTS["t2"],
+            p1=TESTSTING_CONSTANTS["p1"],
+            p2=TESTSTING_CONSTANTS["p2"],
+            k=TESTSTING_CONSTANTS["k"],
+            zr=TESTSTING_CONSTANTS["zr"],
+        )
+    )
+    assert abs(np.real(actual) - expected_real) < TOLERANCE
+    assert abs(np.imag(actual) - expected_imag) < TOLERANCE
+
+
 def test_gamma_t_complete_overlap() -> None:
     """Testing overlap of Gaussian and derivative in y is 0."""
     expected = 0
@@ -180,6 +200,26 @@ def test_gamma_t_general() -> None:
     assert abs(np.imag(actual) - expected_imag) < TOLERANCE
 
 
+def test_gamma_t_conjugate() -> None:
+    """Test derivative on first beam results in a complex conjugate."""
+    expected_real = -0.105839
+    expected_imag = 0.01855
+    actual = np.conj(
+        gaussian_overlaps.gamma_t(
+            s1=TESTSTING_CONSTANTS["s1"],
+            s2=TESTSTING_CONSTANTS["s2"],
+            t1=TESTSTING_CONSTANTS["t1"],
+            t2=TESTSTING_CONSTANTS["t2"],
+            p1=TESTSTING_CONSTANTS["p1"],
+            p2=TESTSTING_CONSTANTS["p2"],
+            k=TESTSTING_CONSTANTS["k"],
+            zr=TESTSTING_CONSTANTS["zr"],
+        )
+    )
+    assert abs(np.real(actual) - expected_real) < TOLERANCE
+    assert abs(np.imag(actual) - expected_imag) < TOLERANCE
+
+
 def test_gamma_p_complete_overlap() -> None:
     """Testing overlap of Gaussian and derivative in z is 0."""
     expected = -1.39832
@@ -210,6 +250,26 @@ def test_gamma_p_general() -> None:
         p2=TESTSTING_CONSTANTS["p2"],
         k=TESTSTING_CONSTANTS["k"],
         zr=TESTSTING_CONSTANTS["zr"],
+    )
+    assert abs(np.real(actual) - expected_real) < TOLERANCE
+    assert abs(np.imag(actual) - expected_imag) < TOLERANCE
+
+
+def test_gamma_p_conjugate() -> None:
+    """Test derivative on first beam results in a complex conjugate."""
+    expected_real = 0.381302
+    expected_imag = 1.34393
+    actual = np.conj(
+        gaussian_overlaps.gamma_p(
+            s1=TESTSTING_CONSTANTS["s1"],
+            s2=TESTSTING_CONSTANTS["s2"],
+            t1=TESTSTING_CONSTANTS["t1"],
+            t2=TESTSTING_CONSTANTS["t2"],
+            p1=TESTSTING_CONSTANTS["p1"],
+            p2=TESTSTING_CONSTANTS["p2"],
+            k=TESTSTING_CONSTANTS["k"],
+            zr=TESTSTING_CONSTANTS["zr"],
+        )
     )
     assert abs(np.real(actual) - expected_real) < TOLERANCE
     assert abs(np.imag(actual) - expected_imag) < TOLERANCE
@@ -250,6 +310,26 @@ def test_tau_ss_general() -> None:
     assert abs(np.imag(actual) - expected_imag) < TOLERANCE
 
 
+def test_tau_ss_conjugate() -> None:
+    """Test switching derivatives results in a complex conjugate."""
+    expected_real = 0.361012
+    expected_imag = -0.0699617
+    actual = np.conj(
+        gaussian_overlaps.tau_ss(
+            s1=TESTSTING_CONSTANTS["s1"],
+            s2=TESTSTING_CONSTANTS["s2"],
+            t1=TESTSTING_CONSTANTS["t1"],
+            t2=TESTSTING_CONSTANTS["t2"],
+            p1=TESTSTING_CONSTANTS["p1"],
+            p2=TESTSTING_CONSTANTS["p2"],
+            k=TESTSTING_CONSTANTS["k"],
+            zr=TESTSTING_CONSTANTS["zr"],
+        )
+    )
+    assert abs(np.real(actual) - expected_real) < TOLERANCE
+    assert abs(np.imag(actual) - expected_imag) < TOLERANCE
+
+
 def test_tau_st_general() -> None:
     """Testing Gaussian derivatives in x- and y-dimension."""
     expected_real = 0.0319929
@@ -269,6 +349,26 @@ def test_tau_st_general() -> None:
     assert abs(np.imag(actual) - expected_imag) < TOLERANCE
 
 
+def test_tau_st_conjugate() -> None:
+    """Test switching derivatives results in a complex conjugate."""
+    expected_real = 0.0319929
+    expected_imag = -0.00293198
+    actual = np.conj(
+        gaussian_overlaps.tau_st(
+            s1=TESTSTING_CONSTANTS["s1"],
+            s2=TESTSTING_CONSTANTS["s2"],
+            t1=TESTSTING_CONSTANTS["t1"],
+            t2=TESTSTING_CONSTANTS["t2"],
+            p1=TESTSTING_CONSTANTS["p1"],
+            p2=TESTSTING_CONSTANTS["p2"],
+            k=TESTSTING_CONSTANTS["k"],
+            zr=TESTSTING_CONSTANTS["zr"],
+        )
+    )
+    assert abs(np.real(actual) - expected_real) < TOLERANCE
+    assert abs(np.imag(actual) - expected_imag) < TOLERANCE
+
+
 def test_tau_sp_general() -> None:
     """Testing Gaussian derivatives in x- and z-dimension."""
     expected_real = -0.0684459
@@ -282,6 +382,26 @@ def test_tau_sp_general() -> None:
         p2=TESTSTING_CONSTANTS["p2"],
         k=TESTSTING_CONSTANTS["k"],
         zr=TESTSTING_CONSTANTS["zr"],
+    )
+    assert abs(np.real(actual) - expected_real) < TOLERANCE
+    assert abs(np.imag(actual) - expected_imag) < TOLERANCE
+
+
+def test_tau_sp_conjugate() -> None:
+    """Test switching derivatives results in a complex conjugate."""
+    expected_real = -0.0684459
+    expected_imag = -0.276513
+    actual = np.conj(
+        gaussian_overlaps.tau_sp(
+            s1=TESTSTING_CONSTANTS["s1"],
+            s2=TESTSTING_CONSTANTS["s2"],
+            t1=TESTSTING_CONSTANTS["t1"],
+            t2=TESTSTING_CONSTANTS["t2"],
+            p1=TESTSTING_CONSTANTS["p1"],
+            p2=TESTSTING_CONSTANTS["p2"],
+            k=TESTSTING_CONSTANTS["k"],
+            zr=TESTSTING_CONSTANTS["zr"],
+        )
     )
     assert abs(np.real(actual) - expected_real) < TOLERANCE
     assert abs(np.imag(actual) - expected_imag) < TOLERANCE
@@ -322,6 +442,26 @@ def test_tau_tt_general() -> None:
     assert abs(np.imag(actual) - expected_imag) < TOLERANCE
 
 
+def test_tau_tt_conjugate() -> None:
+    """Test switching derivatives results in a complex conjugate."""
+    expected_real = 0.428197
+    expected_imag = -0.0761188
+    actual = np.conj(
+        gaussian_overlaps.tau_tt(
+            s1=TESTSTING_CONSTANTS["s1"],
+            s2=TESTSTING_CONSTANTS["s2"],
+            t1=TESTSTING_CONSTANTS["t1"],
+            t2=TESTSTING_CONSTANTS["t2"],
+            p1=TESTSTING_CONSTANTS["p1"],
+            p2=TESTSTING_CONSTANTS["p2"],
+            k=TESTSTING_CONSTANTS["k"],
+            zr=TESTSTING_CONSTANTS["zr"],
+        )
+    )
+    assert abs(np.real(actual) - expected_real) < TOLERANCE
+    assert abs(np.imag(actual) - expected_imag) < TOLERANCE
+
+
 def test_tau_tp_general() -> None:
     """Testing Gaussian derivatives in y- and z-dimension."""
     expected_real = 0.0273784
@@ -335,6 +475,26 @@ def test_tau_tp_general() -> None:
         p2=TESTSTING_CONSTANTS["p2"],
         k=TESTSTING_CONSTANTS["k"],
         zr=TESTSTING_CONSTANTS["zr"],
+    )
+    assert abs(np.real(actual) - expected_real) < TOLERANCE
+    assert abs(np.imag(actual) - expected_imag) < TOLERANCE
+
+
+def test_tau_tp_conjugate() -> None:
+    """Test switching derivatives results in a complex conjugate."""
+    expected_real = 0.0273784
+    expected_imag = 0.110605
+    actual = np.conj(
+        gaussian_overlaps.tau_tp(
+            s1=TESTSTING_CONSTANTS["s1"],
+            s2=TESTSTING_CONSTANTS["s2"],
+            t1=TESTSTING_CONSTANTS["t1"],
+            t2=TESTSTING_CONSTANTS["t2"],
+            p1=TESTSTING_CONSTANTS["p1"],
+            p2=TESTSTING_CONSTANTS["p2"],
+            k=TESTSTING_CONSTANTS["k"],
+            zr=TESTSTING_CONSTANTS["zr"],
+        )
     )
     assert abs(np.real(actual) - expected_real) < TOLERANCE
     assert abs(np.imag(actual) - expected_imag) < TOLERANCE
@@ -354,7 +514,26 @@ def test_tau_pp_general() -> None:
         k=TESTSTING_CONSTANTS["k"],
         zr=TESTSTING_CONSTANTS["zr"],
     )
-    print(actual)
+    assert abs(np.real(actual) - expected_real) < TOLERANCE
+    assert abs(np.imag(actual) - expected_imag) < TOLERANCE
+
+
+def test_tau_pp_conjugate() -> None:
+    """Test switching derivatives results in a complex conjugate."""
+    expected_real = 2.25255
+    expected_imag = -0.656208
+    actual = np.conj(
+        gaussian_overlaps.tau_pp(
+            s1=TESTSTING_CONSTANTS["s1"],
+            s2=TESTSTING_CONSTANTS["s2"],
+            t1=TESTSTING_CONSTANTS["t1"],
+            t2=TESTSTING_CONSTANTS["t2"],
+            p1=TESTSTING_CONSTANTS["p1"],
+            p2=TESTSTING_CONSTANTS["p2"],
+            k=TESTSTING_CONSTANTS["k"],
+            zr=TESTSTING_CONSTANTS["zr"],
+        )
+    )
     assert abs(np.real(actual) - expected_real) < TOLERANCE
     assert abs(np.imag(actual) - expected_imag) < TOLERANCE
 
@@ -366,16 +545,25 @@ if __name__ == "__main__":
     test_gamma_s_complete_overlap()
     test_gamma_s_in_plane_is_real()
     test_gamma_s_general()
+    test_gamma_s_conjugate()
     test_gamma_t_complete_overlap()
     test_gamma_t_in_plane_is_real()
     test_gamma_t_general()
+    test_gamma_t_conjugate()
     test_gamma_p_complete_overlap()
     test_gamma_p_general()
+    test_gamma_p_conjugate()
     test_tau_ss_diagonal()
     test_tau_ss_general()
+    test_tau_ss_conjugate()
     test_tau_st_general()
+    test_tau_st_conjugate()
     test_tau_sp_general()
+    test_tau_sp_conjugate()
     test_tau_tt_diagonal()
     test_tau_tt_general()
+    test_tau_tt_conjugate()
     test_tau_tp_general()
+    test_tau_tp_conjugate()
     test_tau_pp_general()
+    test_tau_pp_conjugate()
