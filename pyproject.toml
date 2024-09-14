@@ -1,5 +1,5 @@
 [project]
-name = "oqula"
+name = "rayfish"
 version = "0.0.1"
 description = "Estimating parameters for discrete quantum imaging"
 authors = [{ name = "Jernej Frank", email = "jernejfrank@gmail.com" }]
@@ -23,9 +23,9 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://jernejfrank.github.io/oqula/"
-Repository = "https://github.com/jernejfrank/oqula"
-Documentation = "https://jernejfrank.github.io/oqula/"
+Homepage = "https://jernejfrank.github.io/rayfish/"
+Repository = "https://github.com/jernejfrank/rayfish"
+Documentation = "https://jernejfrank.github.io/rayfish/"
 
 [tool.uv]
 dev-dependencies = [
@@ -41,7 +41,7 @@ requires = ["setuptools>=72.1"]
 build-backend = "setuptools.build_meta"
 
 [tool.mypy]
-files = ["estimator"]
+files = ["rayfish"]
 disallow_untyped_defs = "True"
 disallow_any_unimported = "True"
 no_implicit_optional = "True"

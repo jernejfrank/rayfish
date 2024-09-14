@@ -26,7 +26,7 @@ from __future__ import annotations
 import numpy as np
 
 # Public API
-# __all__ = ("foo",)
+__all__ = ("delta",)
 
 
 def delta(
@@ -39,7 +39,24 @@ def delta(
     k: float,
     zr: float,
 ) -> float:
-    """Calculating the overlap of two displaced Gaussian Beams."""
+    """Calculating the overlap of two displaced Gaussian Beams.
+
+    Args:
+        s1: displacing first Gaussian on x-axis by x+s1
+        s2: displacing second Gaussian on x-axis by x+s2
+        t1: displacing first Gaussian on y-axis by y+t1
+        t2: displacing second Gaussian on y-axis by y+t2
+        p1: displacing first Gaussian on z-axis by z+p1
+        p2: displacing second Gaussian on z-axis by z+p2
+        k: wave vector = 2 pi / wavelength the point source emits in
+        zr: Rayleigh length. It is the distance along the propagation
+            direction of a beam from the waist to the place where the area of
+            1the cross section is doubled.
+
+    Returns:
+       In general a complex number. The integral has a closed form expression
+       that we hard-code here for improved performance and accuracy.
+    """
     prefactor = 2j / (2j - p1 + p2)
     exp_factor = (1j / (2 * (-2j + p1 - p2))) * (
         (s1 - s2) ** 2

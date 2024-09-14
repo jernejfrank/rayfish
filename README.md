@@ -1,12 +1,12 @@
-# oqula
+# rayfish
 
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
 
 Estimating parameters for discrete quantum imaging
 
-- **Github repository**: <https://github.com/jernejfrank/oqula/>
-- **Documentation** <https://jernejfrank.github.io/oqula/>
+- **Github repository**: <https://github.com/jernejfrank/rayfish/>
+- **Documentation** <https://jernejfrank.github.io/rayfish/>
 
 ## TODO
 * Create CI/CD with Github Actions
