@@ -417,6 +417,88 @@ def test_tau_submat_vector() -> None:
     assert np.allclose(actual, expected, atol=TOLERANCE)
 
 
+def test_gramian_scalar() -> None:
+    """Test constructing the Gramian.
+
+    Populating the Gramian matrix with:
+    - delta_submat
+    - gamma_submat
+    - tau_submat
+
+    Calculation done for a scalar input for point source positions.
+    """
+    expected = copy.deepcopy(G_SCALAR)
+
+    delta_submat = qfi.delta_submat(
+        coordinates=TESTING_COORDINATES_SCALAR,
+        number_of_point_sources=NUMBER_OF_POINT_SOURCES,
+        wave_vector=WAVE_VECTOR,
+        rayleigh_length=RAYLEIGH_LENGTH,
+    )
+
+    gamma_submat = qfi.gamma_submat(
+        coordinates=TESTING_COORDINATES_SCALAR,
+        number_of_point_sources=NUMBER_OF_POINT_SOURCES,
+        wave_vector=WAVE_VECTOR,
+        rayleigh_length=RAYLEIGH_LENGTH,
+    )
+
+    tau_submat = qfi.tau_submat(
+        coordinates=TESTING_COORDINATES_SCALAR,
+        number_of_point_sources=NUMBER_OF_POINT_SOURCES,
+        wave_vector=WAVE_VECTOR,
+        rayleigh_length=RAYLEIGH_LENGTH,
+    )
+
+    actual = qfi.gramian(
+        delta_submat=delta_submat, gamma_submat=gamma_submat, tau_submat=tau_submat
+    )
+
+    assert actual.shape == (1, 8, 8)
+    assert np.allclose(actual, expected, atol=TOLERANCE)
+
+
+def test_gramian_vector() -> None:
+    """Test constructing the Gramian.
+
+    Populating the Gramian matrix with:
+    - delta_submat
+    - gamma_submat
+    - tau_submat
+
+    Calculation done for a scalar input for point source positions.
+    """
+    expected = copy.deepcopy(G_VECTOR)
+
+    delta_submat = qfi.delta_submat(
+        coordinates=TESTING_COORDINATES_VECTOR,
+        number_of_point_sources=NUMBER_OF_POINT_SOURCES,
+        wave_vector=WAVE_VECTOR,
+        rayleigh_length=RAYLEIGH_LENGTH,
+    )
+
+    gamma_submat = qfi.gamma_submat(
+        coordinates=TESTING_COORDINATES_VECTOR,
+        number_of_point_sources=NUMBER_OF_POINT_SOURCES,
+        wave_vector=WAVE_VECTOR,
+        rayleigh_length=RAYLEIGH_LENGTH,
+    )
+
+    tau_submat = qfi.tau_submat(
+        coordinates=TESTING_COORDINATES_VECTOR,
+        number_of_point_sources=NUMBER_OF_POINT_SOURCES,
+        wave_vector=WAVE_VECTOR,
+        rayleigh_length=RAYLEIGH_LENGTH,
+    )
+
+    actual = qfi.gramian(
+        delta_submat=delta_submat, gamma_submat=gamma_submat, tau_submat=tau_submat
+    )
+
+    assert actual.shape == (2, 8, 8)
+    assert np.allclose(actual, expected, atol=TOLERANCE)
+
+
 if __name__ == "__main__":
     test_delta_submat_scalar()
     test_delta_submat_vector()
@@ -424,3 +506,5 @@ if __name__ == "__main__":
     test_gamma_submat_vector()
     test_tau_submat_scalar()
     test_tau_submat_vector()
+    test_gramian_scalar()
+    test_gramian_vector()

@@ -31,11 +31,7 @@ import numpy.typing as npt
 from rayfish import gaussian_overlaps
 
 # Public API
-__all__ = (
-    "delta_submat",
-    "gamma_submat",
-    "tau_submat",
-)
+__all__ = ("delta_submat", "gamma_submat", "tau_submat", "gramian")
 
 
 def delta_submat(
@@ -313,3 +309,38 @@ def tau_submat(
                 zr=rayleigh_length,
             )
     return tau_mat
+
+
+def gramian(
+    delta_submat: npt.NDArray[np.complex128],
+    gamma_submat: npt.NDArray[np.complex128],
+    tau_submat: npt.NDArray[np.complex128],
+) -> npt.NDArray[np.complex128]:
+    """Gramian matrix for non-orthogonal basis.
+
+    Creates the Gramian matrix that is necessary for linear algebra in
+    vector spaces spanned by non-orthogonal basis.
+
+    The matrix takes the form:
+
+    |  delta_submat  |  gamma_submat |
+    |  gamma_submat  |   tau_submat  |
+
+    where
+    - dim(delta_submat) = (N,N)
+    - dim(gamma_submat) = (N,3N) and (3N, N)
+    - dim(tau_submat) = (3N,3N)
+
+    Args:
+        delta_submat: submatrix of overlaps between Gaussians
+        gamma_submat: submatrix of overlaps between Gaussians and derivatives
+        tau_submat: submatrox of overlaps between Gaussian derivatives
+
+    Returns:
+       A (M,4N,4N)-array of complex floats, where N is the number of point sources
+       and M is the number of different distributions of the N point sources.
+    """
+    g = gamma_submat
+    g[:, : delta_submat.shape[1], : delta_submat.shape[2]] += delta_submat
+    g[:, delta_submat.shape[1] :, delta_submat.shape[2] :] += tau_submat
+    return g
