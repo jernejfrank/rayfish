@@ -6,7 +6,7 @@ with arbitrary 3D displacement. This is beneficial since it speeds up the comput
 (analytical vs numerical calculations).
 
 Here we make sure the closed-form expression are correct by comparing the results
-to values calculated in a separate mathematica notebook.
+to values calculated in a separate mathematica notebook ./gaussian_overlaps.nb.
 """
 
 import numpy as np
@@ -24,6 +24,7 @@ TESTSTING_CONSTANTS = {
     "zr": 1,
 }
 
+# Due to numerical precision we cannot get exact equality
 TOLERANCE = 5e-6
 
 

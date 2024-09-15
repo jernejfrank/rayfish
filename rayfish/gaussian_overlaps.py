@@ -1,34 +1,22 @@
-"""Calculating the quantum Fisher information matrix for incoherent point sources.
+"""Calculating inner products of displaced Gaussians.
 
-This module calculates the quantum Fisher information matrix for a
-finite set of parameters.
 The length scale for the position of the particles is normalized w.r.t.
 the Rayleigh length [zr] and wavevector [k] as follows:
 x,y <-> sqrt[k/zr] x,y
 z <-> z / zr
 
-The model assumes incoherent point sources distributed in 3D space and
-a Gaussian point spread function. With the above relative length scale
-this looks like:
+We model the point spread function in the image plane as a
+Gaussian beam. With the above relative length scale this looks like:
 ψ(x-dx, y-dy, z-dz) =
 sqrt[1/pi] (i / (z-dz+i))
 exp[-i ((x-dx)^2 + (y-dy)^2) / (2 (z-dz+i))] exp[-i k zr (z-dz)]
 
-The functions represent the following overlaps:
+We calculate the following overlaps:
 delta: <ψ(x-dx_1, y-dy_1, z-dz_1)|ψ(x-dx_2, y-dy_2, z-dz_2)>
 gamma_µ: <∂_µ ψ(x-dx_1, y-dy_1, z-dz_1)|ψ(x-dx_2, y-dy_2, z-dz_2)> ; µ=dx_1, dy_1, dz_1
 tau_µn: <∂_µ ψ(x-dx_1, y-dy_1, z-dz_1)|∂_n ψ(x-dx_2, y-dy_2, z-dz_2)> ;
     µ=dx_1, dy_1, dz_1 ; n=dx_2, dy_2, dz_2
-
-The module implements the method proposed by Tufarelli, et.al.:
-[1] Marco G Genoni and Tommaso Tufarelli, “Non-orthogonal bases for quantum metrology,”
-Journal of Physics A: Mathematical and Theoretical 52, 434002 (2019).
-[2] Lukas J Fiderer, Tommaso Tufarelli, Samanta Piano, and Gerardo Adesso,
-“General expressions for the quantum fisher information matrix with applications
-to discrete quantum imaging,” PRX Quantum 2, 020308 (2021).
 """
-
-from __future__ import annotations
 
 import numpy as np
 
@@ -45,6 +33,27 @@ __all__ = (
     "tau_tp",
     "tau_pp",
 )
+
+
+def _exp_common_factor(
+    s1: float,
+    s2: float,
+    t1: float,
+    t2: float,
+    p1: float,
+    p2: float,
+    k: float,
+    zr: float,
+) -> float:
+    return np.exp(
+        (1j / (2 * (-2j + p1 - p2)))
+        * (
+            (s1 - s2) ** 2
+            + (t1 - t2) ** 2
+            + 2 * k * zr * (p1 - p2) ** 2
+            - 1j * 4 * k * zr * (p1 - p2)
+        )
+    )
 
 
 def delta(
@@ -76,13 +85,9 @@ def delta(
        that we hard-code here for improved performance and accuracy.
     """
     prefactor = 2j / (2j - p1 + p2)
-    exp_factor = (1j / (2 * (-2j + p1 - p2))) * (
-        (s1 - s2) ** 2
-        + (t1 - t2) ** 2
-        + 2 * k * zr * (p1 - p2) ** 2
-        - 1j * 4 * k * zr * (p1 - p2)
+    return prefactor * _exp_common_factor(
+        s1=s1, s2=s2, t1=t1, t2=t2, p1=p1, p2=p2, k=k, zr=zr
     )
-    return prefactor * np.exp(exp_factor)
 
 
 def gamma_s(
@@ -117,13 +122,9 @@ def gamma_s(
       that we hard-code here for improved performance and accuracy.
     """
     prefactor = -2 * (s1 - s2) / (2j - p1 + p2) ** 2
-    exp_factor = (1j / (2 * (-2j + p1 - p2))) * (
-        (s1 - s2) ** 2
-        + (t1 - t2) ** 2
-        + 2 * k * zr * (p1 - p2) ** 2
-        - 4j * k * zr * (p1 - p2)
+    return prefactor * _exp_common_factor(
+        s1=s1, s2=s2, t1=t1, t2=t2, p1=p1, p2=p2, k=k, zr=zr
     )
-    return prefactor * np.exp(exp_factor)
 
 
 def gamma_t(
@@ -158,13 +159,9 @@ def gamma_t(
       that we hard-code here for improved performance and accuracy.
     """
     prefactor = -2 * (t1 - t2) / (2j - p1 + p2) ** 2
-    exp_factor = (1j / (2 * (-2j + p1 - p2))) * (
-        (s1 - s2) ** 2
-        + (t1 - t2) ** 2
-        + 2 * k * zr * (p1 - p2) ** 2
-        - 4j * k * zr * (p1 - p2)
+    return prefactor * _exp_common_factor(
+        s1=s1, s2=s2, t1=t1, t2=t2, p1=p1, p2=p2, k=k, zr=zr
     )
-    return prefactor * np.exp(exp_factor)
 
 
 def gamma_p(
@@ -205,15 +202,9 @@ def gamma_p(
         - 2 * k * zr * (-4 + (p1 - p2) ** 2)
         + 1j * 2 * (p1 - p2) * (-1 + 4 * k * zr)
     ) / (-2j + p1 - p2) ** 3
-
-    exp_factor = (1j / (2 * (-2j + p1 - p2))) * (
-        (s1 - s2) ** 2
-        + (t1 - t2) ** 2
-        + 2 * k * zr * (p1 - p2) ** 2
-        - 4j * k * zr * (p1 - p2)
+    return prefactor * _exp_common_factor(
+        s1=s1, s2=s2, t1=t1, t2=t2, p1=p1, p2=p2, k=k, zr=zr
     )
-
-    return prefactor * np.exp(exp_factor)
 
 
 def tau_ss(
@@ -248,13 +239,9 @@ def tau_ss(
       that we hard-code here for improved performance and accuracy.
     """
     prefactor = 2j * (-2 + (s1 - s2) ** 2 + 1j * (p2 - p1)) / (2j - p1 + p2) ** 3
-    exp_factor = (1j / (2 * (-2j + p1 - p2))) * (
-        (s1 - s2) ** 2
-        + (t1 - t2) ** 2
-        + 2 * k * zr * (p1 - p2) ** 2
-        - 4j * k * zr * (p1 - p2)
+    return prefactor * _exp_common_factor(
+        s1=s1, s2=s2, t1=t1, t2=t2, p1=p1, p2=p2, k=k, zr=zr
     )
-    return prefactor * np.exp(exp_factor)
 
 
 def tau_st(
@@ -290,13 +277,9 @@ def tau_st(
       that we hard-code here for improved performance and accuracy.
     """
     prefactor = 2j * (s1 - s2) * (t1 - t2) / (2j - p1 + p2) ** 3
-    exp_factor = (1j / (2 * (-2j + p1 - p2))) * (
-        (s1 - s2) ** 2
-        + (t1 - t2) ** 2
-        + 2 * k * zr * (p1 - p2) ** 2
-        - 4j * k * zr * (p1 - p2)
+    return prefactor * _exp_common_factor(
+        s1=s1, s2=s2, t1=t1, t2=t2, p1=p1, p2=p2, k=k, zr=zr
     )
-    return prefactor * np.exp(exp_factor)
 
 
 def tau_sp(
@@ -343,13 +326,9 @@ def tau_sp(
         )
         / ((1j + p2) ** 3 * (2j - p1 + p2) ** 4)
     )
-    exp_factor = (1j / (2 * (-2j + p1 - p2))) * (
-        (s1 - s2) ** 2
-        + (t1 - t2) ** 2
-        + 2 * k * zr * (p1 - p2) ** 2
-        - 4j * k * zr * (p1 - p2)
+    return prefactor * _exp_common_factor(
+        s1=s1, s2=s2, t1=t1, t2=t2, p1=p1, p2=p2, k=k, zr=zr
     )
-    return prefactor * np.exp(exp_factor)
 
 
 def tau_tt(
@@ -384,13 +363,9 @@ def tau_tt(
       that we hard-code here for improved performance and accuracy.
     """
     prefactor = 2j * (-2 + (t1 - t2) ** 2 + 1j * (p2 - p1)) / (2j - p1 + p2) ** 3
-    exp_factor = (1j / (2 * (-2j + p1 - p2))) * (
-        (s1 - s2) ** 2
-        + (t1 - t2) ** 2
-        + 2 * k * zr * (p1 - p2) ** 2
-        - 4j * k * zr * (p1 - p2)
+    return prefactor * _exp_common_factor(
+        s1=s1, s2=s2, t1=t1, t2=t2, p1=p1, p2=p2, k=k, zr=zr
     )
-    return prefactor * np.exp(exp_factor)
 
 
 def tau_tp(
@@ -437,13 +412,9 @@ def tau_tp(
         )
         / ((1j + p2) ** 3 * (2j - p1 + p2) ** 4)
     )
-    exp_factor = (1j / (2 * (-2j + p1 - p2))) * (
-        (s1 - s2) ** 2
-        + (t1 - t2) ** 2
-        + 2 * k * zr * (p1 - p2) ** 2
-        - 4j * k * zr * (p1 - p2)
+    return prefactor * _exp_common_factor(
+        s1=s1, s2=s2, t1=t1, t2=t2, p1=p1, p2=p2, k=k, zr=zr
     )
-    return prefactor * np.exp(exp_factor)
 
 
 def tau_pp(
@@ -509,10 +480,6 @@ def tau_pp(
             )
         )
     )
-    exp_factor = (1j / (2 * (-2j + p1 - p2))) * (
-        (s1 - s2) ** 2
-        + (t1 - t2) ** 2
-        + 2 * k * zr * (p1 - p2) ** 2
-        - 4j * k * zr * (p1 - p2)
+    return prefactor * _exp_common_factor(
+        s1=s1, s2=s2, t1=t1, t2=t2, p1=p1, p2=p2, k=k, zr=zr
     )
-    return prefactor * np.exp(exp_factor)

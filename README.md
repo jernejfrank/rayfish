@@ -14,4 +14,4 @@ Estimating parameters for discrete quantum imaging
 * Protect main branch and use gitflow
 * Sort out existing projects and create backend module
 * Create Dash frontend
-* Create Docker container for the app nad maybe use mounting drive for saving data locally for now
+* Create Docker container for the app and maybe use mounting drive for saving data locally for now
