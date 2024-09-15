@@ -31,7 +31,12 @@ import numpy.typing as npt
 from rayfish import gaussian_overlaps
 
 # Public API
-__all__ = ("delta_submat", "gamma_submat", "tau_submat", "gramian")
+__all__ = (
+    "delta_submat",
+    "gamma_submat",
+    "tau_submat",
+    "gramian",
+)
 
 
 def delta_submat(
