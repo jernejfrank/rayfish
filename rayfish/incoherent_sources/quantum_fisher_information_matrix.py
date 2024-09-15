@@ -31,12 +31,7 @@ import numpy.typing as npt
 from rayfish import gaussian_overlaps
 
 # Public API
-__all__ = (
-    "delta_submat",
-    "gamma_submat",
-    "tau_submat",
-    "gramian",
-)
+__all__ = ("delta_submat", "gamma_submat", "tau_submat", "gramian", "density")
 
 
 def delta_submat(
@@ -349,3 +344,32 @@ def gramian(
     g[:, : delta_submat.shape[1], : delta_submat.shape[2]] += delta_submat
     g[:, delta_submat.shape[1] :, delta_submat.shape[2] :] += tau_submat
     return g
+
+
+def density(
+    number_of_point_sources: int, number_of_point_source_distributions: int
+) -> npt.NDArray[np.float64]:
+    """Density matrix.
+
+    For now we assume all sources have equal probability of emitting
+    a photon (they are equally bright). The trace sums to 1.
+
+    Args:
+        number_of_point_sources: how many point sources we
+            have to model the object
+        number_of_point_source_distributions: number of
+            different distributions of point sources
+
+    Returns:
+        A (M,4N,4N) matrix, of M different point source distribution and
+        where the upper left (N,N) submatrix corresponds to the
+        density matrix for N point sources.
+    """
+    r_full = np.zeros((
+        number_of_point_source_distributions,
+        4 * number_of_point_sources,
+        4 * number_of_point_sources,
+    ))
+    r_sub = np.eye(number_of_point_sources) / number_of_point_sources
+    r_full[:, :number_of_point_sources, :number_of_point_sources] = r_sub
+    return r_full

@@ -499,6 +499,20 @@ def test_gramian_vector() -> None:
     assert np.allclose(actual, expected, atol=TOLERANCE)
 
 
+def test_density() -> None:
+    """Test density matrix has correct shape and content."""
+    actual = qfi.density(
+        number_of_point_sources=2, number_of_point_source_distributions=2
+    )
+
+    assert actual.shape == (2, 8, 8)
+    assert np.trace(actual[0]) == 1
+    assert np.trace(actual[1]) == 1
+    assert np.count_nonzero(actual[0]) == 2
+    assert np.count_nonzero(actual[1]) == 2
+
+
+# In case we don't run pytest
 if __name__ == "__main__":
     test_delta_submat_scalar()
     test_delta_submat_vector()
@@ -508,3 +522,4 @@ if __name__ == "__main__":
     test_tau_submat_vector()
     test_gramian_scalar()
     test_gramian_vector()
+    test_density()
