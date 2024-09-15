@@ -87,6 +87,7 @@ select = [
 ignore = [
     "ANN101",
     "E731",
+    "PGH004",
 ]
 
 unfixable = [

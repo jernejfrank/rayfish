@@ -19,6 +19,7 @@ tau_µn: <∂_µ ψ(x-dx_1, y-dy_1, z-dz_1)|∂_n ψ(x-dx_2, y-dy_2, z-dz_2)> ;
 """
 
 import numpy as np
+from beartype.typing import Callable
 
 # Public API
 __all__ = (
@@ -35,6 +36,21 @@ __all__ = (
 )
 
 
+def _vectorize(f: Callable) -> Callable:
+    """Helper function to vectorize the overlaps.
+
+    This allows us to pass in single parameters or a family of
+    point source distributions and take advantage of numpy's
+    vectorization features to speed up calculations.
+    """
+    vf = np.vectorize(f, otypes=[np.complex128], excluded=["k", "zr"])
+
+    def newfunc(*args, **kwargs):  # noqa
+        return vf(*args, **kwargs)[()]
+
+    return newfunc
+
+
 def _exp_common_factor(
     s1: float,
     s2: float,
@@ -44,18 +60,14 @@ def _exp_common_factor(
     p2: float,
     k: float,
     zr: float,
-) -> float:
+) -> complex:
     return np.exp(
-        (1j / (2 * (-2j + p1 - p2)))
-        * (
-            (s1 - s2) ** 2
-            + (t1 - t2) ** 2
-            + 2 * k * zr * (p1 - p2) ** 2
-            - 1j * 4 * k * zr * (p1 - p2)
-        )
+        (1j * ((s1 - s2) ** 2 + (t1 - t2) ** 2)) / (2 * (-2j + p1 - p2))
+        + 1j * k * zr * (p1 - p2)
     )
 
 
+@_vectorize
 def delta(
     s1: float,
     s2: float,
@@ -65,7 +77,7 @@ def delta(
     p2: float,
     k: float,
     zr: float,
-) -> float:
+) -> complex:
     """Calculating the overlap of two displaced Gaussian beams.
 
     Args:
@@ -90,6 +102,7 @@ def delta(
     )
 
 
+@_vectorize
 def gamma_s(
     s1: float,
     s2: float,
@@ -99,7 +112,7 @@ def gamma_s(
     p2: float,
     k: float,
     zr: float,
-) -> float:
+) -> complex:
     """Overlap of a Gaussian and derivative of another Gaussian in the x-dimension.
 
     Calculating the overlap of a Gaussian beam and derivative of the displacement
@@ -127,6 +140,7 @@ def gamma_s(
     )
 
 
+@_vectorize
 def gamma_t(
     s1: float,
     s2: float,
@@ -136,7 +150,7 @@ def gamma_t(
     p2: float,
     k: float,
     zr: float,
-) -> float:
+) -> complex:
     """Overlap of a Gaussian and derivative of another Gaussian in the y-dimension.
 
     Calculating the overlap of a Gaussian beam and derivative of the displacement
@@ -164,6 +178,7 @@ def gamma_t(
     )
 
 
+@_vectorize
 def gamma_p(
     s1: float,
     s2: float,
@@ -173,7 +188,7 @@ def gamma_p(
     p2: float,
     k: float,
     zr: float,
-) -> float:
+) -> complex:
     """Overlap of a Gaussian and derivative of another Gaussian in the z-dimension.
 
     Calculating the overlap of a Gaussian beam and derivative of the displacement
@@ -207,6 +222,7 @@ def gamma_p(
     )
 
 
+@_vectorize
 def tau_ss(
     s1: float,
     s2: float,
@@ -216,7 +232,7 @@ def tau_ss(
     p2: float,
     k: float,
     zr: float,
-) -> float:
+) -> complex:
     """Overlap between Gaussian derivatives in x-dimension.
 
     Calculating the overlap between two Gaussian beam derivatives of the
@@ -244,6 +260,7 @@ def tau_ss(
     )
 
 
+@_vectorize
 def tau_st(
     s1: float,
     s2: float,
@@ -253,7 +270,7 @@ def tau_st(
     p2: float,
     k: float,
     zr: float,
-) -> float:
+) -> complex:
     """Overlap between Gaussian derivatives in x- and y-dimension.
 
     Calculating the overlap between two derivatives of two Gaussian beams.
@@ -282,6 +299,7 @@ def tau_st(
     )
 
 
+@_vectorize
 def tau_sp(
     s1: float,
     s2: float,
@@ -291,7 +309,7 @@ def tau_sp(
     p2: float,
     k: float,
     zr: float,
-) -> float:
+) -> complex:
     """Overlap between Gaussian derivatives in x- and z-dimension.
 
     Calculating the overlap between two derivatives of two Gaussian beams.
@@ -331,6 +349,7 @@ def tau_sp(
     )
 
 
+@_vectorize
 def tau_tt(
     s1: float,
     s2: float,
@@ -340,7 +359,7 @@ def tau_tt(
     p2: float,
     k: float,
     zr: float,
-) -> float:
+) -> complex:
     """Overlap between Gaussian derivatives in y-dimension.
 
     Calculating the overlap between two Gaussian beam derivatives of the
@@ -368,6 +387,7 @@ def tau_tt(
     )
 
 
+@_vectorize
 def tau_tp(
     s1: float,
     s2: float,
@@ -377,7 +397,7 @@ def tau_tp(
     p2: float,
     k: float,
     zr: float,
-) -> float:
+) -> complex:
     """Overlap between Gaussian derivatives in y- and z-dimension.
 
     Calculating the overlap between two derivatives of two Gaussian beams.
@@ -417,6 +437,7 @@ def tau_tp(
     )
 
 
+@_vectorize
 def tau_pp(
     s1: float,
     s2: float,
@@ -426,7 +447,7 @@ def tau_pp(
     p2: float,
     k: float,
     zr: float,
-) -> float:
+) -> complex:
     """Overlap between Gaussian derivatives in z-dimension.
 
     Calculating the overlap between two Gaussian beam derivatives of the
