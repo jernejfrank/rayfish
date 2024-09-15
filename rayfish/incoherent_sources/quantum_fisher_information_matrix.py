@@ -211,9 +211,98 @@ def tau_submat(
         ))
         + 0j
     )
+
     for i in range(number_of_point_sources):
         for j in range(number_of_point_sources):
-            tau_mat[:, i, j] = gaussian_overlaps.delta(
+            tau_mat[:, i, j] = gaussian_overlaps.tau_ss(
+                s1=coordinates[:, i],
+                s2=coordinates[:, j],
+                t1=coordinates[:, number_of_point_sources + i],
+                t2=coordinates[:, number_of_point_sources + j],
+                p1=coordinates[:, 2 * number_of_point_sources + i],
+                p2=coordinates[:, 2 * number_of_point_sources + j],
+                k=wave_vector,
+                zr=rayleigh_length,
+            )
+            tau_mat[:, i, number_of_point_sources + j] = gaussian_overlaps.tau_st(
+                s1=coordinates[:, i],
+                s2=coordinates[:, j],
+                t1=coordinates[:, number_of_point_sources + i],
+                t2=coordinates[:, number_of_point_sources + j],
+                p1=coordinates[:, 2 * number_of_point_sources + i],
+                p2=coordinates[:, 2 * number_of_point_sources + j],
+                k=wave_vector,
+                zr=rayleigh_length,
+            )
+            tau_mat[:, i, 2 * number_of_point_sources + j] = gaussian_overlaps.tau_sp(
+                s1=coordinates[:, i],
+                s2=coordinates[:, j],
+                t1=coordinates[:, number_of_point_sources + i],
+                t2=coordinates[:, number_of_point_sources + j],
+                p1=coordinates[:, 2 * number_of_point_sources + i],
+                p2=coordinates[:, 2 * number_of_point_sources + j],
+                k=wave_vector,
+                zr=rayleigh_length,
+            )
+            tau_mat[:, number_of_point_sources + i, j] = gaussian_overlaps.tau_st(
+                s1=coordinates[:, i],
+                s2=coordinates[:, j],
+                t1=coordinates[:, number_of_point_sources + i],
+                t2=coordinates[:, number_of_point_sources + j],
+                p1=coordinates[:, 2 * number_of_point_sources + i],
+                p2=coordinates[:, 2 * number_of_point_sources + j],
+                k=wave_vector,
+                zr=rayleigh_length,
+            )
+            tau_mat[:, number_of_point_sources + i, number_of_point_sources + j] = (
+                gaussian_overlaps.tau_tt(
+                    s1=coordinates[:, i],
+                    s2=coordinates[:, j],
+                    t1=coordinates[:, number_of_point_sources + i],
+                    t2=coordinates[:, number_of_point_sources + j],
+                    p1=coordinates[:, 2 * number_of_point_sources + i],
+                    p2=coordinates[:, 2 * number_of_point_sources + j],
+                    k=wave_vector,
+                    zr=rayleigh_length,
+                )
+            )
+            tau_mat[:, number_of_point_sources + i, 2 * number_of_point_sources + j] = (
+                gaussian_overlaps.tau_tp(
+                    s1=coordinates[:, i],
+                    s2=coordinates[:, j],
+                    t1=coordinates[:, number_of_point_sources + i],
+                    t2=coordinates[:, number_of_point_sources + j],
+                    p1=coordinates[:, 2 * number_of_point_sources + i],
+                    p2=coordinates[:, 2 * number_of_point_sources + j],
+                    k=wave_vector,
+                    zr=rayleigh_length,
+                )
+            )
+            tau_mat[:, 2 * number_of_point_sources + i, j] = gaussian_overlaps.tau_sp(
+                s1=coordinates[:, i],
+                s2=coordinates[:, j],
+                t1=coordinates[:, number_of_point_sources + i],
+                t2=coordinates[:, number_of_point_sources + j],
+                p1=coordinates[:, 2 * number_of_point_sources + i],
+                p2=coordinates[:, 2 * number_of_point_sources + j],
+                k=wave_vector,
+                zr=rayleigh_length,
+            )
+            tau_mat[:, 2 * number_of_point_sources + i, number_of_point_sources + j] = (
+                gaussian_overlaps.tau_tp(
+                    s1=coordinates[:, i],
+                    s2=coordinates[:, j],
+                    t1=coordinates[:, number_of_point_sources + i],
+                    t2=coordinates[:, number_of_point_sources + j],
+                    p1=coordinates[:, 2 * number_of_point_sources + i],
+                    p2=coordinates[:, 2 * number_of_point_sources + j],
+                    k=wave_vector,
+                    zr=rayleigh_length,
+                )
+            )
+            tau_mat[
+                :, 2 * number_of_point_sources + i, 2 * number_of_point_sources + j
+            ] = gaussian_overlaps.tau_pp(
                 s1=coordinates[:, i],
                 s2=coordinates[:, j],
                 t1=coordinates[:, number_of_point_sources + i],

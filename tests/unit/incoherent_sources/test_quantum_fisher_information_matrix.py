@@ -12,6 +12,8 @@ vectorized version. We compare the results to values calculated in
 a separate mathematica notebook ./non_orthogonal_transformation_matrix.nb.
 """
 
+import copy
+
 import numpy as np
 
 import rayfish.incoherent_sources.quantum_fisher_information_matrix as qfi
@@ -286,7 +288,7 @@ def test_delta_submat_scalar() -> None:
     obtained from gaussian_overlaps.delta(...). Calculation
     done for a scalar input for point source positions.
     """
-    expected = G_SCALAR[:2, :2]
+    expected = copy.deepcopy(G_SCALAR[:2, :2])
     actual = qfi.delta_submat(
         coordinates=TESTING_COORDINATES_SCALAR,
         number_of_point_sources=NUMBER_OF_POINT_SOURCES,
@@ -304,7 +306,7 @@ def test_delta_submat_vector() -> None:
     obtained from gaussian_overlaps.delta(...). Calculation
     done for a vector input for point source positions.
     """
-    expected = G_VECTOR[:, :2, :2]
+    expected = copy.deepcopy(G_VECTOR[:, :2, :2])
     actual = qfi.delta_submat(
         coordinates=TESTING_COORDINATES_VECTOR,
         number_of_point_sources=NUMBER_OF_POINT_SOURCES,
@@ -326,7 +328,7 @@ def test_gamma_submat_scalar() -> None:
 
     Calculation done for a scalar input for point source positions.
     """
-    expected = G_SCALAR
+    expected = copy.deepcopy(G_SCALAR)
     expected[:2, :2] = 0.0
     expected[2:8, 2:8] = 0.0
     actual = qfi.gamma_submat(
@@ -351,7 +353,7 @@ def test_gamma_submat_vector() -> None:
 
     Calculation done for a vector input for point source positions.
     """
-    expected = G_VECTOR
+    expected = copy.deepcopy(G_VECTOR)
     expected[:, :2, :2] = 0.0
     expected[:, 2:8, 2:8] = 0.0
     actual = qfi.gamma_submat(
@@ -364,8 +366,61 @@ def test_gamma_submat_vector() -> None:
     assert np.allclose(actual, expected, atol=TOLERANCE)
 
 
+def test_tau_submat_scalar() -> None:
+    """Test constructing tau submatrix.
+
+    Populating the tau submatrix with overlaps between
+    Gaussian derivatives obtained from
+    - gaussian_overlaps.tau_ss(...) for x-dimension,
+    - gaussian_overlaps.tau_st(...) for x- and y-dimension,
+    - gaussian_overlaps.tau_sp(...) for x- and z-dimension,
+    - gaussian_overlaps.tau_tt(...) for y-dimension,
+    - gaussian_overlaps.tau_tp(...) for y- and z-dimension,
+    - gaussian_overlaps.tau_pp(...) for z-dimension.
+
+
+    Calculation done for a scalar input for point source positions.
+    """
+    expected = copy.deepcopy(G_SCALAR[2:, 2:])
+    actual = qfi.tau_submat(
+        coordinates=TESTING_COORDINATES_SCALAR,
+        number_of_point_sources=NUMBER_OF_POINT_SOURCES,
+        wave_vector=WAVE_VECTOR,
+        rayleigh_length=RAYLEIGH_LENGTH,
+    )
+    assert actual.shape == (1, 6, 6)
+    assert np.allclose(actual, expected, atol=TOLERANCE)
+
+
+def test_tau_submat_vector() -> None:
+    """Test constructing tau submatrix.
+
+    Populating the tau submatrix with overlaps between
+    Gaussian derivatives obtained from
+    - gaussian_overlaps.tau_ss(...) for x-dimension,
+    - gaussian_overlaps.tau_st(...) for x- and y-dimension,
+    - gaussian_overlaps.tau_sp(...) for x- and z-dimension,
+    - gaussian_overlaps.tau_tt(...) for y-dimension,
+    - gaussian_overlaps.tau_tp(...) for y- and z-dimension,
+    - gaussian_overlaps.tau_pp(...) for z-dimension.
+
+    Calculation done for a vector input for point source positions.
+    """
+    expected = copy.deepcopy(G_VECTOR[:, 2:, 2:])
+    actual = qfi.tau_submat(
+        coordinates=TESTING_COORDINATES_VECTOR,
+        number_of_point_sources=NUMBER_OF_POINT_SOURCES,
+        wave_vector=WAVE_VECTOR,
+        rayleigh_length=RAYLEIGH_LENGTH,
+    )
+    assert actual.shape == (2, 6, 6)
+    assert np.allclose(actual, expected, atol=TOLERANCE)
+
+
 if __name__ == "__main__":
-    # test_delta_submat_scalar()
-    # test_delta_submat_vector()
+    test_delta_submat_scalar()
+    test_delta_submat_vector()
     test_gamma_submat_scalar()
     test_gamma_submat_vector()
+    test_tau_submat_scalar()
+    test_tau_submat_vector()
