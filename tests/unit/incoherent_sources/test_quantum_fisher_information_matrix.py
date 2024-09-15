@@ -8,51 +8,133 @@ We check that we are constructing the correct matrices for:
 - Quantum Fisher information
 
 We test both the case of single point source distributions and the
-vectorized version.
+vectorized version. We compare the results to values calculated in
+a separate mathematica notebook ./non_orthogonal_transformation_matrix.nb.
 """
 
-# import numpy as np
+import numpy as np
 
-# WAVE_VECTOR = 2
-# RAYLEIGH_LENGTH = 1
-# TESTSTING_COORDINATES_SCALAR = np.array([1.3, 0.7, 0.93, 1.17, 0.23, 0.0654])
-# TESTSTING_COORDINATES_VECTOR = np.array([
-#     [1.3, 0.7, 0.93, 1.17, 0.23, 0.0654],
-#     [1.1, -1.1, 0.04, -0.04, 0.0054, -0.0054],
-# ])
+import rayfish.incoherent_sources.quantum_fisher_information_matrix as qfi
 
-# G_SCALAR = np.array([
-#     [1, 0.869266 + 0.227171j, 0, 0, -((3j) / 2), 0.264597 + 0.046375j],
-#     [
-#         0.869266 - 0.227171j,
-#         1,
-#         -0.264597 + 0.046375j,
-#         0.105839 - 0.01855j,
-#         -0.381302 - 1.34393j,
-#         0,
-#     ],
-#     [0, -0.264597 - 0.046375j, 1 / 2, 0, 0, 0.361012 + 0.0699617j],
-#     [0, 0.105839 + 0.01855j, 0, 1 / 2, 0, 0.0319929 + 0.00293198j],
-#     [(3j) / 2, -0.381302 + 1.34393j, 0, 0, 5 / 2, -0.0684459 + 0.276513j],
-#     [
-#         0.264597 - 0.046375j,
-#         0,
-#         0.361012 - 0.0699617j,
-#         0.0319929 - 0.00293198j,
-#         -0.0684459 - 0.276513j,
-#         1 / 2,
-#     ],
-# ])
+WAVE_VECTOR = 2
+RAYLEIGH_LENGTH = 1
+NUMBER_OF_POINT_SOURCES = 2
+TESTING_COORDINATES_SCALAR = np.array([[1.3, 0.7, 0.93, 1.17, 0.23, 0.0654]])
+TESTING_COORDINATES_VECTOR = np.array([
+    [1.3, 0.7, 0.93, 1.17, 0.23, 0.0654],
+    [1.1, -1.1, 0.04, -0.04, 0.0054, -0.0054],
+])
 
-# # Due to numerical precision we cannot get exact equality
-# TOLERANCE = 5e-6
+G_SCALAR = np.array([
+    [1, 0.869266 + 0.227171j, 0, 0, -((3j) / 2), 0.264597 + 0.046375j],
+    [
+        0.869266 - 0.227171j,
+        1,
+        -0.264597 + 0.046375j,
+        0.105839 - 0.01855j,
+        -0.381302 - 1.34393j,
+        0,
+    ],
+    [0, -0.264597 - 0.046375j, 1 / 2, 0, 0, 0.361012 + 0.0699617j],
+    [0, 0.105839 + 0.01855j, 0, 1 / 2, 0, 0.0319929 + 0.00293198j],
+    [(3j) / 2, -0.381302 + 1.34393j, 0, 0, 5 / 2, -0.0684459 + 0.276513j],
+    [
+        0.264597 - 0.046375j,
+        0,
+        0.361012 - 0.0699617j,
+        0.0319929 - 0.00293198j,
+        -0.0684459 - 0.276513j,
+        1 / 2,
+    ],
+])
+
+G_VECTOR = np.array([
+    [
+        [1, 0.869266 + 0.227171j, 0, 0, -((3j) / 2), 0.264597 + 0.046375j],
+        [
+            0.869266 - 0.227171j,
+            1,
+            -0.264597 + 0.046375j,
+            0.105839 - 0.01855j,
+            -0.381302 - 1.34393j,
+            0,
+        ],
+        [0, -0.264597 - 0.046375j, 1 / 2, 0, 0, 0.361012 + 0.0699617j],
+        [0, 0.105839 + 0.01855j, 0, 1 / 2, 0, 0.0319929 + 0.00293198j],
+        [(3j) / 2, -0.381302 + 1.34393j, 0, 0, 5 / 2, -0.0684459 + 0.276513j],
+        [
+            0.264597 - 0.046375j,
+            0,
+            0.361012 - 0.0699617j,
+            0.0319929 - 0.00293198j,
+            -0.0684459 - 0.276513j,
+            1 / 2,
+        ],
+    ],
+    [
+        [1, 0.29765 + 0.00677047j, 0, 0, -((3j) / 2), 0.327445 + 0.00567931j],
+        [
+            0.29765 - 0.00677047j,
+            1,
+            -0.327445 + 0.00567931j,
+            -0.0119071 + 0.00020652j,
+            -0.0131133 - 0.626805j,
+            0,
+        ],
+        [0, -0.327445 - 0.00567931j, 1 / 2, 0, 0, -0.211374 - 0.00172058j],
+        [0, -0.0119071 - 0.00020652j, 0, 1 / 2, 0, -0.0130987 - 0.00015644j],
+        [(3j) / 2, -0.0131133 + 0.626805j, 0, 0, 5 / 2, -0.00874562 + 0.52581j],
+        [
+            0.327445 - 0.00567931j,
+            0,
+            -0.211374 + 0.00172058j,
+            -0.0130987 + 0.00015644j,
+            -0.00874562 - 0.52581j,
+            1 / 2,
+        ],
+    ],
+])
+
+# Due to numerical precision we cannot get exact equality
+TOLERANCE = 5e-6
 
 
-# def test_delta_submat_scalar() -> None:
-#     expected = G_SCALAR[:2, :2]
-#     # actual = qfi.delta_submat(coordinates=TESTSTING_COORDINATES_SCALAR)
+def test_delta_submat_scalar() -> None:
+    """Test constructing delta submatrix.
+
+    Populating the delta submatrix with Gaussian overlaps
+    obtained from gaussian_overlaps.delta(...). Calculation
+    done for a scalar input for point source positions.
+    """
+    expected = G_SCALAR[:2, :2]
+    actual = qfi.delta_submat(
+        coordinates=TESTING_COORDINATES_SCALAR,
+        number_of_point_sources=NUMBER_OF_POINT_SOURCES,
+        wave_vector=WAVE_VECTOR,
+        rayleigh_length=RAYLEIGH_LENGTH,
+    )
+    assert actual.shape == (1, 2, 2)
+    assert np.allclose(actual, expected, atol=TOLERANCE)
 
 
-# if __name__ == "__main__":
-#     print(TESTSTING_COORDINATES)
-#     print(G_SCALAR)
+def test_delta_submat_vector() -> None:
+    """Test constructing delta submatrix.
+
+    Populating the delta submatrix with Gaussian overlaps
+    obtained from gaussian_overlaps.delta(...). Calculation
+    done for a vector input for point source positions.
+    """
+    expected = G_VECTOR[:, :2, :2]
+    actual = qfi.delta_submat(
+        coordinates=TESTING_COORDINATES_VECTOR,
+        number_of_point_sources=NUMBER_OF_POINT_SOURCES,
+        wave_vector=WAVE_VECTOR,
+        rayleigh_length=RAYLEIGH_LENGTH,
+    )
+    assert actual.shape == (2, 2, 2)
+    assert np.allclose(actual, expected, atol=TOLERANCE)
+
+
+if __name__ == "__main__":
+    test_delta_submat_scalar()
+    test_delta_submat_vector()

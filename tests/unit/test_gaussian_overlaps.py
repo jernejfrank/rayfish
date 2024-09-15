@@ -539,6 +539,7 @@ def test_tau_pp_conjugate() -> None:
     assert abs(np.imag(actual) - expected_imag) < TOLERANCE
 
 
+# In case we don't run pytest
 if __name__ == "__main__":
     test_delta_diagonal()
     test_delta_in_plane_is_real()

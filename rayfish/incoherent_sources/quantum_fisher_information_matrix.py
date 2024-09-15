@@ -43,18 +43,18 @@ def delta_submat(
     """Upper left submatrix for non-orthogonal coordinate transformations.
 
     Creates the submatrix consisting of overlaps between Gaussians based on the function
-    gaussian_overlaps.delta(...). Accepts single floats or vectorized arrays as inputs.
+    gaussian_overlaps.delta(...).
 
     Args:
         coordinates: the position of individual Gaussians. Input shape is (M, 3N),
             where the N point sources should be provided in the form
             coordinates = [s1,s2,...,sN,t1,t2,...,tN,,p1,p2,...,pN] for each of the
-            M distributions of particles
+            M >= 1 distributions of particles.
         number_of_point_sources: how many point sources we use to model the object
         wave_vector: wave vector = 2 pi / wavelength the point source emits in
         rayleigh_length: It is the distance along the propagation
             direction of a beam from the waist to the place where the area of
-            1the cross section is doubled.
+            1the cross section is doubled
 
     Returns:
         A (M,N,N)-array of complex floats, where N is the number of point sources
@@ -72,12 +72,12 @@ def delta_submat(
     for i in range(number_of_point_sources):
         for j in range(number_of_point_sources):
             delta_mat[:, i, j] = gaussian_overlaps.delta(
-                s1=coordinates[i],
-                s2=coordinates[j],
-                t1=coordinates[number_of_point_sources + i],
-                t2=coordinates[number_of_point_sources + j],
-                p1=coordinates[2 * number_of_point_sources + i],
-                p2=coordinates[2 * number_of_point_sources + j],
+                s1=coordinates[:, i],
+                s2=coordinates[:, j],
+                t1=coordinates[:, number_of_point_sources + i],
+                t2=coordinates[:, number_of_point_sources + j],
+                p1=coordinates[:, 2 * number_of_point_sources + i],
+                p2=coordinates[:, 2 * number_of_point_sources + j],
                 k=wave_vector,
                 zr=rayleigh_length,
             )
