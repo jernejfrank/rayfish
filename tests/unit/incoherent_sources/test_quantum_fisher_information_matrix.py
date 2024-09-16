@@ -501,15 +501,53 @@ def test_gramian_vector() -> None:
 
 def test_density() -> None:
     """Test density matrix has correct shape and content."""
+    expected = np.zeros((8, 8))
+    expected[0, 0] = 1 / 2
+    expected[1, 1] = 1 / 2
+
     actual = qfi.density(
-        number_of_point_sources=2, number_of_point_source_distributions=2
+        number_of_point_sources=2,
     )
 
-    assert actual.shape == (2, 8, 8)
-    assert np.trace(actual[0]) == 1
-    assert np.trace(actual[1]) == 1
-    assert np.count_nonzero(actual[0]) == 2
-    assert np.count_nonzero(actual[1]) == 2
+    assert actual.shape == (8, 8)
+    assert np.trace(actual) == 1
+    assert np.count_nonzero(actual) == 2
+    assert np.count_nonzero(actual) == 2
+    assert np.array_equal(expected, actual)
+
+
+def test_density_derivatives() -> None:
+    """Test density derivatives matrices have correct shape and content."""
+    expected = np.zeros((6, 8, 8))
+    # s1 derivative
+    expected[0, 0, 2] = 1 / 2
+    expected[0, 2, 0] = 1 / 2
+    # s2 derivative
+    expected[1, 1, 3] = 1 / 2
+    expected[1, 3, 1] = 1 / 2
+    # t1 derivative
+    expected[2, 0, 4] = 1 / 2
+    expected[2, 4, 0] = 1 / 2
+    # t2 derivative
+    expected[3, 1, 5] = 1 / 2
+    expected[3, 5, 1] = 1 / 2
+    # p1 derivative
+    expected[4, 0, 6] = 1 / 2
+    expected[4, 6, 0] = 1 / 2
+    # p2 derivative
+    expected[5, 1, 7] = 1 / 2
+    expected[5, 7, 1] = 1 / 2
+
+    actual = qfi.density_derivatives(
+        number_of_point_sources=2,
+    )
+
+    assert actual.shape == (6, 8, 8)
+    for i in range(6):
+        assert np.trace(actual[i]) == 0
+        assert np.count_nonzero(actual[i]) == 2
+        assert np.count_nonzero(actual[i]) == 2
+    assert np.array_equal(expected, actual)
 
 
 # In case we don't run pytest
@@ -523,3 +561,4 @@ if __name__ == "__main__":
     test_gramian_scalar()
     test_gramian_vector()
     test_density()
+    test_density_derivatives()

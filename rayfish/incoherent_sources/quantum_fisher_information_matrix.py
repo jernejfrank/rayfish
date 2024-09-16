@@ -31,7 +31,14 @@ import numpy.typing as npt
 from rayfish import gaussian_overlaps
 
 # Public API
-__all__ = ("delta_submat", "gamma_submat", "tau_submat", "gramian", "density")
+__all__ = (
+    "delta_submat",
+    "gamma_submat",
+    "tau_submat",
+    "gramian",
+    "density",
+    "density_derivatives",
+)
 
 
 def delta_submat(
@@ -346,9 +353,7 @@ def gramian(
     return g
 
 
-def density(
-    number_of_point_sources: int, number_of_point_source_distributions: int
-) -> npt.NDArray[np.float64]:
+def density(number_of_point_sources: int) -> npt.NDArray[np.float64]:
     """Density matrix.
 
     For now we assume all sources have equal probability of emitting
@@ -357,19 +362,53 @@ def density(
     Args:
         number_of_point_sources: how many point sources we
             have to model the object
-        number_of_point_source_distributions: number of
-            different distributions of point sources
 
     Returns:
-        A (M,4N,4N) matrix, of M different point source distribution and
-        where the upper left (N,N) submatrix corresponds to the
+        A (4N,4N) matrix where the upper left (N,N) submatrix corresponds to the
         density matrix for N point sources.
     """
     r_full = np.zeros((
-        number_of_point_source_distributions,
         4 * number_of_point_sources,
         4 * number_of_point_sources,
     ))
     r_sub = np.eye(number_of_point_sources) / number_of_point_sources
-    r_full[:, :number_of_point_sources, :number_of_point_sources] = r_sub
+    r_full[:number_of_point_sources, :number_of_point_sources] = r_sub
     return r_full
+
+
+def density_derivatives(number_of_point_sources: int) -> npt.NDArray[np.float64]:
+    """Derivatives of the density matrix w.r.t. the parameters.
+
+    For now we assume all sources have equal probability of emitting
+    a photon (they are equally bright) so we can directly populate
+    the individual derivative matrices.
+
+    Args:
+        number_of_point_sources: how many point sources we
+            have to model the object
+
+    Returns:
+        A (3N,4N,4N) matrix where the (4N,4N) is sparse to encode
+        the 3N parameter derivatives. The sequence matches the
+        coordinates sequence (s1,s2,...,t1,t2,...,p1,p2,...).
+    """
+    d_tensor = np.zeros((
+        3 * number_of_point_sources,
+        4 * number_of_point_sources,
+        4 * number_of_point_sources,
+    ))
+
+    for i in range(number_of_point_sources):
+        d_s = np.zeros((4 * number_of_point_sources, 4 * number_of_point_sources))
+        d_s[i, number_of_point_sources + i] = 1 / number_of_point_sources
+        d_tensor[i] = d_s + np.transpose(d_s)
+
+        d_t = np.zeros((4 * number_of_point_sources, 4 * number_of_point_sources))
+        d_t[i, 2 * number_of_point_sources + i] = 1 / number_of_point_sources
+        d_tensor[number_of_point_sources + i] = d_t + np.transpose(d_t)
+
+        d_p = np.zeros((4 * number_of_point_sources, 4 * number_of_point_sources))
+        d_p[i, 3 * number_of_point_sources + i] = 1 / number_of_point_sources
+        d_tensor[2 * number_of_point_sources + i] = d_p + np.transpose(d_p)
+
+    return d_tensor
