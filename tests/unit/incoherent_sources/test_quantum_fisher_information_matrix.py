@@ -15,6 +15,8 @@ a separate mathematica notebook ./non_orthogonal_transformation_matrix.nb.
 import copy
 
 import numpy as np
+import numpy.typing as npt
+import pytest
 
 import rayfish.incoherent_sources.quantum_fisher_information_matrix as qfi
 
@@ -277,6 +279,91 @@ G_VECTOR = np.array([
     ],
 ])
 
+
+@pytest.fixture
+def r() -> npt.NDArray[np.float64]:
+    """Density matri."""
+    return np.array([
+        [1 / 2, 0, 0, 0, 0, 0, 0, 0],
+        [0, 1 / 2, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+    ])
+
+
+D = np.array([
+    [
+        [0, 0, 1 / 2, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [1 / 2, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+    ],
+    [
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 1 / 2, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 1 / 2, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+    ],
+    [
+        [0, 0, 0, 0, 1 / 2, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [1 / 2, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+    ],
+    [
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 1 / 2, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 1 / 2, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+    ],
+    [
+        [0, 0, 0, 0, 0, 0, 1 / 2, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [1 / 2, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+    ],
+    [
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 1 / 2],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 1 / 2, 0, 0, 0, 0, 0, 0],
+    ],
+])
+
+L1 = np.array([
+    [-11.6984 + 4.30787j * 10e-15, 12.6263 + 3.18157j, 10.3751 - 1.31442j * 10e-15],
+    [12.6263 - 3.18157j, -14.194 + 4.27725j * 10e-15, -9.01873 + 2.35692j],
+    [10.3751 - 8.65908j * 10e-15, -9.01873 - 2.35692j, 0],
+])
+
 # Due to numerical precision we cannot get exact equality
 TOLERANCE = 5e-6
 
@@ -499,12 +586,9 @@ def test_gramian_vector() -> None:
     assert np.allclose(actual, expected, atol=TOLERANCE)
 
 
-def test_density() -> None:
+def test_density(r: npt.NDArray[np.float64]) -> None:
     """Test density matrix has correct shape and content."""
-    expected = np.zeros((8, 8))
-    expected[0, 0] = 1 / 2
-    expected[1, 1] = 1 / 2
-
+    expected = r
     actual = qfi.density(
         number_of_point_sources=2,
     )
@@ -516,29 +600,10 @@ def test_density() -> None:
     assert np.array_equal(expected, actual)
 
 
-def test_density_derivatives() -> None:
+def test_all_density_derivatives() -> None:
     """Test density derivatives matrices have correct shape and content."""
-    expected = np.zeros((6, 8, 8))
-    # s1 derivative
-    expected[0, 0, 2] = 1 / 2
-    expected[0, 2, 0] = 1 / 2
-    # s2 derivative
-    expected[1, 1, 3] = 1 / 2
-    expected[1, 3, 1] = 1 / 2
-    # t1 derivative
-    expected[2, 0, 4] = 1 / 2
-    expected[2, 4, 0] = 1 / 2
-    # t2 derivative
-    expected[3, 1, 5] = 1 / 2
-    expected[3, 5, 1] = 1 / 2
-    # p1 derivative
-    expected[4, 0, 6] = 1 / 2
-    expected[4, 6, 0] = 1 / 2
-    # p2 derivative
-    expected[5, 1, 7] = 1 / 2
-    expected[5, 7, 1] = 1 / 2
-
-    actual = qfi.density_derivatives(
+    expected = D
+    actual = qfi.all_density_derivatives(
         number_of_point_sources=2,
     )
 
@@ -548,6 +613,26 @@ def test_density_derivatives() -> None:
         assert np.count_nonzero(actual[i]) == 2
         assert np.count_nonzero(actual[i]) == 2
     assert np.array_equal(expected, actual)
+
+
+def test_pad_operators() -> None:
+    """Test correct padding of rows and columns."""
+    expected = np.array([
+        [1, 1, 0, 0, 1, 0, 0, 0],
+        [1, 1, 0, 0, 1, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [1, 1, 0, 0, 1, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+    ])
+    mock_input = np.array([[1, 1, 1], [1, 1, 1], [1, 1, 1]])
+    actual = qfi._pad_operator(matrix=mock_input, n=2, ind=2)
+    assert np.array_equal(expected, actual)
+
+
+# def test_lyapunov_operators()->None:
 
 
 # In case we don't run pytest
@@ -561,4 +646,5 @@ if __name__ == "__main__":
     test_gramian_scalar()
     test_gramian_vector()
     test_density()
-    test_density_derivatives()
+    test_all_density_derivatives()
+    test_pad_operators()

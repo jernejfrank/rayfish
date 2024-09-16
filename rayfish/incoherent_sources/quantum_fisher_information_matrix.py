@@ -27,6 +27,7 @@ to discrete quantum imaging,” PRX Quantum 2, 020308 (2021).
 
 import numpy as np
 import numpy.typing as npt
+from scipy import linalg
 
 from rayfish import gaussian_overlaps
 
@@ -37,7 +38,8 @@ __all__ = (
     "tau_submat",
     "gramian",
     "density",
-    "density_derivatives",
+    "all_density_derivatives",
+    "lyapunov_operators",
 )
 
 
@@ -376,8 +378,8 @@ def density(number_of_point_sources: int) -> npt.NDArray[np.float64]:
     return r_full
 
 
-def density_derivatives(number_of_point_sources: int) -> npt.NDArray[np.float64]:
-    """Derivatives of the density matrix w.r.t. the parameters.
+def all_density_derivatives(number_of_point_sources: int) -> npt.NDArray[np.float64]:
+    """Derivatives of the density matrix w.r.t. all parameters.
 
     For now we assume all sources have equal probability of emitting
     a photon (they are equally bright) so we can directly populate
@@ -412,3 +414,87 @@ def density_derivatives(number_of_point_sources: int) -> npt.NDArray[np.float64]
         d_tensor[2 * number_of_point_sources + i] = d_p + np.transpose(d_p)
 
     return d_tensor
+
+
+def lyapunov_operators(
+    density: npt.NDArray[np.float64],
+    all_density_derivatives: npt.NDArray[np.float64],
+    gramian: npt.NDArray[np.complex128],
+    number_of_point_sources: int,
+) -> npt.NDArray[np.complex128]:
+    """Calculates Lyapunov operators using Sylvester's equation.
+
+    A Lyapunov operator associated to a particular derivative
+    of the density matrix is the solution to the equation
+
+    2 * Density Derivative =
+    Lyapunov * Gramian * Density + Density * Gramian *  Lyapunov
+
+    We use the package scipy.linalg.solve_silvester(...)
+    https://docs.scipy.org/doc/scipy/reference/generated/scipy.linalg.solve_sylvester.html
+    that solves matrix equations of the form
+
+    AX + XB = Q
+
+    for unknown X using the Bartels- Stewart algorithm. In our case we have:
+    - A = Density * Gramian
+    - B = Gramian * Density
+    - Q = 2 * Density Derivative
+
+    Since the density derivatives are sparse we can reduce the dimensionality
+    of each Sylvester equation to N+1 and pad with 0 rows and columns back to
+    the original (4N,4N) shape.
+
+    Args:
+        density: Encoding intensities of the point source distribution
+        all_density_derivatives: Encoding the derivative of the density
+            matrix for each point source coordinate
+        gramian: non-orthogonal basis linear algebra adjustment
+        number_of_point_sources: how many point sources we
+            have to model the object
+
+    Returns:
+        A (3N,4N,4N) matrix where the (4N,4N) are the Lyapunov operators
+        for each of the 3N coordinates. The sequence matches the
+        coordinates sequence (s1,s2,...,t1,t2,...,p1,p2,...).
+    """
+    lyapunov = np.zeros_like(all_density_derivatives) + 0j
+    for i in range(3 * number_of_point_sources):
+        _slice = np.arange(0, number_of_point_sources + 1)
+        _slice[-1] = number_of_point_sources + i
+        dg = np.dot(density[np.ix_(_slice, _slice)], gramian[np.ix_(_slice, _slice)])
+        gd = np.dot(gramian[np.ix_(_slice, _slice)], density[np.ix_(_slice, _slice)])
+        der = (2 * all_density_derivatives[i])[np.ix_(_slice, _slice)]
+        sub = linalg.solve_sylvester(dg, gd, der)
+        lyapunov[i] = _pad_operator(sub, number_of_point_sources, i)
+    return lyapunov
+
+
+def _pad_operator(
+    matrix: npt.NDArray[np.complex128], n: int, ind: int
+) -> npt.NDArray[np.complex128]:
+    """Helper function to pad a matrix.
+
+    Inplace padding of the matrix with 0 columns / rows
+    back to the original (dim,dim) around a certain
+    column / row.
+
+    Args:
+        matrix: the submatrix to pad
+        n: number of point sources
+        ind: index of row/column around which we pad
+
+    Returns:
+        A (4n,4n) matrix where we padded so that the row/column
+        entry matches the correct coordinates basis.
+    """
+    dim = 3 * n - 1
+    before = ind
+    after = dim - ind
+    for _ in range(before):
+        matrix = np.insert(np.insert(matrix, [n], 0, axis=0), [n], 0, axis=1)
+    for _ in range(after):
+        matrix = np.insert(
+            np.insert(matrix, [n + 1 + before], 0, axis=0), [n + 1 + before], 0, axis=1
+        )
+    return matrix
