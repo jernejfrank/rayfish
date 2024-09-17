@@ -46,6 +46,7 @@ __all__ = (
 def delta_submat(
     coordinates: npt.NDArray[np.float64],
     number_of_point_sources: int,
+    number_of_point_source_distributions: int,
     wave_vector: float,
     rayleigh_length: float,
 ) -> npt.NDArray[np.complex128]:
@@ -60,6 +61,8 @@ def delta_submat(
             coordinates = [s1,s2,...,sN,t1,t2,...,tN,,p1,p2,...,pN] for each of the
             M >= 1 distributions of particles.
         number_of_point_sources: how many point sources we use to model the object
+        number_of_point_source_distributions: how many different point source
+            distributions we are computing for
         wave_vector: wave vector = 2 pi / wavelength the point source emits in
         rayleigh_length: It is the distance along the propagation
             direction of a beam from the waist to the place where the area of
@@ -72,7 +75,7 @@ def delta_submat(
     """
     delta_mat = (
         np.zeros((
-            coordinates.shape[0],
+            number_of_point_source_distributions,
             number_of_point_sources,
             number_of_point_sources,
         ))
@@ -96,6 +99,7 @@ def delta_submat(
 def gamma_submat(
     coordinates: npt.NDArray[np.float64],
     number_of_point_sources: int,
+    number_of_point_source_distributions: int,
     wave_vector: float,
     rayleigh_length: float,
 ) -> npt.NDArray[np.complex128]:
@@ -117,6 +121,8 @@ def gamma_submat(
             coordinates = [s1,s2,...,sN,t1,t2,...,tN,,p1,p2,...,pN] for each of the
             M >= 1 distributions of particles.
         number_of_point_sources: how many point sources we use to model the object
+        number_of_point_source_distributions: how many different point source
+            distributions we are computing for
         wave_vector: wave vector = 2 pi / wavelength the point source emits in
         rayleigh_length: It is the distance along the propagation
             direction of a beam from the waist to the place where the area of
@@ -128,7 +134,7 @@ def gamma_submat(
     """
     gamma_mat = (
         np.zeros((
-            coordinates.shape[0],
+            number_of_point_source_distributions,
             4 * number_of_point_sources,
             4 * number_of_point_sources,
         ))
@@ -179,6 +185,7 @@ def gamma_submat(
 def tau_submat(
     coordinates: npt.NDArray[np.float64],
     number_of_point_sources: int,
+    number_of_point_source_distributions: int,
     wave_vector: float,
     rayleigh_length: float,
 ) -> npt.NDArray[np.complex128]:
@@ -199,6 +206,8 @@ def tau_submat(
             coordinates = [s1,s2,...,sN,t1,t2,...,tN,,p1,p2,...,pN] for each of the
             M >= 1 distributions of particles.
         number_of_point_sources: how many point sources we use to model the object
+        number_of_point_source_distributions: how many different point source
+            distributions we are computing for
         wave_vector: wave vector = 2 pi / wavelength the point source emits in
         rayleigh_length: It is the distance along the propagation
             direction of a beam from the waist to the place where the area of
@@ -210,7 +219,7 @@ def tau_submat(
     """
     tau_mat = (
         np.zeros((
-            coordinates.shape[0],
+            number_of_point_source_distributions,
             3 * number_of_point_sources,
             3 * number_of_point_sources,
         ))
@@ -419,7 +428,7 @@ def all_density_derivatives(number_of_point_sources: int) -> npt.NDArray[np.floa
 def lyapunov_operators(
     density: npt.NDArray[np.float64],
     all_density_derivatives: npt.NDArray[np.float64],
-    gramian: npt.NDArray[np.complex128],
+    gramian_of_single_distribution: npt.NDArray[np.complex128],
     number_of_point_sources: int,
 ) -> npt.NDArray[np.complex128]:
     """Calculates Lyapunov operators using Sylvester's equation.
@@ -446,10 +455,11 @@ def lyapunov_operators(
     the original (4N,4N) shape.
 
     Args:
-        density: Encoding intensities of the point source distribution
-        all_density_derivatives: Encoding the derivative of the density
-            matrix for each point source coordinate
-        gramian: non-orthogonal basis linear algebra adjustment
+        density: (4N,4N) matrix. Encoding intensities of the point source distribution
+        all_density_derivatives: (3N,4N,4N) matrix. Encoding the derivative of the
+            density matrix for each point source coordinate
+        gramian_of_single_distribution: (M,4N,4N) matrix. Used for linear algebra
+            in a vector space spanned by a non-orthogonal basis
         number_of_point_sources: how many point sources we
             have to model the object
 
@@ -462,8 +472,14 @@ def lyapunov_operators(
     for i in range(3 * number_of_point_sources):
         _slice = np.arange(0, number_of_point_sources + 1)
         _slice[-1] = number_of_point_sources + i
-        dg = np.dot(density[np.ix_(_slice, _slice)], gramian[np.ix_(_slice, _slice)])
-        gd = np.dot(gramian[np.ix_(_slice, _slice)], density[np.ix_(_slice, _slice)])
+        dg = np.dot(
+            density[np.ix_(_slice, _slice)],
+            gramian_of_single_distribution[np.ix_(_slice, _slice)],
+        )
+        gd = np.dot(
+            gramian_of_single_distribution[np.ix_(_slice, _slice)],
+            density[np.ix_(_slice, _slice)],
+        )
         der = (2 * all_density_derivatives[i])[np.ix_(_slice, _slice)]
         sub = linalg.solve_sylvester(dg, gd, der)
         lyapunov[i] = _pad_operator(sub, number_of_point_sources, i)

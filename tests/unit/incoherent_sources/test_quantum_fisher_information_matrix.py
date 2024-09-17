@@ -34,6 +34,7 @@ class TestGramian:
         mock_gramian_scalar: npt.NDArray[np.complex128],
         mock_coordinates_scalar: npt.NDArray[np.float64],
         mock_number_of_point_sources: int,
+        mock_number_of_point_source_distributions_scalar: int,
         mock_wave_vector: int,
         mock_rayleigh_length: int,
         tolerance: float,
@@ -48,6 +49,7 @@ class TestGramian:
         actual = qfi.delta_submat(
             coordinates=mock_coordinates_scalar,
             number_of_point_sources=mock_number_of_point_sources,
+            number_of_point_source_distributions=mock_number_of_point_source_distributions_scalar,
             wave_vector=mock_wave_vector,
             rayleigh_length=mock_rayleigh_length,
         )
@@ -59,6 +61,7 @@ class TestGramian:
         mock_gramian_vector: npt.NDArray[np.complex128],
         mock_coordinates_vector: npt.NDArray[np.float64],
         mock_number_of_point_sources: int,
+        mock_number_of_point_source_distributions_vector: int,
         mock_wave_vector: int,
         mock_rayleigh_length: int,
         tolerance: float,
@@ -73,6 +76,7 @@ class TestGramian:
         actual = qfi.delta_submat(
             coordinates=mock_coordinates_vector,
             number_of_point_sources=mock_number_of_point_sources,
+            number_of_point_source_distributions=mock_number_of_point_source_distributions_vector,
             wave_vector=mock_wave_vector,
             rayleigh_length=mock_rayleigh_length,
         )
@@ -84,6 +88,7 @@ class TestGramian:
         mock_gramian_scalar: npt.NDArray[np.complex128],
         mock_coordinates_scalar: npt.NDArray[np.float64],
         mock_number_of_point_sources: int,
+        mock_number_of_point_source_distributions_scalar: int,
         mock_wave_vector: int,
         mock_rayleigh_length: int,
         tolerance: float,
@@ -104,6 +109,7 @@ class TestGramian:
         actual = qfi.gamma_submat(
             coordinates=mock_coordinates_scalar,
             number_of_point_sources=mock_number_of_point_sources,
+            number_of_point_source_distributions=mock_number_of_point_source_distributions_scalar,
             wave_vector=mock_wave_vector,
             rayleigh_length=mock_rayleigh_length,
         )
@@ -116,6 +122,7 @@ class TestGramian:
         mock_gramian_vector: npt.NDArray[np.complex128],
         mock_coordinates_vector: npt.NDArray[np.float64],
         mock_number_of_point_sources: int,
+        mock_number_of_point_source_distributions_vector: int,
         mock_wave_vector: int,
         mock_rayleigh_length: int,
         tolerance: float,
@@ -136,6 +143,7 @@ class TestGramian:
         actual = qfi.gamma_submat(
             coordinates=mock_coordinates_vector,
             number_of_point_sources=mock_number_of_point_sources,
+            number_of_point_source_distributions=mock_number_of_point_source_distributions_vector,
             wave_vector=mock_wave_vector,
             rayleigh_length=mock_rayleigh_length,
         )
@@ -147,6 +155,7 @@ class TestGramian:
         mock_gramian_scalar: npt.NDArray[np.complex128],
         mock_coordinates_scalar: npt.NDArray[np.float64],
         mock_number_of_point_sources: int,
+        mock_number_of_point_source_distributions_scalar: int,
         mock_wave_vector: int,
         mock_rayleigh_length: int,
         tolerance: float,
@@ -169,6 +178,7 @@ class TestGramian:
         actual = qfi.tau_submat(
             coordinates=mock_coordinates_scalar,
             number_of_point_sources=mock_number_of_point_sources,
+            number_of_point_source_distributions=mock_number_of_point_source_distributions_scalar,
             wave_vector=mock_wave_vector,
             rayleigh_length=mock_rayleigh_length,
         )
@@ -180,6 +190,7 @@ class TestGramian:
         mock_gramian_vector: npt.NDArray[np.complex128],
         mock_coordinates_vector: npt.NDArray[np.float64],
         mock_number_of_point_sources: int,
+        mock_number_of_point_source_distributions_vector: int,
         mock_wave_vector: int,
         mock_rayleigh_length: int,
         tolerance: float,
@@ -201,6 +212,7 @@ class TestGramian:
         actual = qfi.tau_submat(
             coordinates=mock_coordinates_vector,
             number_of_point_sources=mock_number_of_point_sources,
+            number_of_point_source_distributions=mock_number_of_point_source_distributions_vector,
             wave_vector=mock_wave_vector,
             rayleigh_length=mock_rayleigh_length,
         )
@@ -212,6 +224,7 @@ class TestGramian:
         mock_gramian_scalar: npt.NDArray[np.complex128],
         mock_coordinates_scalar: npt.NDArray[np.float64],
         mock_number_of_point_sources: int,
+        mock_number_of_point_source_distributions_scalar: int,
         mock_wave_vector: int,
         mock_rayleigh_length: int,
         tolerance: float,
@@ -230,6 +243,7 @@ class TestGramian:
         delta_submat = qfi.delta_submat(
             coordinates=mock_coordinates_scalar,
             number_of_point_sources=mock_number_of_point_sources,
+            number_of_point_source_distributions=mock_number_of_point_source_distributions_scalar,
             wave_vector=mock_wave_vector,
             rayleigh_length=mock_rayleigh_length,
         )
@@ -237,6 +251,7 @@ class TestGramian:
         gamma_submat = qfi.gamma_submat(
             coordinates=mock_coordinates_scalar,
             number_of_point_sources=mock_number_of_point_sources,
+            number_of_point_source_distributions=mock_number_of_point_source_distributions_scalar,
             wave_vector=mock_wave_vector,
             rayleigh_length=mock_rayleigh_length,
         )
@@ -244,6 +259,7 @@ class TestGramian:
         tau_submat = qfi.tau_submat(
             coordinates=mock_coordinates_scalar,
             number_of_point_sources=mock_number_of_point_sources,
+            number_of_point_source_distributions=mock_number_of_point_source_distributions_scalar,
             wave_vector=mock_wave_vector,
             rayleigh_length=mock_rayleigh_length,
         )
@@ -260,6 +276,7 @@ class TestGramian:
         mock_gramian_vector: npt.NDArray[np.complex128],
         mock_coordinates_vector: npt.NDArray[np.float64],
         mock_number_of_point_sources: int,
+        mock_number_of_point_source_distributions_vector: int,
         mock_wave_vector: int,
         mock_rayleigh_length: int,
         tolerance: float,
@@ -278,6 +295,7 @@ class TestGramian:
         delta_submat = qfi.delta_submat(
             coordinates=mock_coordinates_vector,
             number_of_point_sources=mock_number_of_point_sources,
+            number_of_point_source_distributions=mock_number_of_point_source_distributions_vector,
             wave_vector=mock_wave_vector,
             rayleigh_length=mock_rayleigh_length,
         )
@@ -285,6 +303,7 @@ class TestGramian:
         gamma_submat = qfi.gamma_submat(
             coordinates=mock_coordinates_vector,
             number_of_point_sources=mock_number_of_point_sources,
+            number_of_point_source_distributions=mock_number_of_point_source_distributions_vector,
             wave_vector=mock_wave_vector,
             rayleigh_length=mock_rayleigh_length,
         )
@@ -292,6 +311,7 @@ class TestGramian:
         tau_submat = qfi.tau_submat(
             coordinates=mock_coordinates_vector,
             number_of_point_sources=mock_number_of_point_sources,
+            number_of_point_source_distributions=mock_number_of_point_source_distributions_vector,
             wave_vector=mock_wave_vector,
             rayleigh_length=mock_rayleigh_length,
         )
@@ -314,7 +334,6 @@ def test_density(mock_density: npt.NDArray[np.float64]) -> None:
     assert actual.shape == (8, 8)
     assert np.trace(actual) == 1
     assert np.count_nonzero(actual) == 2
-    assert np.count_nonzero(actual) == 2
     assert np.array_equal(expected, actual)
 
 
@@ -330,7 +349,6 @@ def test_all_density_derivatives(
     assert actual.shape == (6, 8, 8)
     for i in range(6):
         assert np.trace(actual[i]) == 0
-        assert np.count_nonzero(actual[i]) == 2
         assert np.count_nonzero(actual[i]) == 2
     assert np.array_equal(expected, actual)
 
@@ -352,11 +370,28 @@ def test_pad_operators() -> None:
     assert np.array_equal(expected, actual)
 
 
-# def test_lyapunov_operators()->None:
+def test_lyapunov_operators(
+    mock_density: npt.NDArray[np.float64],
+    mock_density_derivative: npt.NDArray[np.complex128],
+    mock_gramian_scalar: npt.NDArray[np.complex128],
+    mock_number_of_point_sources: int,
+    mock_lyapunov_operators: npt.NDArray[np.complex128],
+    tolerance: float,
+) -> None:
+    """Test Lyapunov operators.
 
+    Testing the scipy.linalg.solve_silvester(...) yields accurate
+    enough results and that the operators are padded correctly.
+    """
+    expected = mock_lyapunov_operators
 
-# In case we don't run pytest
-if __name__ == "__main__":
-    test_density()
-    test_all_density_derivatives()
-    test_pad_operators()
+    actual = qfi.lyapunov_operators(
+        density=mock_density,
+        all_density_derivatives=mock_density_derivative,
+        gramian_of_single_distribution=mock_gramian_scalar,
+        number_of_point_sources=mock_number_of_point_sources,
+    )
+
+    assert actual.shape == (6, 8, 8)
+    # Adjusting tolerance due to numerics
+    assert np.allclose(actual, expected, atol=10 * tolerance)
