@@ -40,6 +40,7 @@ __all__ = (
     "density",
     "all_density_derivatives",
     "lyapunov_operators",
+    "lyapunov_covariance_matrix",
 )
 
 
@@ -56,8 +57,8 @@ def delta_submat(
     gaussian_overlaps.delta(...).
 
     Args:
-        coordinates: the position of individual Gaussians. Input shape is (M, 3N),
-            where the N point sources should be provided in the form
+        coordinates: (M, 3N) array. The position of individual Gaussians. N is the
+            number of point sources in the form
             coordinates = [s1,s2,...,sN,t1,t2,...,tN,,p1,p2,...,pN] for each of the
             M >= 1 distributions of particles.
         number_of_point_sources: how many point sources we use to model the object
@@ -69,9 +70,9 @@ def delta_submat(
             1the cross section is doubled
 
     Returns:
-        A (M,N,N)-array of complex floats, where N is the number of point sources
+        A (M,N,N) array of complex floats, where N is the number of point sources
         and M is the number of different distributions of the N point sources.
-        The diagonal for each (N,N) matraix is 1 since we assume normalized Gaussians.
+        The diagonal for each (N,N) matrix is 1 since we assume normalized Gaussians.
     """
     delta_mat = (
         np.zeros((
@@ -116,8 +117,8 @@ def gamma_submat(
     The diagonal (N,N) and (3N,3N) blocks are 0.
 
     Args:
-        coordinates: the position of individual Gaussians. Input shape is (M, 3N),
-            where the N point sources should be provided in the form
+        coordinates: (M, 3N) array. The position of individual Gaussians. N is the
+            number of point sources in the form
             coordinates = [s1,s2,...,sN,t1,t2,...,tN,,p1,p2,...,pN] for each of the
             M >= 1 distributions of particles.
         number_of_point_sources: how many point sources we use to model the object
@@ -129,7 +130,7 @@ def gamma_submat(
             1the cross section is doubled
 
     Returns:
-        A (M,4N,4N)-array of complex floats, where N is the number of point sources
+        A (M,4N,4N) array of complex floats, where N is the number of point sources
         and M is the number of different distributions of the N point sources.
     """
     gamma_mat = (
@@ -201,8 +202,8 @@ def tau_submat(
     - gaussian_overlaps.tau_pp(...) for z-dimension.
 
     Args:
-        coordinates: the position of individual Gaussians. Input shape is (M, 3N),
-            where the N point sources should be provided in the form
+        coordinates: (M, 3N) array. The position of individual Gaussians. N is the
+            number of point sources in the form
             coordinates = [s1,s2,...,sN,t1,t2,...,tN,,p1,p2,...,pN] for each of the
             M >= 1 distributions of particles.
         number_of_point_sources: how many point sources we use to model the object
@@ -214,7 +215,7 @@ def tau_submat(
             1the cross section is doubled
 
     Returns:
-       A (M,3N,3N)-array of complex floats, where N is the number of point sources
+       A (M,3N,3N) array of complex floats, where N is the number of point sources
        and M is the number of different distributions of the N point sources.
     """
     tau_mat = (
@@ -344,18 +345,15 @@ def gramian(
     |  delta_submat  |  gamma_submat |
     |  gamma_submat  |   tau_submat  |
 
-    where
-    - dim(delta_submat) = (N,N)
-    - dim(gamma_submat) = (N,3N) and (3N, N)
-    - dim(tau_submat) = (3N,3N)
-
     Args:
-        delta_submat: submatrix of overlaps between Gaussians
-        gamma_submat: submatrix of overlaps between Gaussians and derivatives
-        tau_submat: submatrox of overlaps between Gaussian derivatives
+        delta_submat: (M,N,N) array of overlaps between Gaussians
+        gamma_submat: (M,4N,4N) array. Only the upper right (N,3N) and
+            lower left (3N, N) submatrices are populated with overlaps between
+            Gaussians and derivatives
+        tau_submat: (M,3N,3N) array of overlaps between Gaussian derivatives
 
     Returns:
-       A (M,4N,4N)-array of complex floats, where N is the number of point sources
+       A (M,4N,4N) array of complex floats, where N is the number of point sources
        and M is the number of different distributions of the N point sources.
     """
     g = gamma_submat
@@ -375,7 +373,7 @@ def density(number_of_point_sources: int) -> npt.NDArray[np.float64]:
             have to model the object
 
     Returns:
-        A (4N,4N) matrix where the upper left (N,N) submatrix corresponds to the
+        A (4N,4N) array where the upper left (N,N) submatrix corresponds to the
         density matrix for N point sources.
     """
     r_full = np.zeros((
@@ -399,7 +397,7 @@ def all_density_derivatives(number_of_point_sources: int) -> npt.NDArray[np.floa
             have to model the object
 
     Returns:
-        A (3N,4N,4N) matrix where the (4N,4N) is sparse to encode
+        A (3N,4N,4N) array where the (4N,4N) is sparse to encode
         the 3N parameter derivatives. The sequence matches the
         coordinates sequence (s1,s2,...,t1,t2,...,p1,p2,...).
     """
@@ -455,16 +453,16 @@ def lyapunov_operators(
     the original (4N,4N) shape.
 
     Args:
-        density: (4N,4N) matrix. Encoding intensities of the point source distribution
-        all_density_derivatives: (3N,4N,4N) matrix. Encoding the derivative of the
+        density: (4N,4N) array encoding intensities of the point source distribution
+        all_density_derivatives: (3N,4N,4N) array encoding the derivative of the
             density matrix for each point source coordinate
-        gramian_of_single_distribution: (M,4N,4N) matrix. Used for linear algebra
+        gramian_of_single_distribution: (4N,4N) array used for linear algebra
             in a vector space spanned by a non-orthogonal basis
         number_of_point_sources: how many point sources we
             have to model the object
 
     Returns:
-        A (3N,4N,4N) matrix where the (4N,4N) are the Lyapunov operators
+        A (3N,4N,4N) array where the (4N,4N) are the Lyapunov operators
         for each of the 3N coordinates. The sequence matches the
         coordinates sequence (s1,s2,...,t1,t2,...,p1,p2,...).
     """
@@ -514,3 +512,72 @@ def _pad_operator(
             np.insert(matrix, [n + 1 + before], 0, axis=0), [n + 1 + before], 0, axis=1
         )
     return matrix
+
+
+def lyapunov_covariance_matrix(
+    all_density_derivatives: npt.NDArray[np.float64],
+    gramian_of_single_distribution: npt.NDArray[np.complex128],
+    lyapunov_operators: npt.NDArray[np.complex128],
+    coordinate_jacobian: npt.NDArray[np.float64],
+    number_of_point_sources: int,
+) -> npt.NDArray[np.complex128]:
+    """Calculates covariance matrix between Lyapunov operators.
+
+    The covariance matrix is the general entity encoding parameter estimation
+    boundaries. The real part corresponds to the quantum Fisher information
+    matrix and the imaginary part to the compatibility matrix for simultaneously
+    estimating parameters.
+
+    Are Gaussian overlaps are calculated for displacements ψ(x+dx, y+dy, z+dz),
+    but the actual distributions might depend a on different parametrization,
+    i.e. ψ(x+s/2, y+t/2, z+p/2) + ψ(x-s/2, y-t/2, z-p/2), which we can use to
+    express our covariance matrix in the coordinate system (s,t,p). For that
+    we use the Jacobian of the coordinate transformation
+
+    B = ∂f(dx[s,t,p],dy[s,t,p],dz[s,t,p]) / ∂(s,t,p)
+
+    to do a change of basis of the covariance matrix
+
+    Cov(s,t,p) = B(s,t,p) Cov(dx[s,t,p],dy[s,t,p],dz[s,t,p]) T^B(s,t,p),
+
+    with T^B being the transpose. This would transform the (3N,3N) covariance
+    matrix to a (N,N) matrix.
+
+    Args:
+        all_density_derivatives: (3N,4N,4N) array encoding the derivative of the
+            density matrix for each point source coordinate
+        gramian_of_single_distribution: (4N,4N) array used for linear algebra
+            in a vector space spanned by a non-orthogonal basis
+        lyapunov_operators: (3N,4N,4N) array encoding the stability of each
+            parameter.
+        coordinate_jacobian: (3N,3N) array correcting the re-parametrization
+            of point source coordinates
+        number_of_point_sources: how many point sources we
+            have to model the object
+
+    Returns:
+        A (3N,3N) array of complex floats encoding precision boundaries for
+        localising each point source in 3D space.
+    """
+    covariance = (
+        np.zeros((3 * number_of_point_sources, 3 * number_of_point_sources)) + 0j
+    )
+    for i in range(3 * number_of_point_sources):
+        for j in range(3 * number_of_point_sources):
+            covariance[i, j] = np.trace(
+                np.dot(
+                    lyapunov_operators[i],
+                    np.dot(
+                        gramian_of_single_distribution,
+                        np.dot(
+                            all_density_derivatives[j], gramian_of_single_distribution
+                        ),
+                    ),
+                )
+            )
+
+    covariance = coordinate_jacobian.dot(
+        covariance.dot(np.transpose(coordinate_jacobian))
+    )
+
+    return covariance

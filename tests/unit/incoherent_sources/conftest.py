@@ -1,53 +1,8 @@
-"""Some constants we use to test the algorithm against."""
+"""Some constants to test the algorithm for incoherent sources."""
 
 import numpy as np
 import numpy.typing as npt
 import pytest
-
-
-@pytest.fixture
-def mock_wave_vector() -> int:
-    """Good value for exponential."""
-    return 2
-
-
-@pytest.fixture
-def mock_rayleigh_length() -> int:
-    """Good value for exponential."""
-    return 1
-
-
-@pytest.fixture
-def mock_number_of_point_sources() -> int:
-    """Replicating Tsang's original setup."""
-    return 2
-
-
-@pytest.fixture
-def mock_number_of_point_source_distributions_scalar() -> int:
-    """For testing single case."""
-    return 1
-
-
-@pytest.fixture
-def mock_coordinates_scalar() -> npt.NDArray[np.float64]:
-    """For testing single case."""
-    return np.array([[1.3, 0.7, 0.93, 1.17, 0.23, 0.0654]])
-
-
-@pytest.fixture
-def mock_number_of_point_source_distributions_vector() -> int:
-    """For testing multiple cases as vector."""
-    return 2
-
-
-@pytest.fixture
-def mock_coordinates_vector() -> npt.NDArray[np.float64]:
-    """For testing multiple cases as vector."""
-    return np.array([
-        [1.3, 0.7, 0.93, 1.17, 0.23, 0.0654],
-        [1.1, -1.1, 0.04, -0.04, 0.0054, -0.0054],
-    ])
 
 
 @pytest.fixture(scope="function")
@@ -561,5 +516,27 @@ def mock_lyapunov_operators() -> npt.NDArray[np.complex128]:
             [0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0],
             [-9.01873 + 2.35692j, 10.3751 + 1.76162j * 1e-14, 0, 0, 0, 0, 0, 0],
+        ],
+    ])
+
+
+@pytest.fixture
+def mock_covariance_matrix() -> npt.NDArray[np.complex128]:
+    """Covariance matrix for two point sources."""
+    return np.array([
+        [
+            0.5 - 3.641j * 1e-16,
+            -2.77556 * 1e-16 + 7.77604j * 1e-17,
+            -2.32453 * 1e-16 - 1.8735j * 1e-16,
+        ],
+        [
+            -9.02056 * 1e-17 + 8.45729j * 1e-18,
+            0.5 + 6.00185j * 1e-19,
+            1.1189 * 1e-16 - 1.09288j * 1e-16,
+        ],
+        [
+            8.32667 * 1e-17 - 1.4988j * 1e-15,
+            -6.76542 * 1e-17 + 6.38378j * 1e-16,
+            0.25 - 3.60822j * 1e-16,
         ],
     ])

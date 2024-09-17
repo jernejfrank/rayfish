@@ -7,14 +7,14 @@ z <-> z / zr
 
 We model the point spread function in the image plane as a
 Gaussian beam. With the above relative length scale this looks like:
-ψ(x-dx, y-dy, z-dz) =
-sqrt[1/pi] (i / (z-dz+i))
-exp[-i ((x-dx)^2 + (y-dy)^2) / (2 (z-dz+i))] exp[-i k zr (z-dz)]
+ψ(x+dx, y+dy, z+dz) =
+sqrt[1/pi] (i / (z+dz+i))
+exp[-i ((x+dx)^2 + (y+dy)^2) / (2 (z+dz+i))] exp[-i k zr (z+dz)]
 
 We calculate the following overlaps:
-delta: <ψ(x-dx_1, y-dy_1, z-dz_1)|ψ(x-dx_2, y-dy_2, z-dz_2)>
-gamma_µ: <∂_µ ψ(x-dx_1, y-dy_1, z-dz_1)|ψ(x-dx_2, y-dy_2, z-dz_2)> ; µ=dx_1, dy_1, dz_1
-tau_µn: <∂_µ ψ(x-dx_1, y-dy_1, z-dz_1)|∂_n ψ(x-dx_2, y-dy_2, z-dz_2)> ;
+delta: <ψ(x+dx_1, y+dy_1, z+dz_1)|ψ(x+dx_2, y+dy_2, z+dz_2)>
+gamma_µ: <∂_µ ψ(x+dx_1, y+dy_1, z+dz_1)|ψ(x+dx_2, y+dy_2, z+dz_2)> ; µ=dx_1, dy_1, dz_1
+tau_µn: <∂_µ ψ(x+dx_1, y+dy_1, z+dz_1)|∂_n ψ(x+dx_2, y+dy_2, z+dz_2)> ;
     µ=dx_1, dy_1, dz_1 ; n=dx_2, dy_2, dz_2
 """
 

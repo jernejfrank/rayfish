@@ -10,562 +10,654 @@ to values calculated in a separate mathematica notebook ./gaussian_overlaps.nb.
 """
 
 import numpy as np
+import numpy.typing as npt
 
 from rayfish import gaussian_overlaps
 
-TESTING_CONSTANTS = {
-    "s1": 1.3,
-    "s2": 0.7,
-    "t1": 0.93,
-    "t2": 1.17,
-    "p1": 0.23,
-    "p2": 0.0654,
-    "k": 2,
-    "zr": 1,
-}
 
-# Due to numerical precision we cannot get exact equality
-TOLERANCE = 5e-6
-
-
-def test_delta_diagonal() -> None:
+def test_delta_diagonal(
+    mock_coordinates_scalar: npt.NDArray[np.float64],
+    mock_wave_vector: int,
+    mock_rayleigh_length: int,
+) -> None:
     """Testing Gaussian displacement in x-dimension."""
     expected = 1
     actual = gaussian_overlaps.delta(
-        s1=TESTING_CONSTANTS["s1"],
-        s2=TESTING_CONSTANTS["s1"],
-        t1=TESTING_CONSTANTS["t1"],
-        t2=TESTING_CONSTANTS["t1"],
-        p1=TESTING_CONSTANTS["p1"],
-        p2=TESTING_CONSTANTS["p1"],
-        k=TESTING_CONSTANTS["k"],
-        zr=TESTING_CONSTANTS["zr"],
+        s1=mock_coordinates_scalar[0, 0],
+        s2=mock_coordinates_scalar[0, 0],
+        t1=mock_coordinates_scalar[0, 2],
+        t2=mock_coordinates_scalar[0, 2],
+        p1=mock_coordinates_scalar[0, 4],
+        p2=mock_coordinates_scalar[0, 4],
+        k=mock_wave_vector,
+        zr=mock_rayleigh_length,
     )
     assert expected == actual
 
 
-def test_delta_in_plane_is_real() -> None:
+def test_delta_in_plane_is_real(
+    mock_coordinates_scalar: npt.NDArray[np.float64],
+    mock_wave_vector: int,
+    mock_rayleigh_length: int,
+    tolerance: float,
+) -> None:
     """Testing overlap of two Gaussian beams in plane is real."""
     expected = 0.900865
     actual = gaussian_overlaps.delta(
-        s1=TESTING_CONSTANTS["s1"],
-        s2=TESTING_CONSTANTS["s2"],
-        t1=TESTING_CONSTANTS["t1"],
-        t2=TESTING_CONSTANTS["t2"],
+        s1=mock_coordinates_scalar[0, 0],
+        s2=mock_coordinates_scalar[0, 1],
+        t1=mock_coordinates_scalar[0, 2],
+        t2=mock_coordinates_scalar[0, 3],
         p1=0,
         p2=0,
-        k=TESTING_CONSTANTS["k"],
-        zr=TESTING_CONSTANTS["zr"],
+        k=mock_wave_vector,
+        zr=mock_rayleigh_length,
     )
-    assert abs(np.real(actual) - expected) < TOLERANCE
+    assert abs(np.real(actual) - expected) < tolerance
     assert np.imag(actual) == 0.0
 
 
-def test_delta_general() -> None:
+def test_delta_general(
+    mock_coordinates_scalar: npt.NDArray[np.float64],
+    mock_wave_vector: int,
+    mock_rayleigh_length: int,
+    tolerance: float,
+) -> None:
     """Testing overlap of two Gaussian beams for displacement in x-dimension."""
     expected_real = 0.869266
     expected_imag = 0.227171
     actual = gaussian_overlaps.delta(
-        s1=TESTING_CONSTANTS["s1"],
-        s2=TESTING_CONSTANTS["s2"],
-        t1=TESTING_CONSTANTS["t1"],
-        t2=TESTING_CONSTANTS["t2"],
-        p1=TESTING_CONSTANTS["p1"],
-        p2=TESTING_CONSTANTS["p2"],
-        k=TESTING_CONSTANTS["k"],
-        zr=TESTING_CONSTANTS["zr"],
+        s1=mock_coordinates_scalar[0, 0],
+        s2=mock_coordinates_scalar[0, 1],
+        t1=mock_coordinates_scalar[0, 2],
+        t2=mock_coordinates_scalar[0, 3],
+        p1=mock_coordinates_scalar[0, 4],
+        p2=mock_coordinates_scalar[0, 5],
+        k=mock_wave_vector,
+        zr=mock_rayleigh_length,
     )
-    assert abs(np.real(actual) - expected_real) < TOLERANCE
-    assert abs(np.imag(actual) - expected_imag) < TOLERANCE
+    assert abs(np.real(actual) - expected_real) < tolerance
+    assert abs(np.imag(actual) - expected_imag) < tolerance
 
 
-def test_gamma_s_complete_overlap() -> None:
+def test_gamma_s_complete_overlap(
+    mock_coordinates_scalar: npt.NDArray[np.float64],
+    mock_wave_vector: int,
+    mock_rayleigh_length: int,
+) -> None:
     """Testing overlap of Gaussian and derivative in x is 0."""
     expected = 0
     actual = gaussian_overlaps.gamma_s(
-        s1=TESTING_CONSTANTS["s1"],
-        s2=TESTING_CONSTANTS["s1"],
-        t1=TESTING_CONSTANTS["t1"],
-        t2=TESTING_CONSTANTS["t2"],
-        p1=TESTING_CONSTANTS["p1"],
-        p2=TESTING_CONSTANTS["p2"],
-        k=TESTING_CONSTANTS["k"],
-        zr=TESTING_CONSTANTS["zr"],
+        s1=mock_coordinates_scalar[0, 0],
+        s2=mock_coordinates_scalar[0, 0],
+        t1=mock_coordinates_scalar[0, 2],
+        t2=mock_coordinates_scalar[0, 3],
+        p1=mock_coordinates_scalar[0, 4],
+        p2=mock_coordinates_scalar[0, 5],
+        k=mock_wave_vector,
+        zr=mock_rayleigh_length,
     )
     assert expected == actual
 
 
-def test_gamma_s_in_plane_is_real() -> None:
+def test_gamma_s_in_plane_is_real(
+    mock_coordinates_scalar: npt.NDArray[np.float64],
+    mock_wave_vector: int,
+    mock_rayleigh_length: int,
+    tolerance: float,
+) -> None:
     """Testing overlap of Gaussian and derivative in x in plane is real."""
     expected = 0.270259
     actual = gaussian_overlaps.gamma_s(
-        s1=TESTING_CONSTANTS["s1"],
-        s2=TESTING_CONSTANTS["s2"],
-        t1=TESTING_CONSTANTS["t1"],
-        t2=TESTING_CONSTANTS["t2"],
+        s1=mock_coordinates_scalar[0, 0],
+        s2=mock_coordinates_scalar[0, 1],
+        t1=mock_coordinates_scalar[0, 2],
+        t2=mock_coordinates_scalar[0, 3],
         p1=0,
         p2=0,
-        k=TESTING_CONSTANTS["k"],
-        zr=TESTING_CONSTANTS["zr"],
+        k=mock_wave_vector,
+        zr=mock_rayleigh_length,
     )
-    assert abs(np.real(actual) - expected) < TOLERANCE
+    assert abs(np.real(actual) - expected) < tolerance
     assert np.imag(actual) == 0.0
 
 
-def test_gamma_s_general() -> None:
+def test_gamma_s_general(
+    mock_coordinates_scalar: npt.NDArray[np.float64],
+    mock_wave_vector: int,
+    mock_rayleigh_length: int,
+    tolerance: float,
+) -> None:
     """Testing overlap of Gaussian and derivative in x."""
     expected_real = 0.264597
     expected_imag = 0.046375
     actual = gaussian_overlaps.gamma_s(
-        s1=TESTING_CONSTANTS["s1"],
-        s2=TESTING_CONSTANTS["s2"],
-        t1=TESTING_CONSTANTS["t1"],
-        t2=TESTING_CONSTANTS["t2"],
-        p1=TESTING_CONSTANTS["p1"],
-        p2=TESTING_CONSTANTS["p2"],
-        k=TESTING_CONSTANTS["k"],
-        zr=TESTING_CONSTANTS["zr"],
+        s1=mock_coordinates_scalar[0, 0],
+        s2=mock_coordinates_scalar[0, 1],
+        t1=mock_coordinates_scalar[0, 2],
+        t2=mock_coordinates_scalar[0, 3],
+        p1=mock_coordinates_scalar[0, 4],
+        p2=mock_coordinates_scalar[0, 5],
+        k=mock_wave_vector,
+        zr=mock_rayleigh_length,
     )
-    assert abs(np.real(actual) - expected_real) < TOLERANCE
-    assert abs(np.imag(actual) - expected_imag) < TOLERANCE
+    assert abs(np.real(actual) - expected_real) < tolerance
+    assert abs(np.imag(actual) - expected_imag) < tolerance
 
 
-def test_gamma_s_conjugate() -> None:
+def test_gamma_s_conjugate(
+    mock_coordinates_scalar: npt.NDArray[np.float64],
+    mock_wave_vector: int,
+    mock_rayleigh_length: int,
+    tolerance: float,
+) -> None:
     """Test derivative on first beam results in a complex conjugate."""
     expected_real = 0.264597
     expected_imag = -0.046375
     actual = np.conj(
         gaussian_overlaps.gamma_s(
-            s1=TESTING_CONSTANTS["s1"],
-            s2=TESTING_CONSTANTS["s2"],
-            t1=TESTING_CONSTANTS["t1"],
-            t2=TESTING_CONSTANTS["t2"],
-            p1=TESTING_CONSTANTS["p1"],
-            p2=TESTING_CONSTANTS["p2"],
-            k=TESTING_CONSTANTS["k"],
-            zr=TESTING_CONSTANTS["zr"],
+            s1=mock_coordinates_scalar[0, 0],
+            s2=mock_coordinates_scalar[0, 1],
+            t1=mock_coordinates_scalar[0, 2],
+            t2=mock_coordinates_scalar[0, 3],
+            p1=mock_coordinates_scalar[0, 4],
+            p2=mock_coordinates_scalar[0, 5],
+            k=mock_wave_vector,
+            zr=mock_rayleigh_length,
         )
     )
-    assert abs(np.real(actual) - expected_real) < TOLERANCE
-    assert abs(np.imag(actual) - expected_imag) < TOLERANCE
+    assert abs(np.real(actual) - expected_real) < tolerance
+    assert abs(np.imag(actual) - expected_imag) < tolerance
 
 
-def test_gamma_t_complete_overlap() -> None:
+def test_gamma_t_complete_overlap(
+    mock_coordinates_scalar: npt.NDArray[np.float64],
+    mock_wave_vector: int,
+    mock_rayleigh_length: int,
+) -> None:
     """Testing overlap of Gaussian and derivative in y is 0."""
     expected = 0
     actual = gaussian_overlaps.gamma_t(
-        s1=TESTING_CONSTANTS["s1"],
-        s2=TESTING_CONSTANTS["s2"],
-        t1=TESTING_CONSTANTS["t1"],
-        t2=TESTING_CONSTANTS["t1"],
-        p1=TESTING_CONSTANTS["p1"],
-        p2=TESTING_CONSTANTS["p2"],
-        k=TESTING_CONSTANTS["k"],
-        zr=TESTING_CONSTANTS["zr"],
+        s1=mock_coordinates_scalar[0, 0],
+        s2=mock_coordinates_scalar[0, 1],
+        t1=mock_coordinates_scalar[0, 2],
+        t2=mock_coordinates_scalar[0, 2],
+        p1=mock_coordinates_scalar[0, 4],
+        p2=mock_coordinates_scalar[0, 5],
+        k=mock_wave_vector,
+        zr=mock_rayleigh_length,
     )
     assert expected == actual
 
 
-def test_gamma_t_in_plane_is_real() -> None:
+def test_gamma_t_in_plane_is_real(
+    mock_coordinates_scalar: npt.NDArray[np.float64],
+    mock_wave_vector: int,
+    mock_rayleigh_length: int,
+    tolerance: float,
+) -> None:
     """Testing overlap of Gaussian and derivative in y in plane is real."""
     expected = -0.108104
     actual = gaussian_overlaps.gamma_t(
-        s1=TESTING_CONSTANTS["s1"],
-        s2=TESTING_CONSTANTS["s2"],
-        t1=TESTING_CONSTANTS["t1"],
-        t2=TESTING_CONSTANTS["t2"],
+        s1=mock_coordinates_scalar[0, 0],
+        s2=mock_coordinates_scalar[0, 1],
+        t1=mock_coordinates_scalar[0, 2],
+        t2=mock_coordinates_scalar[0, 3],
         p1=0,
         p2=0,
-        k=TESTING_CONSTANTS["k"],
-        zr=TESTING_CONSTANTS["zr"],
+        k=mock_wave_vector,
+        zr=mock_rayleigh_length,
     )
-    assert abs(np.real(actual) - expected) < TOLERANCE
+    assert abs(np.real(actual) - expected) < tolerance
     assert np.imag(actual) == 0.0
 
 
-def test_gamma_t_general() -> None:
+def test_gamma_t_general(
+    mock_coordinates_scalar: npt.NDArray[np.float64],
+    mock_wave_vector: int,
+    mock_rayleigh_length: int,
+    tolerance: float,
+) -> None:
     """Testing overlap of Gaussian and derivative in y."""
     expected_real = -0.105839
     expected_imag = -0.01855
     actual = gaussian_overlaps.gamma_t(
-        s1=TESTING_CONSTANTS["s1"],
-        s2=TESTING_CONSTANTS["s2"],
-        t1=TESTING_CONSTANTS["t1"],
-        t2=TESTING_CONSTANTS["t2"],
-        p1=TESTING_CONSTANTS["p1"],
-        p2=TESTING_CONSTANTS["p2"],
-        k=TESTING_CONSTANTS["k"],
-        zr=TESTING_CONSTANTS["zr"],
+        s1=mock_coordinates_scalar[0, 0],
+        s2=mock_coordinates_scalar[0, 1],
+        t1=mock_coordinates_scalar[0, 2],
+        t2=mock_coordinates_scalar[0, 3],
+        p1=mock_coordinates_scalar[0, 4],
+        p2=mock_coordinates_scalar[0, 5],
+        k=mock_wave_vector,
+        zr=mock_rayleigh_length,
     )
-    assert abs(np.real(actual) - expected_real) < TOLERANCE
-    assert abs(np.imag(actual) - expected_imag) < TOLERANCE
+    assert abs(np.real(actual) - expected_real) < tolerance
+    assert abs(np.imag(actual) - expected_imag) < tolerance
 
 
-def test_gamma_t_conjugate() -> None:
+def test_gamma_t_conjugate(
+    mock_coordinates_scalar: npt.NDArray[np.float64],
+    mock_wave_vector: int,
+    mock_rayleigh_length: int,
+    tolerance: float,
+) -> None:
     """Test derivative on first beam results in a complex conjugate."""
     expected_real = -0.105839
     expected_imag = 0.01855
     actual = np.conj(
         gaussian_overlaps.gamma_t(
-            s1=TESTING_CONSTANTS["s1"],
-            s2=TESTING_CONSTANTS["s2"],
-            t1=TESTING_CONSTANTS["t1"],
-            t2=TESTING_CONSTANTS["t2"],
-            p1=TESTING_CONSTANTS["p1"],
-            p2=TESTING_CONSTANTS["p2"],
-            k=TESTING_CONSTANTS["k"],
-            zr=TESTING_CONSTANTS["zr"],
+            s1=mock_coordinates_scalar[0, 0],
+            s2=mock_coordinates_scalar[0, 1],
+            t1=mock_coordinates_scalar[0, 2],
+            t2=mock_coordinates_scalar[0, 3],
+            p1=mock_coordinates_scalar[0, 4],
+            p2=mock_coordinates_scalar[0, 5],
+            k=mock_wave_vector,
+            zr=mock_rayleigh_length,
         )
     )
-    assert abs(np.real(actual) - expected_real) < TOLERANCE
-    assert abs(np.imag(actual) - expected_imag) < TOLERANCE
+    assert abs(np.real(actual) - expected_real) < tolerance
+    assert abs(np.imag(actual) - expected_imag) < tolerance
 
 
-def test_gamma_p_complete_overlap() -> None:
+def test_gamma_p_complete_overlap(
+    mock_coordinates_scalar: npt.NDArray[np.float64],
+    mock_wave_vector: int,
+    mock_rayleigh_length: int,
+    tolerance: float,
+) -> None:
     """Testing overlap of Gaussian and derivative in z is 0."""
     expected = -1.39832
     actual = gaussian_overlaps.gamma_p(
-        s1=TESTING_CONSTANTS["s1"],
-        s2=TESTING_CONSTANTS["s2"],
-        t1=TESTING_CONSTANTS["t1"],
-        t2=TESTING_CONSTANTS["t2"],
-        p1=TESTING_CONSTANTS["p1"],
-        p2=TESTING_CONSTANTS["p1"],
-        k=TESTING_CONSTANTS["k"],
-        zr=TESTING_CONSTANTS["zr"],
+        s1=mock_coordinates_scalar[0, 0],
+        s2=mock_coordinates_scalar[0, 1],
+        t1=mock_coordinates_scalar[0, 2],
+        t2=mock_coordinates_scalar[0, 3],
+        p1=mock_coordinates_scalar[0, 4],
+        p2=mock_coordinates_scalar[0, 4],
+        k=mock_wave_vector,
+        zr=mock_rayleigh_length,
     )
     assert np.real(actual) == 0.0
-    assert abs(np.imag(actual) - expected) < TOLERANCE
+    assert abs(np.imag(actual) - expected) < tolerance
 
 
-def test_gamma_p_general() -> None:
+def test_gamma_p_general(
+    mock_coordinates_scalar: npt.NDArray[np.float64],
+    mock_wave_vector: int,
+    mock_rayleigh_length: int,
+    tolerance: float,
+) -> None:
     """Testing overlap of Gaussian and derivative in z."""
     expected_real = 0.381302
     expected_imag = -1.34393
     actual = gaussian_overlaps.gamma_p(
-        s1=TESTING_CONSTANTS["s1"],
-        s2=TESTING_CONSTANTS["s2"],
-        t1=TESTING_CONSTANTS["t1"],
-        t2=TESTING_CONSTANTS["t2"],
-        p1=TESTING_CONSTANTS["p1"],
-        p2=TESTING_CONSTANTS["p2"],
-        k=TESTING_CONSTANTS["k"],
-        zr=TESTING_CONSTANTS["zr"],
+        s1=mock_coordinates_scalar[0, 0],
+        s2=mock_coordinates_scalar[0, 1],
+        t1=mock_coordinates_scalar[0, 2],
+        t2=mock_coordinates_scalar[0, 3],
+        p1=mock_coordinates_scalar[0, 4],
+        p2=mock_coordinates_scalar[0, 5],
+        k=mock_wave_vector,
+        zr=mock_rayleigh_length,
     )
-    assert abs(np.real(actual) - expected_real) < TOLERANCE
-    assert abs(np.imag(actual) - expected_imag) < TOLERANCE
+    assert abs(np.real(actual) - expected_real) < tolerance
+    assert abs(np.imag(actual) - expected_imag) < tolerance
 
 
-def test_gamma_p_conjugate() -> None:
+def test_gamma_p_conjugate(
+    mock_coordinates_scalar: npt.NDArray[np.float64],
+    mock_wave_vector: int,
+    mock_rayleigh_length: int,
+    tolerance: float,
+) -> None:
     """Test derivative on first beam results in a complex conjugate."""
     expected_real = 0.381302
     expected_imag = 1.34393
     actual = np.conj(
         gaussian_overlaps.gamma_p(
-            s1=TESTING_CONSTANTS["s1"],
-            s2=TESTING_CONSTANTS["s2"],
-            t1=TESTING_CONSTANTS["t1"],
-            t2=TESTING_CONSTANTS["t2"],
-            p1=TESTING_CONSTANTS["p1"],
-            p2=TESTING_CONSTANTS["p2"],
-            k=TESTING_CONSTANTS["k"],
-            zr=TESTING_CONSTANTS["zr"],
+            s1=mock_coordinates_scalar[0, 0],
+            s2=mock_coordinates_scalar[0, 1],
+            t1=mock_coordinates_scalar[0, 2],
+            t2=mock_coordinates_scalar[0, 3],
+            p1=mock_coordinates_scalar[0, 4],
+            p2=mock_coordinates_scalar[0, 5],
+            k=mock_wave_vector,
+            zr=mock_rayleigh_length,
         )
     )
-    assert abs(np.real(actual) - expected_real) < TOLERANCE
-    assert abs(np.imag(actual) - expected_imag) < TOLERANCE
+    assert abs(np.real(actual) - expected_real) < tolerance
+    assert abs(np.imag(actual) - expected_imag) < tolerance
 
 
-def test_tau_ss_diagonal() -> None:
+def test_tau_ss_diagonal(
+    mock_coordinates_scalar: npt.NDArray[np.float64],
+    mock_wave_vector: int,
+    mock_rayleigh_length: int,
+    tolerance: float,
+) -> None:
     """Testing Gaussian derivatives in x-dimension normalize to 1/2."""
     expected = 1 / 2
     actual = gaussian_overlaps.tau_ss(
-        s1=TESTING_CONSTANTS["s1"],
-        s2=TESTING_CONSTANTS["s1"],
-        t1=TESTING_CONSTANTS["t1"],
-        t2=TESTING_CONSTANTS["t1"],
-        p1=TESTING_CONSTANTS["p1"],
-        p2=TESTING_CONSTANTS["p1"],
-        k=TESTING_CONSTANTS["k"],
-        zr=TESTING_CONSTANTS["zr"],
+        s1=mock_coordinates_scalar[0, 0],
+        s2=mock_coordinates_scalar[0, 0],
+        t1=mock_coordinates_scalar[0, 2],
+        t2=mock_coordinates_scalar[0, 2],
+        p1=mock_coordinates_scalar[0, 4],
+        p2=mock_coordinates_scalar[0, 4],
+        k=mock_wave_vector,
+        zr=mock_rayleigh_length,
     )
-    assert abs(np.real(actual) - expected) < TOLERANCE
+    assert abs(np.real(actual) - expected) < tolerance
     assert np.imag(actual) == 0
 
 
-def test_tau_ss_general() -> None:
+def test_tau_ss_general(
+    mock_coordinates_scalar: npt.NDArray[np.float64],
+    mock_wave_vector: int,
+    mock_rayleigh_length: int,
+    tolerance: float,
+) -> None:
     """Testing overlap Gaussian derivatives in x-dimension."""
     expected_real = 0.361012
     expected_imag = 0.0699617
     actual = gaussian_overlaps.tau_ss(
-        s1=TESTING_CONSTANTS["s1"],
-        s2=TESTING_CONSTANTS["s2"],
-        t1=TESTING_CONSTANTS["t1"],
-        t2=TESTING_CONSTANTS["t2"],
-        p1=TESTING_CONSTANTS["p1"],
-        p2=TESTING_CONSTANTS["p2"],
-        k=TESTING_CONSTANTS["k"],
-        zr=TESTING_CONSTANTS["zr"],
+        s1=mock_coordinates_scalar[0, 0],
+        s2=mock_coordinates_scalar[0, 1],
+        t1=mock_coordinates_scalar[0, 2],
+        t2=mock_coordinates_scalar[0, 3],
+        p1=mock_coordinates_scalar[0, 4],
+        p2=mock_coordinates_scalar[0, 5],
+        k=mock_wave_vector,
+        zr=mock_rayleigh_length,
     )
-    assert abs(np.real(actual) - expected_real) < TOLERANCE
-    assert abs(np.imag(actual) - expected_imag) < TOLERANCE
+    assert abs(np.real(actual) - expected_real) < tolerance
+    assert abs(np.imag(actual) - expected_imag) < tolerance
 
 
-def test_tau_ss_conjugate() -> None:
+def test_tau_ss_conjugate(
+    mock_coordinates_scalar: npt.NDArray[np.float64],
+    mock_wave_vector: int,
+    mock_rayleigh_length: int,
+    tolerance: float,
+) -> None:
     """Test switching derivatives results in a complex conjugate."""
     expected_real = 0.361012
     expected_imag = -0.0699617
     actual = np.conj(
         gaussian_overlaps.tau_ss(
-            s1=TESTING_CONSTANTS["s1"],
-            s2=TESTING_CONSTANTS["s2"],
-            t1=TESTING_CONSTANTS["t1"],
-            t2=TESTING_CONSTANTS["t2"],
-            p1=TESTING_CONSTANTS["p1"],
-            p2=TESTING_CONSTANTS["p2"],
-            k=TESTING_CONSTANTS["k"],
-            zr=TESTING_CONSTANTS["zr"],
+            s1=mock_coordinates_scalar[0, 0],
+            s2=mock_coordinates_scalar[0, 1],
+            t1=mock_coordinates_scalar[0, 2],
+            t2=mock_coordinates_scalar[0, 3],
+            p1=mock_coordinates_scalar[0, 4],
+            p2=mock_coordinates_scalar[0, 5],
+            k=mock_wave_vector,
+            zr=mock_rayleigh_length,
         )
     )
-    assert abs(np.real(actual) - expected_real) < TOLERANCE
-    assert abs(np.imag(actual) - expected_imag) < TOLERANCE
+    assert abs(np.real(actual) - expected_real) < tolerance
+    assert abs(np.imag(actual) - expected_imag) < tolerance
 
 
-def test_tau_st_general() -> None:
+def test_tau_st_general(
+    mock_coordinates_scalar: npt.NDArray[np.float64],
+    mock_wave_vector: int,
+    mock_rayleigh_length: int,
+    tolerance: float,
+) -> None:
     """Testing Gaussian derivatives in x- and y-dimension."""
     expected_real = 0.0319929
     expected_imag = 0.00293198
     actual = gaussian_overlaps.tau_st(
-        s1=TESTING_CONSTANTS["s1"],
-        s2=TESTING_CONSTANTS["s2"],
-        t1=TESTING_CONSTANTS["t1"],
-        t2=TESTING_CONSTANTS["t2"],
-        p1=TESTING_CONSTANTS["p1"],
-        p2=TESTING_CONSTANTS["p2"],
-        k=TESTING_CONSTANTS["k"],
-        zr=TESTING_CONSTANTS["zr"],
+        s1=mock_coordinates_scalar[0, 0],
+        s2=mock_coordinates_scalar[0, 1],
+        t1=mock_coordinates_scalar[0, 2],
+        t2=mock_coordinates_scalar[0, 3],
+        p1=mock_coordinates_scalar[0, 4],
+        p2=mock_coordinates_scalar[0, 5],
+        k=mock_wave_vector,
+        zr=mock_rayleigh_length,
     )
 
-    assert abs(np.real(actual) - expected_real) < TOLERANCE
-    assert abs(np.imag(actual) - expected_imag) < TOLERANCE
+    assert abs(np.real(actual) - expected_real) < tolerance
+    assert abs(np.imag(actual) - expected_imag) < tolerance
 
 
-def test_tau_st_conjugate() -> None:
+def test_tau_st_conjugate(
+    mock_coordinates_scalar: npt.NDArray[np.float64],
+    mock_wave_vector: int,
+    mock_rayleigh_length: int,
+    tolerance: float,
+) -> None:
     """Test switching derivatives results in a complex conjugate."""
     expected_real = 0.0319929
     expected_imag = -0.00293198
     actual = np.conj(
         gaussian_overlaps.tau_st(
-            s1=TESTING_CONSTANTS["s1"],
-            s2=TESTING_CONSTANTS["s2"],
-            t1=TESTING_CONSTANTS["t1"],
-            t2=TESTING_CONSTANTS["t2"],
-            p1=TESTING_CONSTANTS["p1"],
-            p2=TESTING_CONSTANTS["p2"],
-            k=TESTING_CONSTANTS["k"],
-            zr=TESTING_CONSTANTS["zr"],
+            s1=mock_coordinates_scalar[0, 0],
+            s2=mock_coordinates_scalar[0, 1],
+            t1=mock_coordinates_scalar[0, 2],
+            t2=mock_coordinates_scalar[0, 3],
+            p1=mock_coordinates_scalar[0, 4],
+            p2=mock_coordinates_scalar[0, 5],
+            k=mock_wave_vector,
+            zr=mock_rayleigh_length,
         )
     )
-    assert abs(np.real(actual) - expected_real) < TOLERANCE
-    assert abs(np.imag(actual) - expected_imag) < TOLERANCE
+    assert abs(np.real(actual) - expected_real) < tolerance
+    assert abs(np.imag(actual) - expected_imag) < tolerance
 
 
-def test_tau_sp_general() -> None:
+def test_tau_sp_general(
+    mock_coordinates_scalar: npt.NDArray[np.float64],
+    mock_wave_vector: int,
+    mock_rayleigh_length: int,
+    tolerance: float,
+) -> None:
     """Testing Gaussian derivatives in x- and z-dimension."""
     expected_real = -0.0684459
     expected_imag = 0.276513
     actual = gaussian_overlaps.tau_sp(
-        s1=TESTING_CONSTANTS["s1"],
-        s2=TESTING_CONSTANTS["s2"],
-        t1=TESTING_CONSTANTS["t1"],
-        t2=TESTING_CONSTANTS["t2"],
-        p1=TESTING_CONSTANTS["p1"],
-        p2=TESTING_CONSTANTS["p2"],
-        k=TESTING_CONSTANTS["k"],
-        zr=TESTING_CONSTANTS["zr"],
+        s1=mock_coordinates_scalar[0, 0],
+        s2=mock_coordinates_scalar[0, 1],
+        t1=mock_coordinates_scalar[0, 2],
+        t2=mock_coordinates_scalar[0, 3],
+        p1=mock_coordinates_scalar[0, 4],
+        p2=mock_coordinates_scalar[0, 5],
+        k=mock_wave_vector,
+        zr=mock_rayleigh_length,
     )
-    assert abs(np.real(actual) - expected_real) < TOLERANCE
-    assert abs(np.imag(actual) - expected_imag) < TOLERANCE
+    assert abs(np.real(actual) - expected_real) < tolerance
+    assert abs(np.imag(actual) - expected_imag) < tolerance
 
 
-def test_tau_sp_conjugate() -> None:
+def test_tau_sp_conjugate(
+    mock_coordinates_scalar: npt.NDArray[np.float64],
+    mock_wave_vector: int,
+    mock_rayleigh_length: int,
+    tolerance: float,
+) -> None:
     """Test switching derivatives results in a complex conjugate."""
     expected_real = -0.0684459
     expected_imag = -0.276513
     actual = np.conj(
         gaussian_overlaps.tau_sp(
-            s1=TESTING_CONSTANTS["s1"],
-            s2=TESTING_CONSTANTS["s2"],
-            t1=TESTING_CONSTANTS["t1"],
-            t2=TESTING_CONSTANTS["t2"],
-            p1=TESTING_CONSTANTS["p1"],
-            p2=TESTING_CONSTANTS["p2"],
-            k=TESTING_CONSTANTS["k"],
-            zr=TESTING_CONSTANTS["zr"],
+            s1=mock_coordinates_scalar[0, 0],
+            s2=mock_coordinates_scalar[0, 1],
+            t1=mock_coordinates_scalar[0, 2],
+            t2=mock_coordinates_scalar[0, 3],
+            p1=mock_coordinates_scalar[0, 4],
+            p2=mock_coordinates_scalar[0, 5],
+            k=mock_wave_vector,
+            zr=mock_rayleigh_length,
         )
     )
-    assert abs(np.real(actual) - expected_real) < TOLERANCE
-    assert abs(np.imag(actual) - expected_imag) < TOLERANCE
+    assert abs(np.real(actual) - expected_real) < tolerance
+    assert abs(np.imag(actual) - expected_imag) < tolerance
 
 
-def test_tau_tt_diagonal() -> None:
+def test_tau_tt_diagonal(
+    mock_coordinates_scalar: npt.NDArray[np.float64],
+    mock_wave_vector: int,
+    mock_rayleigh_length: int,
+    tolerance: float,
+) -> None:
     """Testing Gaussian derivatives in y-dimension normalize to 1/2."""
     expected = 1 / 2
     actual = gaussian_overlaps.tau_tt(
-        s1=TESTING_CONSTANTS["s1"],
-        s2=TESTING_CONSTANTS["s1"],
-        t1=TESTING_CONSTANTS["t1"],
-        t2=TESTING_CONSTANTS["t1"],
-        p1=TESTING_CONSTANTS["p1"],
-        p2=TESTING_CONSTANTS["p1"],
-        k=TESTING_CONSTANTS["k"],
-        zr=TESTING_CONSTANTS["zr"],
+        s1=mock_coordinates_scalar[0, 0],
+        s2=mock_coordinates_scalar[0, 0],
+        t1=mock_coordinates_scalar[0, 2],
+        t2=mock_coordinates_scalar[0, 2],
+        p1=mock_coordinates_scalar[0, 4],
+        p2=mock_coordinates_scalar[0, 4],
+        k=mock_wave_vector,
+        zr=mock_rayleigh_length,
     )
-    assert abs(np.real(actual) - expected) < TOLERANCE
+    assert abs(np.real(actual) - expected) < tolerance
     assert np.imag(actual) == 0
 
 
-def test_tau_tt_general() -> None:
-    """Testing overlap Gaussian derivatives in y-dimension."""
+def test_tau_tt_general(
+    mock_coordinates_scalar: npt.NDArray[np.float64],
+    mock_wave_vector: int,
+    mock_rayleigh_length: int,
+    tolerance: float,
+) -> None:
+    """Testing overlap Gaussian derivatives in y-dimensio n."""
     expected_real = 0.428197
     expected_imag = 0.0761188
     actual = gaussian_overlaps.tau_tt(
-        s1=TESTING_CONSTANTS["s1"],
-        s2=TESTING_CONSTANTS["s2"],
-        t1=TESTING_CONSTANTS["t1"],
-        t2=TESTING_CONSTANTS["t2"],
-        p1=TESTING_CONSTANTS["p1"],
-        p2=TESTING_CONSTANTS["p2"],
-        k=TESTING_CONSTANTS["k"],
-        zr=TESTING_CONSTANTS["zr"],
+        s1=mock_coordinates_scalar[0, 0],
+        s2=mock_coordinates_scalar[0, 1],
+        t1=mock_coordinates_scalar[0, 2],
+        t2=mock_coordinates_scalar[0, 3],
+        p1=mock_coordinates_scalar[0, 4],
+        p2=mock_coordinates_scalar[0, 5],
+        k=mock_wave_vector,
+        zr=mock_rayleigh_length,
     )
-    assert abs(np.real(actual) - expected_real) < TOLERANCE
-    assert abs(np.imag(actual) - expected_imag) < TOLERANCE
+    assert abs(np.real(actual) - expected_real) < tolerance
+    assert abs(np.imag(actual) - expected_imag) < tolerance
 
 
-def test_tau_tt_conjugate() -> None:
+def test_tau_tt_conjugate(
+    mock_coordinates_scalar: npt.NDArray[np.float64],
+    mock_wave_vector: int,
+    mock_rayleigh_length: int,
+    tolerance: float,
+) -> None:
     """Test switching derivatives results in a complex conjugate."""
     expected_real = 0.428197
     expected_imag = -0.0761188
     actual = np.conj(
         gaussian_overlaps.tau_tt(
-            s1=TESTING_CONSTANTS["s1"],
-            s2=TESTING_CONSTANTS["s2"],
-            t1=TESTING_CONSTANTS["t1"],
-            t2=TESTING_CONSTANTS["t2"],
-            p1=TESTING_CONSTANTS["p1"],
-            p2=TESTING_CONSTANTS["p2"],
-            k=TESTING_CONSTANTS["k"],
-            zr=TESTING_CONSTANTS["zr"],
+            s1=mock_coordinates_scalar[0, 0],
+            s2=mock_coordinates_scalar[0, 1],
+            t1=mock_coordinates_scalar[0, 2],
+            t2=mock_coordinates_scalar[0, 3],
+            p1=mock_coordinates_scalar[0, 4],
+            p2=mock_coordinates_scalar[0, 5],
+            k=mock_wave_vector,
+            zr=mock_rayleigh_length,
         )
     )
-    assert abs(np.real(actual) - expected_real) < TOLERANCE
-    assert abs(np.imag(actual) - expected_imag) < TOLERANCE
+    assert abs(np.real(actual) - expected_real) < tolerance
+    assert abs(np.imag(actual) - expected_imag) < tolerance
 
 
-def test_tau_tp_general() -> None:
+def test_tau_tp_general(
+    mock_coordinates_scalar: npt.NDArray[np.float64],
+    mock_wave_vector: int,
+    mock_rayleigh_length: int,
+    tolerance: float,
+) -> None:
     """Testing Gaussian derivatives in y- and z-dimension."""
     expected_real = 0.0273784
     expected_imag = -0.110605
     actual = gaussian_overlaps.tau_tp(
-        s1=TESTING_CONSTANTS["s1"],
-        s2=TESTING_CONSTANTS["s2"],
-        t1=TESTING_CONSTANTS["t1"],
-        t2=TESTING_CONSTANTS["t2"],
-        p1=TESTING_CONSTANTS["p1"],
-        p2=TESTING_CONSTANTS["p2"],
-        k=TESTING_CONSTANTS["k"],
-        zr=TESTING_CONSTANTS["zr"],
+        s1=mock_coordinates_scalar[0, 0],
+        s2=mock_coordinates_scalar[0, 1],
+        t1=mock_coordinates_scalar[0, 2],
+        t2=mock_coordinates_scalar[0, 3],
+        p1=mock_coordinates_scalar[0, 4],
+        p2=mock_coordinates_scalar[0, 5],
+        k=mock_wave_vector,
+        zr=mock_rayleigh_length,
     )
-    assert abs(np.real(actual) - expected_real) < TOLERANCE
-    assert abs(np.imag(actual) - expected_imag) < TOLERANCE
+    assert abs(np.real(actual) - expected_real) < tolerance
+    assert abs(np.imag(actual) - expected_imag) < tolerance
 
 
-def test_tau_tp_conjugate() -> None:
+def test_tau_tp_conjugate(
+    mock_coordinates_scalar: npt.NDArray[np.float64],
+    mock_wave_vector: int,
+    mock_rayleigh_length: int,
+    tolerance: float,
+) -> None:
     """Test switching derivatives results in a complex conjugate."""
     expected_real = 0.0273784
     expected_imag = 0.110605
     actual = np.conj(
         gaussian_overlaps.tau_tp(
-            s1=TESTING_CONSTANTS["s1"],
-            s2=TESTING_CONSTANTS["s2"],
-            t1=TESTING_CONSTANTS["t1"],
-            t2=TESTING_CONSTANTS["t2"],
-            p1=TESTING_CONSTANTS["p1"],
-            p2=TESTING_CONSTANTS["p2"],
-            k=TESTING_CONSTANTS["k"],
-            zr=TESTING_CONSTANTS["zr"],
+            s1=mock_coordinates_scalar[0, 0],
+            s2=mock_coordinates_scalar[0, 1],
+            t1=mock_coordinates_scalar[0, 2],
+            t2=mock_coordinates_scalar[0, 3],
+            p1=mock_coordinates_scalar[0, 4],
+            p2=mock_coordinates_scalar[0, 5],
+            k=mock_wave_vector,
+            zr=mock_rayleigh_length,
         )
     )
-    assert abs(np.real(actual) - expected_real) < TOLERANCE
-    assert abs(np.imag(actual) - expected_imag) < TOLERANCE
+    assert abs(np.real(actual) - expected_real) < tolerance
+    assert abs(np.imag(actual) - expected_imag) < tolerance
 
 
-def test_tau_pp_general() -> None:
+def test_tau_pp_general(
+    mock_coordinates_scalar: npt.NDArray[np.float64],
+    mock_wave_vector: int,
+    mock_rayleigh_length: int,
+    tolerance: float,
+) -> None:
     """Testing overlap Gaussian derivatives in z-dimension."""
     expected_real = 2.25255
     expected_imag = 0.656208
     actual = gaussian_overlaps.tau_pp(
-        s1=TESTING_CONSTANTS["s1"],
-        s2=TESTING_CONSTANTS["s2"],
-        t1=TESTING_CONSTANTS["t1"],
-        t2=TESTING_CONSTANTS["t2"],
-        p1=TESTING_CONSTANTS["p1"],
-        p2=TESTING_CONSTANTS["p2"],
-        k=TESTING_CONSTANTS["k"],
-        zr=TESTING_CONSTANTS["zr"],
+        s1=mock_coordinates_scalar[0, 0],
+        s2=mock_coordinates_scalar[0, 1],
+        t1=mock_coordinates_scalar[0, 2],
+        t2=mock_coordinates_scalar[0, 3],
+        p1=mock_coordinates_scalar[0, 4],
+        p2=mock_coordinates_scalar[0, 5],
+        k=mock_wave_vector,
+        zr=mock_rayleigh_length,
     )
-    assert abs(np.real(actual) - expected_real) < TOLERANCE
-    assert abs(np.imag(actual) - expected_imag) < TOLERANCE
+    assert abs(np.real(actual) - expected_real) < tolerance
+    assert abs(np.imag(actual) - expected_imag) < tolerance
 
 
-def test_tau_pp_conjugate() -> None:
+def test_tau_pp_conjugate(
+    mock_coordinates_scalar: npt.NDArray[np.float64],
+    mock_wave_vector: int,
+    mock_rayleigh_length: int,
+    tolerance: float,
+) -> None:
     """Test switching derivatives results in a complex conjugate."""
     expected_real = 2.25255
     expected_imag = -0.656208
     actual = np.conj(
         gaussian_overlaps.tau_pp(
-            s1=TESTING_CONSTANTS["s1"],
-            s2=TESTING_CONSTANTS["s2"],
-            t1=TESTING_CONSTANTS["t1"],
-            t2=TESTING_CONSTANTS["t2"],
-            p1=TESTING_CONSTANTS["p1"],
-            p2=TESTING_CONSTANTS["p2"],
-            k=TESTING_CONSTANTS["k"],
-            zr=TESTING_CONSTANTS["zr"],
+            s1=mock_coordinates_scalar[0, 0],
+            s2=mock_coordinates_scalar[0, 1],
+            t1=mock_coordinates_scalar[0, 2],
+            t2=mock_coordinates_scalar[0, 3],
+            p1=mock_coordinates_scalar[0, 4],
+            p2=mock_coordinates_scalar[0, 5],
+            k=mock_wave_vector,
+            zr=mock_rayleigh_length,
         )
     )
-    assert abs(np.real(actual) - expected_real) < TOLERANCE
-    assert abs(np.imag(actual) - expected_imag) < TOLERANCE
-
-
-# In case we don't run pytest
-if __name__ == "__main__":
-    test_delta_diagonal()
-    test_delta_in_plane_is_real()
-    test_delta_general()
-    test_gamma_s_complete_overlap()
-    test_gamma_s_in_plane_is_real()
-    test_gamma_s_general()
-    test_gamma_s_conjugate()
-    test_gamma_t_complete_overlap()
-    test_gamma_t_in_plane_is_real()
-    test_gamma_t_general()
-    test_gamma_t_conjugate()
-    test_gamma_p_complete_overlap()
-    test_gamma_p_general()
-    test_gamma_p_conjugate()
-    test_tau_ss_diagonal()
-    test_tau_ss_general()
-    test_tau_ss_conjugate()
-    test_tau_st_general()
-    test_tau_st_conjugate()
-    test_tau_sp_general()
-    test_tau_sp_conjugate()
-    test_tau_tt_diagonal()
-    test_tau_tt_general()
-    test_tau_tt_conjugate()
-    test_tau_tp_general()
-    test_tau_tp_conjugate()
-    test_tau_pp_general()
-    test_tau_pp_conjugate()
+    assert abs(np.real(actual) - expected_real) < tolerance
+    assert abs(np.imag(actual) - expected_imag) < tolerance

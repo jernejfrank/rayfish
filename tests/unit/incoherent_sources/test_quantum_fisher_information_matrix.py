@@ -14,16 +14,8 @@ a separate mathematica notebook ./non_orthogonal_transformation_matrix.nb.
 
 import numpy as np
 import numpy.typing as npt
-import pytest
 
-import rayfish.incoherent_sources.quantum_fisher_information_matrix as qfi
-
-
-# Due to numerical precision we cannot get exact equality
-@pytest.fixture()
-def tolerance() -> float:
-    """Tolerance for asserting two values are the same."""
-    return 5e-6
+import rayfish.incoherent_sources as qfi
 
 
 class TestGramian:
@@ -366,7 +358,9 @@ def test_pad_operators() -> None:
         [0, 0, 0, 0, 0, 0, 0, 0],
     ])
     mock_input = np.array([[1, 1, 1], [1, 1, 1], [1, 1, 1]])
-    actual = qfi._pad_operator(matrix=mock_input, n=2, ind=2)
+    actual = qfi.quantum_fisher_information_matrix._pad_operator(
+        matrix=mock_input, n=2, ind=2
+    )
     assert np.array_equal(expected, actual)
 
 
@@ -395,3 +389,33 @@ def test_lyapunov_operators(
     assert actual.shape == (6, 8, 8)
     # Adjusting tolerance due to numerics
     assert np.allclose(actual, expected, atol=10 * tolerance)
+
+
+def test_lyapunov_covariance_matrix(
+    mock_covariance_matrix: npt.NDArray[np.complex128],
+    mock_density_derivative: npt.NDArray[np.complex128],
+    mock_gramian_scalar: npt.NDArray[np.complex128],
+    mock_lyapunov_operators: npt.NDArray[np.complex128],
+    mock_jacobian_two_sources: npt.NDArray[np.float64],
+    mock_number_of_point_sources: int,
+    tolerance: float,
+) -> None:
+    """Test covariance matrix for Lyapunov operators.
+
+    We test the correct construction of the matrix elements
+    and re-parametrisation from absolute point source coordinates
+    to relative coordinates change of basis.
+    """
+    expected = mock_covariance_matrix
+
+    actual = qfi.lyapunov_covariance_matrix(
+        all_density_derivatives=mock_density_derivative,
+        gramian_of_single_distribution=mock_gramian_scalar,
+        lyapunov_operators=mock_lyapunov_operators,
+        coordinate_jacobian=mock_jacobian_two_sources,
+        number_of_point_sources=mock_number_of_point_sources,
+    )
+
+    assert actual.shape == (3, 3)
+    # Adjusting tolerance due to numerics
+    assert np.allclose(actual, expected, atol=tolerance)
