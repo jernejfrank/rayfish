@@ -1,18 +1,17 @@
 """Calculating the quantum Fisher information matrix for incoherent point sources.
 
-This module calculates the general quantum Fisher information matrix where
-parameters correspond to the 3D coordinates of the point sources. This is a
-starting point from which we then transform the matrix to the parameters of
-interest.
+This module calculates the general quantum Fisher information matrix where parameters
+correspond to the 3D coordinates of the point sources. This is a starting point from
+which we then transform the matrix to the parameters of interest.
 
-The length scale for the position of the particles is normalized w.r.t.
-the Rayleigh length [zr] and wavevector [k] as follows:
+The length scale for the position of the particles is normalized w.r.t. the Rayleigh
+length [zr] and wavevector [k] as follows:
 x,y <-> sqrt[k/zr] x,y
 z <-> z / zr
 
-The model assumes incoherent point sources distributed in 3D space and
-a Gaussian beam in the image plane as the point spread function.
-With the above relative length scale this looks like:
+The model assumes incoherent point sources distributed in 3D space and a Gaussian beam
+in the image plane as the point spread function. With the above relative length scale
+this looks like:
 ψ(x-dx, y-dy, z-dz) =
 sqrt[1/pi] (i / (z-dz+i))
 exp[-i ((x-dx)^2 + (y-dy)^2) / (2 (z-dz+i))] exp[-i k zr (z-dz)]
@@ -70,9 +69,9 @@ def delta_submat(
             1the cross section is doubled
 
     Returns:
-        A (M,N,N) array of complex floats, where N is the number of point sources
-        and M is the number of different distributions of the N point sources.
-        The diagonal for each (N,N) matrix is 1 since we assume normalized Gaussians.
+        A (M,N,N) array of complex floats, where N is the number of point sources and M
+        is the number of different distributions of the N point sources. The diagonal
+        for each (N,N) matrix is 1 since we assume normalized Gaussians.
     """
     delta_mat = (
         np.zeros((
@@ -337,8 +336,8 @@ def gramian(
 ) -> npt.NDArray[np.complex128]:
     """Gramian matrix for non-orthogonal basis.
 
-    Creates the Gramian matrix that is necessary for linear algebra in
-    vector spaces spanned by non-orthogonal basis.
+    Creates the Gramian matrix that is necessary for linear algebra in vector spaces
+    spanned by non-orthogonal basis.
 
     The matrix takes the form:
 
@@ -388,18 +387,17 @@ def density(number_of_point_sources: int) -> npt.NDArray[np.float64]:
 def all_density_derivatives(number_of_point_sources: int) -> npt.NDArray[np.float64]:
     """Derivatives of the density matrix w.r.t. all parameters.
 
-    For now we assume all sources have equal probability of emitting
-    a photon (they are equally bright) so we can directly populate
-    the individual derivative matrices.
+    For now we assume all sources have equal probability of emitting a photon (they are
+    equally bright) so we can directly populate the individual derivative matrices.
 
     Args:
         number_of_point_sources: how many point sources we
             have to model the object
 
     Returns:
-        A (3N,4N,4N) array where the (4N,4N) is sparse to encode
-        the 3N parameter derivatives. The sequence matches the
-        coordinates sequence (s1,s2,...,t1,t2,...,p1,p2,...).
+        A (3N,4N,4N) array where the (4N,4N) is sparse to encode the 3N parameter
+        derivatives. The sequence matches the coordinates sequence
+        (s1,s2,...,t1,t2,...,p1,p2,...).
     """
     d_tensor = np.zeros((
         3 * number_of_point_sources,
@@ -431,8 +429,8 @@ def lyapunov_operators(
 ) -> npt.NDArray[np.complex128]:
     """Calculates Lyapunov operators using Sylvester's equation.
 
-    A Lyapunov operator associated to a particular derivative
-    of the density matrix is the solution to the equation
+    A Lyapunov operator associated to a particular derivative of the density matrix is
+    the solution to the equation
 
     2 * Density Derivative =
     Lyapunov * Gramian * Density + Density * Gramian *  Lyapunov
@@ -462,9 +460,9 @@ def lyapunov_operators(
             have to model the object
 
     Returns:
-        A (3N,4N,4N) array where the (4N,4N) are the Lyapunov operators
-        for each of the 3N coordinates. The sequence matches the
-        coordinates sequence (s1,s2,...,t1,t2,...,p1,p2,...).
+        A (3N,4N,4N) array where the (4N,4N) are the Lyapunov operators for each of the
+        3N coordinates. The sequence matches the coordinates sequence
+        (s1,s2,...,t1,t2,...,p1,p2,...).
     """
     lyapunov = np.zeros_like(all_density_derivatives) + 0j
     for i in range(3 * number_of_point_sources):
@@ -489,9 +487,8 @@ def _pad_operator(
 ) -> npt.NDArray[np.complex128]:
     """Helper function to pad a matrix.
 
-    Inplace padding of the matrix with 0 columns / rows
-    back to the original (dim,dim) around a certain
-    column / row.
+    Inplace padding of the matrix with 0 columns / rows back to the original (dim,dim)
+    around a certain column / row.
 
     Args:
         matrix: the submatrix to pad
@@ -499,8 +496,8 @@ def _pad_operator(
         ind: index of row/column around which we pad
 
     Returns:
-        A (4n,4n) matrix where we padded so that the row/column
-        entry matches the correct coordinates basis.
+        A (4n,4n) matrix where we padded so that the row/column entry matches the
+        correct coordinates basis.
     """
     dim = 3 * n - 1
     before = ind

@@ -65,3 +65,15 @@ def mock_jacobian_two_sources() -> npt.NDArray[np.float64]:
         [0, 0, -1 / 2, 1 / 2, 0, 0],
         [0, 0, 0, 0, -1 / 2, 1 / 2],
     ])
+
+
+@pytest.fixture
+def mock_spacing_two_sources() -> npt.NDArray[np.float64]:
+    """Spacing for two point sources."""
+    return np.array([0.2, 0.4, 0.6])
+
+
+@pytest.fixture
+def mock_spacing_three_sources() -> npt.NDArray[np.float64]:
+    """Spacing for three point sources."""
+    return np.array([3, 6, 9, 12])
