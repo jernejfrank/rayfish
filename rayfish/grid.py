@@ -20,6 +20,8 @@ import numpy.typing as npt
 __all__ = (
     "LengthError",
     "spacing",
+    "grid__1d",
+    "coordinate_jacobian__basic",
 )
 
 # [s1,s2,...,sN,t1,t2,...,tN,,p1,p2,...,pN]
@@ -91,13 +93,13 @@ def grid__1d(
     symmetry of the plane and the Gaussian beam). The point sources are distributed
     in a symmetric manner around the origin.
 
-    If even number of sources they are placed at +spacing and -spacing from the
+    If even number of sources: they are placed at +spacing and -spacing from the
     origin.
-    If odd number one source is place at (0,0,p_0).
+    If odd number of sources: one point source is placed at origin (0,0).
 
     Args:
         number_of_point_sources: number of point sources we use to model the object
-        number_of_point_source_distributions: (M,) array of discrete sampling states
+        number_of_point_source_distributions: number of discrete sampling states
         spacing: (M,) array of distances between point sources
 
     Returns:
@@ -108,11 +110,52 @@ def grid__1d(
     """
     grid = np.zeros((number_of_point_source_distributions, 3 * number_of_point_sources))
 
-    for i_distribution in range(number_of_point_source_distributions):
+    for i, distance in enumerate(spacing):
         # Placing one point source at the origin of the coordinate system
-        if number_of_point_source_distributions % 2 == 1:
-            continue
+        shift_by = 0
+        if number_of_point_sources % 2 == 1:
+            shift_by = 1
 
-        for coordinate in range(number_of_point_sources // 2):
-            grid[i_distribution, coordinate] = spacing
-            grid[i_distribution, coordinate + number_of_point_sources // 2] = -spacing
+        second_index = 0
+        for point_source in range(number_of_point_sources - shift_by):
+            prefactor = 1
+            if point_source % 2 == 0:
+                prefactor = -1
+                second_index += 1
+
+            grid[i, point_source + shift_by] = prefactor * second_index * distance
+
+    return grid
+
+
+def coordinate_jacobian__basic(
+    grid: npt.NDArray[np.float64],
+) -> npt.NDArray[np.float64]:
+    """Jacobian for the reparametrisation used in constructing the grid.
+
+    We assume the Gaussian beams to be displace by positive (dx,dy,dz)-values in
+    calculating the closed-form overlaps. The grid is created symmetrically around the
+    origin of the coordinate system, so half the values are negative. We capture
+    this reparametrisation get captured here in the form of the Jacobian which has
+    +1 or -1 on the diagonal.
+
+    Args:
+        grid: (M,3N) array of particle distributions in 3D space
+
+    Returns:
+        A (3N,3N) array with the diagonal +1 or -1 depending if the particle is
+        displaced by a positive or negative number.
+
+    """
+    sign_vector = np.sign(grid[0]) + (grid[0] == 0)
+    return np.diag(sign_vector)
+
+
+if __name__ == "__main__":
+    expected = np.array([
+        [0, -3, 3, -3, 3, 0, 0, 0, 0],
+        [0, -6, 6, -3, 3, 0, 0, 0, 0],
+        [0, -9, 9, -9, 9, 0, 0, 0, 0],
+        [0, -12, 12, 12, -12, 0, 0, 0, 0],
+    ])
+    print(coordinate_jacobian__basic(expected))
