@@ -72,14 +72,11 @@ def spacing(
             maximal_length=maximal_length,
         )
 
-    return (
-        np.linspace(
-            minimal_spacing,
-            maximal_length / number_of_point_sources,
-            number_of_point_source_distributions,
-            endpoint=True,
-        )
-        / 2
+    return np.linspace(
+        minimal_spacing,
+        maximal_length / number_of_point_sources,
+        number_of_point_source_distributions,
+        endpoint=True,
     )
 
 
