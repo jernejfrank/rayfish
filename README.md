@@ -74,9 +74,11 @@ Written in order of priority:
     - olynomial measurement basis (general way to represnt any mode sorting basis)
     - intensity estimation as benchmark
 * Create Dash frontend
-* Protect main branch and use gitflow
+* Protect main branch
 * Create CI/CD with Github Actions
     - automate changelog and semver
+    - run tests
+    - attempt to build
 * Create Docker container for the app and maybe use mounting drive for saving data locally for now
 * Use sphinx to create docs
 * Build package and publish to pypi
