@@ -3,10 +3,7 @@
 This module creates point source distributions that model the underlying object.
 
 For now we represent the 3D object as a uniform grid with each point having a varying
-height (figure 1 in: https://www.azooptics.com/Article.aspx?ArticleID=1238). We compute
-the jacobian of the grid parametrization as a pre-processing step for the covariance
-matrix to perform dimensionality reduction to a single distance parameter in the x-y
-plane.
+height (figure 1 in: https://www.azooptics.com/Article.aspx?ArticleID=1238).
 
 We can choose to model 1D (line) or 2D (area) objects. Note that for a 1D model the
 number of point sources N corresponds directly, but for 2D we will have N^2 point

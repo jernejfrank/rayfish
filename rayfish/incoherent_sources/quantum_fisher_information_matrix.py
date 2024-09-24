@@ -26,6 +26,7 @@ to discrete quantum imaging,” PRX Quantum 2, 020308 (2021).
 
 import numpy as np
 import numpy.typing as npt
+from hamilton.htypes import Collect, Parallelizable
 from scipy import linalg
 
 from rayfish import gaussian_overlaps
@@ -36,10 +37,12 @@ __all__ = (
     "gamma_submat",
     "tau_submat",
     "gramian",
+    "gramian_of_single_distribution",
     "density",
     "all_density_derivatives",
     "lyapunov_operators",
     "lyapunov_covariance_matrix",
+    "lyapunov_covariance_matrix_for_entire_distribution",
 )
 
 
@@ -361,6 +364,24 @@ def gramian(
     return g
 
 
+def gramian_of_single_distribution(
+    gramian: npt.NDArray[np.complex128],
+) -> Parallelizable[npt.NDArray[np.complex128]]:
+    """Fans out the gramian to process the individual distributions.
+
+    We can decide if this will occur in parallel or serial at execution.
+
+    Args:
+        gramian: (M,4N,4N) array. Computed matrix necessary for non-orthogonal algebra
+
+    Returns:
+        A (4N,4N) array that corresponds to the gramian of a single point source
+        distribution.
+    """
+    for i in range(gramian.shape[0]):
+        yield gramian[i]
+
+
 def density(number_of_point_sources: int) -> npt.NDArray[np.float64]:
     """Density matrix.
 
@@ -547,14 +568,15 @@ def lyapunov_covariance_matrix(
             in a vector space spanned by a non-orthogonal basis
         lyapunov_operators: (3N,4N,4N) array encoding the stability of each
             parameter.
-        coordinate_jacobian: (3N,3N) array correcting the re-parametrization
-            of point source coordinates
+        coordinate_jacobian: (*,3N) array correcting the re-parametrization
+            of point source coordinates and collapsing the matrix for the parameters
+            of interst. The first dimension is dependent on the user input.
         number_of_point_sources: how many point sources we
             have to model the object
 
     Returns:
-        A (3N,3N) array of complex floats encoding precision boundaries for
-        localising each point source in 3D space.
+        A (*,*) array of complex floats encoding precision boundaries for
+        parameters of interest that have been encoded into the `coordinate_jacobian`.
     """
     covariance = (
         np.zeros((3 * number_of_point_sources, 3 * number_of_point_sources)) + 0j
@@ -573,8 +595,24 @@ def lyapunov_covariance_matrix(
                 )
             )
 
-    covariance = coordinate_jacobian.dot(
-        covariance.dot(np.transpose(coordinate_jacobian))
+    covariance = np.matmul(
+        coordinate_jacobian, np.matmul(covariance, np.transpose(coordinate_jacobian))
     )
 
     return covariance
+
+
+def lyapunov_covariance_matrix_for_entire_distribution(
+    lyapunov_covariance_matrix: Collect[npt.NDArray[np.complex128]],
+) -> npt.NDArray[np.complex128]:
+    """Concatenates individual covariance matrices.
+
+    Args:
+        lyapunov_covariance_matrix: (*,*) array, corresponding to the covariance
+            matrix for a single point source distribution
+
+    Returns:
+        A (M,*,*) array that concatenates the individual covariant matrices for
+        the parameters of interest.
+    """
+    return np.concatenate(lyapunov_covariance_matrix)

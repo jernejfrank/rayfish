@@ -27,7 +27,7 @@ def test_jacobian__basic_xdim(
         [0, 0, 0, 0, 0, 0, 0, 1, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 1],
     ])
-    actual = parameter_catalogue.coordinate_jacobian_sign(
+    actual = parameter_catalogue.jacobian_to_correct_sign(
         grid=mock_grid_1d_three_sources
     )
 
@@ -86,12 +86,12 @@ def test_jacobian__basic_general() -> None:
             1,
         ],
     ])
-    actual = parameter_catalogue.coordinate_jacobian_sign(grid=grid)
+    actual = parameter_catalogue.jacobian_to_correct_sign(grid=grid)
 
     assert np.array_equiv(expected, actual)
 
 
-def test_coordinate_jacobian_collapse_plane_parameters_2_sources() -> None:
+def testjacobian_to_collapse_xy_2_sources() -> None:
     """Test Jacobian collapses xy even number of point sources."""
     expected = np.array([
         [0.5, 0.5, 0.5, 0.5, 0.0, 0.0],
@@ -99,11 +99,11 @@ def test_coordinate_jacobian_collapse_plane_parameters_2_sources() -> None:
         [0.0, 0.0, 0.0, 0.0, 0.0, 1.0],
     ])
 
-    actual = parameter_catalogue.coordinate_jacobian_collapse_plane_parameters(2)
+    actual = parameter_catalogue.jacobian_to_collapse_xy(2)
     assert np.array_equiv(expected, actual)
 
 
-def test_coordinate_jacobian_collapse_plane_parameters_3_sources() -> None:
+def testjacobian_to_collapse_xy_3_sources() -> None:
     """Test Jacobian collapses xy odd number of point sources."""
     expected = np.array([
         [1.0, 0.5, 0.5, 1.0, 0.5, 0.5, 0.0, 0.0, 0.0],
@@ -112,5 +112,70 @@ def test_coordinate_jacobian_collapse_plane_parameters_3_sources() -> None:
         [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0],
     ])
 
-    actual = parameter_catalogue.coordinate_jacobian_collapse_plane_parameters(3)
+    actual = parameter_catalogue.jacobian_to_collapse_xy(3)
+    assert np.array_equiv(expected, actual)
+
+
+def test_create_jacobian_1d_single_z() -> None:
+    """Test correct dimensional Jacobian matrix for x-y and single z."""
+    expected = np.array([[1, 0], [0, 1 / 13]])
+
+    user_input = np.array([[1 / 13]])
+
+    actual = parameter_catalogue.jacobian_1d(user_input=user_input)
+    assert np.array_equiv(expected, actual)
+
+
+def test_create_jacobian_1d_collapse_z() -> None:
+    """Test correct dimensional Jacobian matrix for x-y and collapsing z."""
+    expected = np.array([[1, 0, 0], [0, 1 / 13, 1 / 13]])
+
+    user_input = np.array([[1 / 13, 1 / 13]])
+
+    actual = parameter_catalogue.jacobian_1d(user_input=user_input)
+    assert np.array_equiv(expected, actual)
+
+
+def test_create_jacobian_1d_multiple_z() -> None:
+    """Test the correct dimensional Jacobian matrix for x-y and multiple z."""
+    expected = np.array([[1, 0, 0, 0], [0, 1 / 13, 1 / 13, 0], [0, 0, 0, 3]])
+
+    user_input = np.array([[1 / 13, 1 / 13, 0], [0, 0, 3]])
+
+    actual = parameter_catalogue.jacobian_1d(user_input=user_input)
+    assert np.array_equiv(expected, actual)
+
+
+def test_create_jacobian_2d_single_z() -> None:
+    """Test correct dimensional Jacobian matrix for x-y and single z."""
+    expected = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1 / 13]])
+
+    user_input = np.array([[1 / 13]])
+
+    actual = parameter_catalogue.jacobian_2d(user_input=user_input)
+    assert np.array_equiv(expected, actual)
+
+
+def test_create_jacobian_2d_collapse_z() -> None:
+    """Test correct dimensional Jacobian matrix for x-y and collapsing z."""
+    expected = np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1 / 13, 1 / 13]])
+
+    user_input = np.array([[1 / 13, 1 / 13]])
+
+    actual = parameter_catalogue.jacobian_2d(user_input=user_input)
+    assert np.array_equiv(expected, actual)
+
+
+def test_create_jacobian_2d_multiple_z() -> None:
+    """Test correct dimensional Jacobian matrix for x-y and multiple z."""
+    expected = np.array([
+        [1, 0, 0, 0, 0],
+        [0, 1, 0, 0, 0],
+        [0, 0, 1 / 13, 1 / 13, 0],
+        [0, 0, 0, 0, 3],
+    ])
+
+    user_input = np.array([[1 / 13, 1 / 13, 0], [0, 0, 3]])
+
+    actual = parameter_catalogue.jacobian_2d(user_input=user_input)
     assert np.array_equiv(expected, actual)
