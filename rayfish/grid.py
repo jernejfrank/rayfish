@@ -15,14 +15,13 @@ sources (N in each dimension).
 
 import numpy as np
 import numpy.typing as npt
+from hamilton.function_modifiers import config
 
 # Public API
 __all__ = (
     "LengthError",
     "spacing",
     "grid__1d",
-    "coordinate_jacobian_sign",
-    "coordinate_jacobian_collapse_plane_parameters",
 )
 
 # Parameter order
@@ -87,6 +86,7 @@ def spacing(
     )
 
 
+@config.when_not(dimension=2)
 def grid__1d(
     number_of_point_sources: int,
     number_of_point_source_distributions: int,
@@ -133,68 +133,10 @@ def grid__1d(
     return grid
 
 
-def coordinate_jacobian_sign(
-    grid: npt.NDArray[np.float64],
-) -> npt.NDArray[np.float64]:
-    """Jacobian for the reparametrisation used in constructing the grid.
-
-    We assume the Gaussian beams to be displace by positive (dx,dy,dz)-values in
-    calculating the closed-form overlaps. The grid is created symmetrically around the
-    origin of the coordinate system, so half the values are negative. We capture
-    this reparametrisation get captured here in the form of the Jacobian which has
-    +1 or -1 on the diagonal.
-
-    Args:
-        grid: (M,3N) array of particle distributions in 3D space
-
-    Returns:
-        A (3N,3N) array with the diagonal +1 or -1 depending if the particle is
-        displaced by a positive or negative number.
-
-    """
-    sign_vector = np.sign(grid[0]) + (grid[0] == 0)
-    return np.diag(sign_vector)
-
-
-def coordinate_jacobian_collapse_plane_parameters(
+@config.when(dimension=2)
+def grid__2d(
     number_of_point_sources: int,
+    number_of_point_source_distributions: int,
+    spacing: npt.NDArray[np.float64],
 ) -> npt.NDArray[np.float64]:
-    """Jacobian for reparametrizing the x-y coordinates to a single distance parameter.
-
-    The grid in the x-y is isotropic so we can reduce the estimation parameter to only
-    capture the relative distance between points. We place an identity for the
-    parameters in the z-dimension since we will apply a user specif transformation
-    afterwards to get the parameters of interest.
-
-    Args:
-        number_of_point_sources: N. Number of point sources distributed in space.
-
-    Returns:
-        A (1+N,3N) array with the first dimension reflecting the grid positioning in
-        the x-y plane and the next N dimension being the identity.
-
-    """
-    jacobian = np.zeros((1 + number_of_point_sources, 3 * number_of_point_sources))
-    factor = 1 / 2
-    shift_by = 0
-    if number_of_point_sources % 2 == 1:
-        shift_by = 1
-        jacobian[0, 0] = 1
-        jacobian[0, number_of_point_sources] = 1
-        jacobian[1, 2 * number_of_point_sources] = 1
-
-    for point_source in range(shift_by, number_of_point_sources, 2):
-        # x-dimnesion
-        jacobian[0, point_source] = factor
-        jacobian[0, point_source + 1] = factor
-        # y-dimnesion
-        jacobian[0, number_of_point_sources + point_source] = factor
-        jacobian[0, number_of_point_sources + point_source + 1] = factor
-
-        factor += 1 / 2
-
-    for point_source in range(shift_by, number_of_point_sources):
-        # We leave z-dim alone here, user needs to specify how to collapse
-        jacobian[1 + point_source, 2 * number_of_point_sources + point_source] = 1
-
-    return jacobian
+    raise NotImplementedError

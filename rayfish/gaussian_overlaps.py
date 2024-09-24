@@ -45,9 +45,11 @@ def _vectorize(f: Callable) -> Callable:
     """
     vf = np.vectorize(f, otypes=[np.complex128], excluded=["k", "zr"])
 
-    def newfunc(*args, **kwargs):  # noqa
+    def newfunc(*args: float, **kwargs: float) -> complex:
         return vf(*args, **kwargs)[()]
 
+    # newfunc.__name__ = f.__name__
+    # newfunc.__qualname__ = f.__qualname__
     return newfunc
 
 
