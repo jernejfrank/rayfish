@@ -117,7 +117,7 @@ def test_jacobian__basic_xdim(
         [0, 0, 0, 0, 0, 0, 0, 1, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 1],
     ])
-    actual = rayfish.coordinate_jacobian__basic(grid=mock_grid_1d_three_sources)
+    actual = rayfish.coordinate_jacobian_sign(grid=mock_grid_1d_three_sources)
 
     assert np.array_equiv(expected, actual)
 
@@ -174,6 +174,31 @@ def test_jacobian__basic_general() -> None:
             1,
         ],
     ])
-    actual = rayfish.coordinate_jacobian__basic(grid=grid)
+    actual = rayfish.coordinate_jacobian_sign(grid=grid)
 
+    assert np.array_equiv(expected, actual)
+
+
+def test_coordinate_jacobian_collapse_plane_parameters_2_sources() -> None:
+    """Test Jacobian collapses xy even number of point sources."""
+    expected = np.array([
+        [0.5, 0.5, 0.5, 0.5, 0.0, 0.0],
+        [0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+        [0.0, 0.0, 0.0, 0.0, 0.0, 1.0],
+    ])
+
+    actual = rayfish.coordinate_jacobian_collapse_plane_parameters(2)
+    assert np.array_equiv(expected, actual)
+
+
+def test_coordinate_jacobian_collapse_plane_parameters_3_sources() -> None:
+    """Test Jacobian collapses xy odd number of point sources."""
+    expected = np.array([
+        [1.0, 0.5, 0.5, 1.0, 0.5, 0.5, 0.0, 0.0, 0.0],
+        [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0],
+        [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+        [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0],
+    ])
+
+    actual = rayfish.coordinate_jacobian_collapse_plane_parameters(3)
     assert np.array_equiv(expected, actual)

@@ -70,31 +70,37 @@ def mock_jacobian_two_sources() -> npt.NDArray[np.float64]:
 @pytest.fixture
 def mock_spacing_two_sources() -> npt.NDArray[np.float64]:
     """Spacing for two point sources."""
-    return np.array([0.2, 0.4, 0.6])
+    return np.array([0.2, 0.4, 0.6]) / 2
 
 
 @pytest.fixture
 def mock_spacing_three_sources() -> npt.NDArray[np.float64]:
     """Spacing for three point sources."""
-    return np.array([3, 6, 9, 12])
+    return np.array([3, 6, 9, 12]) / 2
 
 
 @pytest.fixture
 def mock_grid_1d_two_sources() -> npt.NDArray[np.float64]:
     """Spacing for two point sources."""
-    return np.array([
-        [-0.2, 0.2, 0, 0, 0, 0],
-        [-0.4, 0.4, 0, 0, 0, 0],
-        [-0.6, 0.6, 0, 0, 0, 0],
-    ])
+    return (
+        np.array([
+            [-0.2, 0.2, 0, 0, 0, 0],
+            [-0.4, 0.4, 0, 0, 0, 0],
+            [-0.6, 0.6, 0, 0, 0, 0],
+        ])
+        / 2
+    )
 
 
 @pytest.fixture
 def mock_grid_1d_three_sources() -> npt.NDArray[np.float64]:
     """Spacing for three point sources."""
-    return np.array([
-        [0, -3, 3, 0, 0, 0, 0, 0, 0],
-        [0, -6, 6, 0, 0, 0, 0, 0, 0],
-        [0, -9, 9, 0, 0, 0, 0, 0, 0],
-        [0, -12, 12, 0, 0, 0, 0, 0, 0],
-    ])
+    return (
+        np.array([
+            [0, -3, 3, 0, 0, 0, 0, 0, 0],
+            [0, -6, 6, 0, 0, 0, 0, 0, 0],
+            [0, -9, 9, 0, 0, 0, 0, 0, 0],
+            [0, -12, 12, 0, 0, 0, 0, 0, 0],
+        ])
+        / 2
+    )
