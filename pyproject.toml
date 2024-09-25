@@ -27,6 +27,7 @@ dependencies = [
 Homepage = "https://jernejfrank.github.io/rayfish/"
 Repository = "https://github.com/jernejfrank/rayfish"
 Documentation = "https://jernejfrank.github.io/rayfish/"
+"Bug Tracker" = "https://github.com/jernejfrank/rayfish/issues"
 
 [tool.uv]
 dev-dependencies = [
@@ -58,8 +59,6 @@ testpaths = ["tests"]
 line-length = 88
 indent-width = 4
 fix = true
-
-
 
 [tool.ruff.lint]
 select = [

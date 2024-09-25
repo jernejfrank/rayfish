@@ -9,17 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-
 ### Changed
-
 
 ### Deprecated
 
-
 ### Removed
-
 
 ### Fixed
 
-
 ### Security
+
+## [0.0.1] - 2023-09-24
+
+### Added
+- computing quantum covariance matrix for incoherent sources
+- example replicating Tsang's 2 point sources

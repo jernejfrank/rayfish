@@ -82,4 +82,4 @@ Written in order of priority:
 * Create Docker container for the app and maybe use mounting drive for saving data locally for now
 * Use sphinx to create docs
 * Build package and publish to pypi
-* Sort out docs, create templates for contribution, pull-request, issues etc.
+* Sort out docs
