@@ -19,4 +19,4 @@ ADD . /app
 RUN uv sync --frozen
 
 # Entrypoint
-CMD [ "python", "estimator/foo.py"]
+CMD [ "python", "rayfish/foo.py"]
