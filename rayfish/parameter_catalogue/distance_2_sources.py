@@ -11,7 +11,7 @@ how you need to get out parameters of interest to you.
 
 import numpy as np
 import numpy.typing as npt
-from hamilton.function_modifiers import pipe, source, step
+from hamilton.function_modifiers import pipe_output, source, step
 
 from rayfish.parameter_catalogue import _matrix_multiplication, jacobian_1d
 
@@ -53,8 +53,7 @@ def coordinates(
     return grid
 
 
-# TODO: change to pipe_output when released
-@pipe(
+@pipe_output(
     step(jacobian_1d).when(dimension=1).named("z_dimension"),
     step(_matrix_multiplication, matrix=source("jacobian_to_collapse_xy"))
     .when_not(dimension=2)
@@ -66,7 +65,7 @@ def coordinates(
         "sign"
     ),
 )
-def coordinate_jacobian(z_jacobian: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
+def coordinate_jacobian() -> npt.NDArray[np.float64]:
     """Specifiying parameters of interest.
 
     This can be any reparametrization from 3N -> parameter number of interest. We have
@@ -74,12 +73,7 @@ def coordinate_jacobian(z_jacobian: npt.NDArray[np.float64]) -> npt.NDArray[np.f
     scheme, that chains reparametrizations together.
 
     In this case we just specify that we are interested in the distance between two
-    point sources along the z-axis, and the above `pipe` collapses to another distance
-    parameter along the x-axis.
+    point sources along the z-axis, and the above `pipe` collapses the covariance matrix
+    to another distance parameter along the x-axis.
     """
-    return z_jacobian
-
-
-def z_jacobian() -> npt.NDArray[np.float64]:
-    """Placeholder for now until pipe_output is released."""
     return np.array([[1 / 2, 1 / 2]])

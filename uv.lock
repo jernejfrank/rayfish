@@ -1878,7 +1878,7 @@ requires-dist = [
     { name = "pyarrow" },
     { name = "pydantic" },
     { name = "scipy" },
-    { name = "sf-hamilton", extras = ["visualization"], specifier = ">=1.77.1" },
+    { name = "sf-hamilton", extras = ["visualization"], specifier = ">=1.78" },
     { name = "typing-extensions", specifier = ">4.0.0" },
     { name = "typing-inspect" },
 ]
@@ -2130,7 +2130,7 @@ wheels = [
 
 [[package]]
 name = "sf-hamilton"
-version = "1.77.1"
+version = "1.78.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "numpy" },
@@ -2138,9 +2138,9 @@ dependencies = [
     { name = "typing-extensions" },
     { name = "typing-inspect" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/8c/96/603864405c4bceb7163f4532b7aa7e5c51e2888fcbb9ea5d551af73a4e09/sf_hamilton-1.77.1.tar.gz", hash = "sha256:b08eb6aa14d3a1b5864ff0b92f701660caa33184deb5228e79a02c85ce4db426", size = 461988 }
+sdist = { url = "https://files.pythonhosted.org/packages/63/50/1be2f12e50de3ee7ba17e667ede02c2e5efcc13ab42817283d8a3b5ccef8/sf_hamilton-1.78.0.tar.gz", hash = "sha256:2682a354c904207c3ba38aa95393b724cba58c4809567847d0ab590508dfb3bb", size = 461842 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a3/ac/91c0025267f630fd797956587c70d27667f7514817a653f0158daa32b860/sf_hamilton-1.77.1-py3-none-any.whl", hash = "sha256:d4878a65d4229baf902e8a3152180084c0f9546be1a40d265241fe6c5e270152", size = 347901 },
+    { url = "https://files.pythonhosted.org/packages/c8/b7/db6ba439a03121c442686645c71286cef93d2c961d08d7033d9f67302cff/sf_hamilton-1.78.0-py3-none-any.whl", hash = "sha256:6f44e3908dd75f4b4aff3d21ca4d7127afcbc7d9616d6045d7ada692f88d47da", size = 348981 },
 ]
 
 [package.optional-dependencies]
