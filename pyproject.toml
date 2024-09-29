@@ -1,6 +1,6 @@
 [project]
 name = "rayfish"
-version = "0.0.1"
+version = "0.1.1"
 description = "Estimating parameters for discrete quantum imaging"
 authors = [{ name = "Jernej Frank", email = "jernejfrank@gmail.com" }]
 readme = "README.md"
