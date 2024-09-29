@@ -18,6 +18,8 @@ tau_µn: <∂_µ ψ(x+dx_1, y+dy_1, z+dz_1)|∂_n ψ(x+dx_2, y+dy_2, z+dz_2)> ;
     µ=dx_1, dy_1, dz_1 ; n=dx_2, dy_2, dz_2
 """
 
+from functools import wraps
+
 import numpy as np
 from beartype.typing import Callable
 
@@ -45,6 +47,7 @@ def _vectorize(f: Callable) -> Callable:
     """
     vf = np.vectorize(f, otypes=[np.complex128], excluded=["k", "zr"])
 
+    @wraps(vf)
     def newfunc(*args: float, **kwargs: float) -> complex:
         return vf(*args, **kwargs)[()]
 

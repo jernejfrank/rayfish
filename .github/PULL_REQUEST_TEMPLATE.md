@@ -8,8 +8,8 @@
 
 ## Checklist
 
-- [ ] PR has an informative and human-readable title (this will be pulled into the release notes)
+- [ ] Filled out Changelog
 - [ ] Changes are limited to a single goal (no scope creep)
 - [ ] Code passed the pre-commit check & code is left cleaner/nicer than when first encountered.
-- [ ] Any _change_ in functionality is tested
+- [ ] Any change in functionality is tested
 - [ ] New functions are documented (with a description, list of inputs, and expected output)

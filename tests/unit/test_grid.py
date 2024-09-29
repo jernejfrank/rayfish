@@ -79,7 +79,6 @@ class TestGrid:
 
         actual = rayfish.grid__1d(
             number_of_point_sources=2,
-            number_of_point_source_distributions=3,
             spacing=mock_spacing_two_sources,
         )
 
@@ -95,7 +94,179 @@ class TestGrid:
 
         actual = rayfish.grid__1d(
             number_of_point_sources=3,
-            number_of_point_source_distributions=4,
+            spacing=mock_spacing_three_sources,
+        )
+
+        assert np.array_equiv(expected, actual)
+
+    def test_not_a_perfect_square_error(self) -> None:
+        """Test exception if number of point sources is not a perfect square."""
+        n_point_sources = 55
+        with pytest.raises(rayfish.NumberNotSquareError) as excinfo:
+            actual_error = rayfish.grid__2d(  # noqa: F841
+                number_of_point_sources=n_point_sources,
+                spacing=np.array([0.5]),
+            )
+
+        assert str(excinfo.value) == (
+            f"Cannot create a grid out of {n_point_sources} "
+            "point sources. Has to be perfect square."
+        )
+
+    def test_too_few_point_sources_error(self) -> None:
+        """Test exception if number of point sources is not a perfect square."""
+        n_point_sources = 2
+        with pytest.raises(ValueError) as excinfo:
+            actual_error = rayfish.grid__2d(  # noqa: F841
+                number_of_point_sources=n_point_sources,
+                spacing=np.array([0.5]),
+            )
+
+        assert str(excinfo.value) == ("Minimal number of point sources for 2D is 4.")
+
+    def test_grid_2d_4_sources(
+        self,
+        mock_spacing_two_sources: npt.NDArray[np.float64],
+    ) -> None:
+        """Testing correct grid for two point sources."""
+        expected = np.array([
+            [-0.2, -0.2, 0.2, 0.2, -0.2, 0.2, -0.2, 0.2, 0.0, 0.0, 0.0, 0.0],
+            [-0.4, -0.4, 0.4, 0.4, -0.4, 0.4, -0.4, 0.4, 0.0, 0.0, 0.0, 0.0],
+            [-0.6, -0.6, 0.6, 0.6, -0.6, 0.6, -0.6, 0.6, 0.0, 0.0, 0.0, 0.0],
+        ])
+
+        actual = rayfish.grid__2d(
+            number_of_point_sources=4,
+            spacing=mock_spacing_two_sources,
+        )
+
+        assert np.array_equiv(expected, actual)
+
+    def test_grid_2d_9_sources(
+        self,
+        mock_spacing_three_sources: npt.NDArray[np.float64],
+    ) -> None:
+        """Testing correct grid for two point sources."""
+        expected = np.array([
+            [
+                0,
+                0,
+                0,
+                -3,
+                -3,
+                -3,
+                3,
+                3,
+                3,
+                0,
+                -3,
+                3,
+                0,
+                -3,
+                3,
+                0,
+                -3,
+                3,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+            ],
+            [
+                0,
+                0,
+                0,
+                -6,
+                -6,
+                -6,
+                6,
+                6,
+                6,
+                0,
+                -6,
+                6,
+                0,
+                -6,
+                6,
+                0,
+                -6,
+                6,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+            ],
+            [
+                0,
+                0,
+                0,
+                -9,
+                -9,
+                -9,
+                9,
+                9,
+                9,
+                0,
+                -9,
+                9,
+                0,
+                -9,
+                9,
+                0,
+                -9,
+                9,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+            ],
+            [
+                0,
+                0,
+                0,
+                -12,
+                -12,
+                -12,
+                12,
+                12,
+                12,
+                0,
+                -12,
+                12,
+                0,
+                -12,
+                12,
+                0,
+                -12,
+                12,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+            ],
+        ])
+        actual = rayfish.grid__2d(
+            number_of_point_sources=9,
             spacing=mock_spacing_three_sources,
         )
 

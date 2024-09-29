@@ -17,8 +17,10 @@ from hamilton.function_modifiers import config
 # Public API
 __all__ = (
     "LengthError",
+    "NumberNotSquareError",
     "spacing",
     "grid__1d",
+    "grid__2d",
 )
 
 # Parameter order
@@ -37,6 +39,17 @@ class LengthError(Exception):
             "point sources that have to be at"
             f"least {minimal_spacing} apart into a "
             f"line of length {maximal_length}."
+        )
+
+
+class NumberNotSquareError(Exception):
+    """Number of point sources needs to be a perfect square for a 2D grid.."""
+
+    def __init__(self, number_of_point_sources: int) -> None:
+        """Raising error message."""
+        super().__init__(
+            f"Cannot create a grid out of {number_of_point_sources} "
+            "point sources. Has to be perfect square."
         )
 
 
@@ -83,7 +96,6 @@ def spacing(
 @config.when_not(dimension=2)
 def grid__1d(
     number_of_point_sources: int,
-    number_of_point_source_distributions: int,
     spacing: npt.NDArray[np.float64],
 ) -> npt.NDArray[np.float64]:
     """Creates 1D grid in the x-dimension.
@@ -98,7 +110,6 @@ def grid__1d(
 
     Args:
         number_of_point_sources: number of point sources we use to model the object
-        number_of_point_source_distributions: number of discrete sampling states
         spacing: (M,) array of distances between point sources
 
     Returns:
@@ -107,30 +118,78 @@ def grid__1d(
         by a similar (M,N) array for the z-dimension
         grid__1D[M,2N:] = height_distribution.
     """
-    grid = np.zeros((number_of_point_source_distributions, 3 * number_of_point_sources))
+    grid_relative_spacing = np.zeros(3 * number_of_point_sources)
 
-    for i, distance in enumerate(spacing):
-        # Placing one point source at the origin of the coordinate system
-        shift_by = 0
-        if number_of_point_sources % 2 == 1:
-            shift_by = 1
+    # Placing one point source at the origin of the coordinate system
+    shift_by = 0
+    if number_of_point_sources % 2 == 1:
+        shift_by = 1
 
-        second_index = 0
-        for point_source in range(number_of_point_sources - shift_by):
-            prefactor = 1
-            if point_source % 2 == 0:
-                prefactor = -1
-                second_index += 1
+    relative_position = 0
+    for point_source in range(number_of_point_sources - shift_by):
+        prefactor = 1
+        if point_source % 2 == 0:
+            prefactor = -1
+            relative_position += 1
 
-            grid[i, point_source + shift_by] = prefactor * second_index * distance
+        grid_relative_spacing[point_source + shift_by] = prefactor * relative_position
 
-    return grid
+    return spacing.reshape(-1, 1) * grid_relative_spacing.reshape(1, -1)
 
 
 @config.when(dimension=2)
 def grid__2d(
     number_of_point_sources: int,
-    number_of_point_source_distributions: int,
     spacing: npt.NDArray[np.float64],
 ) -> npt.NDArray[np.float64]:
-    raise NotImplementedError
+    """Creates 2D grid in the x-y plane.
+
+    If even number of sources: they are placed at +spacing and -spacing from the
+    origin.
+    If odd number of sources: one point source is placed at origin (0,0).
+
+    Args:
+        number_of_point_sources: number of point sources we use to model the object
+        spacing: (M,) array of distances between point sources
+
+    Returns:
+        A (M,3N) array with the first (M,N) values corresponding to the distributions
+        of point sources for varying spacings. This grid is meant to be populated
+        by a similar (M,N) array for the z-dimension
+        grid__2D[M,2N:] = height_distribution.
+    """
+    if number_of_point_sources < 4:
+        raise ValueError("Minimal number of point sources for 2D is 4.")  # noqa
+
+    # Make sure it is a perfect square - should work for realistic use cases but not
+    # for gigantic numbers
+    if number_of_point_sources**0.5 % 1 != 0:
+        raise NumberNotSquareError(number_of_point_sources=number_of_point_sources)
+
+    _sqrt_number_of_point_sources = int(np.sqrt(number_of_point_sources))
+
+    _rel_x = np.zeros(_sqrt_number_of_point_sources)
+
+    # Placing one point source at the origin of the coordinate system
+    shift_by = 0
+    if _sqrt_number_of_point_sources % 2 == 1:
+        shift_by = 1
+
+    relative_position = 0
+    for point_source in range(_sqrt_number_of_point_sources - shift_by):
+        prefactor = 1
+        if point_source % 2 == 0:
+            prefactor = -1
+            relative_position += 1
+        _rel_x[point_source + shift_by] = prefactor * relative_position
+
+    x, y = np.meshgrid(_rel_x, _rel_x)
+    grid_relative_spacing = np.concatenate(
+        (
+            x.flatten(order="F"),
+            y.flatten(order="F"),
+            np.zeros_like(x).flatten(order="F"),
+        ),
+        axis=0,
+    )
+    return spacing.reshape(-1, 1) * grid_relative_spacing.reshape(1, -1)

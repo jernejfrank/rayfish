@@ -18,7 +18,7 @@ dependencies = [
     "pyarrow",
     "pydantic",
     "scipy",
-    "sf-hamilton[visualization]>=1.77.1",
+    "sf-hamilton[visualization]>=1.78",
     "typing_extensions > 4.0.0",
     "typing_inspect",
 ]
