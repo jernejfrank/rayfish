@@ -20,6 +20,7 @@ __all__ = (
     "_matrix_multiplication",
     "jacobian_to_correct_sign",
     "jacobian_to_collapse_xy",
+    "jacobian_to_collapse_xy_separate",
     "jacobian_1d",
     "jacobian_2d",
 )
@@ -95,6 +96,50 @@ def jacobian_to_collapse_xy(
     for point_source in range(shift_by, number_of_point_sources):
         # We leave z-dim alone here, user needs to specify how to collapse
         jacobian[1 + point_source, 2 * number_of_point_sources + point_source] = 1
+
+    return jacobian
+
+
+def jacobian_to_collapse_xy_separate(
+    number_of_point_sources: int,
+) -> npt.NDArray[np.float64]:
+    """Jacobian for reparametrizing the x-y coordinates individual distance parameters.
+
+    We reduce the distance in the x- and y-dimension seperately in case the grid is not
+    symmetric in the two dimensions. We place an identity for the parameters in the
+    z-dimension since we will apply a user specif transformation afterwards to get the
+    parameters of interest.
+
+    Args:
+        number_of_point_sources: N. Number of point sources distributed in space.
+
+    Returns:
+        A (2+N,3N) array with the first dimension reflecting the grid distance in x and
+        the second dimension the grid distance in y and the next N dimension being the
+        identity.
+    """
+    jacobian = np.zeros((2 + number_of_point_sources, 3 * number_of_point_sources))
+    factor = 1 / 2
+    shift_by = 0
+    if number_of_point_sources % 2 == 1:
+        shift_by = 1
+        jacobian[0, 0] = 1
+        jacobian[1, number_of_point_sources] = 1
+        jacobian[2, 2 * number_of_point_sources] = 1
+
+    for point_source in range(shift_by, number_of_point_sources, 2):
+        # x-dimnesion
+        jacobian[0, point_source] = factor
+        jacobian[0, point_source + 1] = factor
+        # y-dimnesion
+        jacobian[1, number_of_point_sources + point_source] = factor
+        jacobian[1, number_of_point_sources + point_source + 1] = factor
+
+        factor += 1 / 2
+
+    for point_source in range(shift_by, number_of_point_sources):
+        # We leave z-dim alone here, user needs to specify how to collapse
+        jacobian[2 + point_source, 2 * number_of_point_sources + point_source] = 1
 
     return jacobian
 

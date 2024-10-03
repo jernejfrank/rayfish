@@ -20,10 +20,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 
 
+## [0.2.0] - 2023-10-03
+
+### Added
+- collapse grid for x and y separately
+- coherent covariance matrix
+- example of 2 coherent point sources
+
+## Changed
+- parameter catalogue two point sources removed conditional for 2 dimensional since
+it doesn't occur as a use-case
+
 ## [0.1.1] - 2023-09-29
 
 ### Added
 - creating 2D grid in x-y dimension
+- GitHub CI action to run ruff linting and pytest for PR/push to main
 
 ### Changed
 - pull-request template asks for changelog completion, removed some default prompts
