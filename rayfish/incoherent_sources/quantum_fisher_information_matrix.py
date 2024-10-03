@@ -570,7 +570,7 @@ def lyapunov_covariance_matrix(
             parameter.
         coordinate_jacobian: (*,3N) array correcting the re-parametrization
             of point source coordinates and collapsing the matrix for the parameters
-            of interst. The first dimension is dependent on the user input.
+            of interest. The first dimension is dependent on the user input.
         number_of_point_sources: how many point sources we
             have to model the object
 
