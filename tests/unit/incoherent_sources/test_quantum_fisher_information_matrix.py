@@ -15,7 +15,8 @@ a separate mathematica notebook ./non_orthogonal_transformation_matrix.nb.
 import numpy as np
 import numpy.typing as npt
 
-import rayfish.incoherent_sources as qfi
+import rayfish.quantum_fisher_information.incoherent_sources as incoherent_sources
+from rayfish import quantum_fisher_information as qfi
 
 
 class TestGramian:
@@ -38,7 +39,7 @@ class TestGramian:
         done for a scalar input for point source positions.
         """
         expected = mock_gramian_scalar[:2, :2]
-        actual = qfi.delta_submat(
+        actual = incoherent_sources.delta_submat(
             coordinates=mock_coordinates_scalar,
             number_of_point_sources=mock_number_of_point_sources,
             number_of_point_source_distributions=mock_number_of_point_source_distributions_scalar,
@@ -65,7 +66,7 @@ class TestGramian:
         done for a vector input for point source positions.
         """
         expected = mock_gramian_vector[:, :2, :2]
-        actual = qfi.delta_submat(
+        actual = incoherent_sources.delta_submat(
             coordinates=mock_coordinates_vector,
             number_of_point_sources=mock_number_of_point_sources,
             number_of_point_source_distributions=mock_number_of_point_source_distributions_vector,
@@ -98,7 +99,7 @@ class TestGramian:
         expected = mock_gramian_scalar
         expected[:2, :2] = 0.0
         expected[2:8, 2:8] = 0.0
-        actual = qfi.gamma_submat(
+        actual = incoherent_sources.gamma_submat(
             coordinates=mock_coordinates_scalar,
             number_of_point_sources=mock_number_of_point_sources,
             number_of_point_source_distributions=mock_number_of_point_source_distributions_scalar,
@@ -132,7 +133,7 @@ class TestGramian:
         expected = mock_gramian_vector
         expected[:, :2, :2] = 0.0
         expected[:, 2:8, 2:8] = 0.0
-        actual = qfi.gamma_submat(
+        actual = incoherent_sources.gamma_submat(
             coordinates=mock_coordinates_vector,
             number_of_point_sources=mock_number_of_point_sources,
             number_of_point_source_distributions=mock_number_of_point_source_distributions_vector,
@@ -232,7 +233,7 @@ class TestGramian:
         """
         expected = mock_gramian_scalar
 
-        delta_submat = qfi.delta_submat(
+        delta_submat = incoherent_sources.delta_submat(
             coordinates=mock_coordinates_scalar,
             number_of_point_sources=mock_number_of_point_sources,
             number_of_point_source_distributions=mock_number_of_point_source_distributions_scalar,
@@ -240,7 +241,7 @@ class TestGramian:
             rayleigh_length=mock_rayleigh_length,
         )
 
-        gamma_submat = qfi.gamma_submat(
+        gamma_submat = incoherent_sources.gamma_submat(
             coordinates=mock_coordinates_scalar,
             number_of_point_sources=mock_number_of_point_sources,
             number_of_point_source_distributions=mock_number_of_point_source_distributions_scalar,
@@ -256,7 +257,7 @@ class TestGramian:
             rayleigh_length=mock_rayleigh_length,
         )
 
-        actual = qfi.gramian(
+        actual = incoherent_sources.gramian(
             delta_submat=delta_submat, gamma_submat=gamma_submat, tau_submat=tau_submat
         )
 
@@ -284,7 +285,7 @@ class TestGramian:
         """
         expected = mock_gramian_vector
 
-        delta_submat = qfi.delta_submat(
+        delta_submat = incoherent_sources.delta_submat(
             coordinates=mock_coordinates_vector,
             number_of_point_sources=mock_number_of_point_sources,
             number_of_point_source_distributions=mock_number_of_point_source_distributions_vector,
@@ -292,7 +293,7 @@ class TestGramian:
             rayleigh_length=mock_rayleigh_length,
         )
 
-        gamma_submat = qfi.gamma_submat(
+        gamma_submat = incoherent_sources.gamma_submat(
             coordinates=mock_coordinates_vector,
             number_of_point_sources=mock_number_of_point_sources,
             number_of_point_source_distributions=mock_number_of_point_source_distributions_vector,
@@ -308,7 +309,7 @@ class TestGramian:
             rayleigh_length=mock_rayleigh_length,
         )
 
-        actual = qfi.gramian(
+        actual = incoherent_sources.gramian(
             delta_submat=delta_submat, gamma_submat=gamma_submat, tau_submat=tau_submat
         )
 
@@ -319,7 +320,7 @@ class TestGramian:
 def test_density(mock_density: npt.NDArray[np.float64]) -> None:
     """Test density matrix has correct shape and content."""
     expected = mock_density
-    actual = qfi.density(
+    actual = incoherent_sources.density(
         number_of_point_sources=2,
     )
 
@@ -334,7 +335,7 @@ def test_all_density_derivatives(
 ) -> None:
     """Test density derivatives matrices have correct shape and content."""
     expected = mock_density_derivative
-    actual = qfi.all_density_derivatives(
+    actual = incoherent_sources.all_density_derivatives(
         number_of_point_sources=2,
     )
 
@@ -358,7 +359,7 @@ def test_pad_operators() -> None:
         [0, 0, 0, 0, 0, 0, 0, 0],
     ])
     mock_input = np.array([[1, 1, 1], [1, 1, 1], [1, 1, 1]])
-    actual = qfi.quantum_fisher_information_matrix._pad_operator(
+    actual = incoherent_sources.quantum_fisher_information_matrix._pad_operator(
         matrix=mock_input, n=2, ind=2
     )
     assert np.array_equal(expected, actual)
@@ -379,7 +380,7 @@ def test_lyapunov_operators(
     """
     expected = mock_lyapunov_operators
 
-    actual = qfi.lyapunov_operators(
+    actual = incoherent_sources.lyapunov_operators(
         density=mock_density,
         all_density_derivatives=mock_density_derivative,
         gramian_of_single_distribution=mock_gramian_scalar,
@@ -408,7 +409,7 @@ def test_lyapunov_covariance_matrix(
     """
     expected = mock_covariance_matrix
 
-    actual = qfi.lyapunov_covariance_matrix(
+    actual = incoherent_sources.lyapunov_covariance_matrix(
         all_density_derivatives=mock_density_derivative,
         gramian_of_single_distribution=mock_gramian_scalar,
         lyapunov_operators=mock_lyapunov_operators,

@@ -24,34 +24,20 @@ incoherent point sources.
 import numpy as np
 import numpy.typing as npt
 
-from rayfish.incoherent_sources.quantum_fisher_information_matrix import tau_submat
-
 # Public API
 __all__ = ("covariance_matrix_for_entire_distribution",)
 
 
 def covariance_matrix_for_entire_distribution(
-    coordinates: npt.NDArray[np.float64],
     number_of_point_sources: int,
-    number_of_point_source_distributions: int,
-    wave_vector: float,
-    rayleigh_length: float,
+    tau_submat: npt.NDArray[np.complex128],
     coordinate_jacobian: npt.NDArray[np.float64],
 ) -> npt.NDArray[np.complex128]:
     """Creates covariance matrix by calculating tau-submatrix.
 
     Args:
-        coordinates: (M, 3N) array. The position of individual Gaussians. N is the
-            number of point sources in the form
-            coordinates = [s1,s2,...,sN,t1,t2,...,tN,,p1,p2,...,pN] for each of the
-            M >= 1 distributions of particles.
         number_of_point_sources: how many point sources we use to model the object
-        number_of_point_source_distributions: how many different point source
-            distributions we are computing for
-        wave_vector: wave vector = 2 pi / wavelength the point source emits in
-        rayleigh_length: It is the distance along the propagation
-            direction of a beam from the waist to the place where the area of
-            1the cross section is doubled
+        tau_submat: (M,3N,3N) array of overlaps between Gaussian derivatives
         coordinate_jacobian: (*,3N) array correcting the re-parametrization
             of point source coordinates and collapsing the matrix for the parameters
             of interest. The first dimension is dependent on the user input.
@@ -60,15 +46,7 @@ def covariance_matrix_for_entire_distribution(
         A (M,*,*) array of complex floats encoding precision boundaries for
         parameters of interest that have been encoded into the `coordinate_jacobian`.
     """
-    scaling_factor = 4 / number_of_point_sources**2
-    covariance = scaling_factor * tau_submat(
-        coordinates=coordinates,
-        number_of_point_sources=number_of_point_sources,
-        number_of_point_source_distributions=number_of_point_source_distributions,
-        wave_vector=wave_vector,
-        rayleigh_length=rayleigh_length,
-    )
-
+    covariance = 4 * tau_submat / number_of_point_sources**2
     covariance = np.matmul(
         coordinate_jacobian, np.matmul(covariance, np.transpose(coordinate_jacobian))
     )

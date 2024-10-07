@@ -30,6 +30,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Changed
 - parameter catalogue two point sources removed conditional for 2 dimensional since
 it doesn't occur as a use-case
+- refactored coherent and incoherent sources under same quantum_fisher_information folder
+and moved tau_submat into common submodule to share between them
 
 ## [0.1.1] - 2023-09-29
 
