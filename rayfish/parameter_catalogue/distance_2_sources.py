@@ -54,13 +54,10 @@ def coordinates(
 
 
 @pipe_output(
-    step(jacobian_1d).when(dimension=1).named("z_dimension"),
-    step(_matrix_multiplication, matrix=source("jacobian_to_collapse_xy"))
-    .when_not(dimension=2)
-    .named("xy_dimension"),
-    step(_matrix_multiplication, matrix=source("jacobian_to_collapse_xy_separate"))
-    .when(dimension=2)
-    .named("xy_dimension"),
+    step(jacobian_1d).named("z_dimension"),
+    step(_matrix_multiplication, matrix=source("jacobian_to_collapse_xy")).named(
+        "xy_dimension"
+    ),
     step(_matrix_multiplication, matrix=source("jacobian_to_correct_sign")).named(
         "sign"
     ),
