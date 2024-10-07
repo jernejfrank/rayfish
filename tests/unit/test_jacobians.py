@@ -116,6 +116,33 @@ def testjacobian_to_collapse_xy_3_sources() -> None:
     assert np.array_equiv(expected, actual)
 
 
+def testjacobian_to_collapse_xy_separate_2_sources() -> None:
+    """Test Jacobian collapses xy even number of point sources."""
+    expected = np.array([
+        [0.5, 0.5, 0, 0, 0.0, 0.0],
+        [0, 0, 0.5, 0.5, 0.0, 0.0],
+        [0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+        [0.0, 0.0, 0.0, 0.0, 0.0, 1.0],
+    ])
+
+    actual = parameter_catalogue.jacobian_to_collapse_xy_separate(2)
+    assert np.array_equiv(expected, actual)
+
+
+def testjacobian_to_collapse_xy_separate_3_sources() -> None:
+    """Test Jacobian collapses xy odd number of point sources."""
+    expected = np.array([
+        [1.0, 0.5, 0.5, 0, 0, 0, 0.0, 0.0, 0.0],
+        [0, 0, 0, 1.0, 0.5, 0.5, 0.0, 0.0, 0.0],
+        [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0],
+        [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
+        [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0],
+    ])
+
+    actual = parameter_catalogue.jacobian_to_collapse_xy_separate(3)
+    assert np.array_equiv(expected, actual)
+
+
 def test_create_jacobian_1d_single_z() -> None:
     """Test correct dimensional Jacobian matrix for x-y and single z."""
     expected = np.array([[1, 0], [0, 1 / 13]])
