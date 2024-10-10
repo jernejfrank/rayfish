@@ -4,7 +4,7 @@ default_install_hook_types:
   - post-merge
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: "v4.6.0"
+    rev: "v5.0.0"
     hooks:
       - id: check-added-large-files
         # args: ['--maxkb=123']
@@ -21,9 +21,15 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.6.4"
+    rev: "v0.6.9"
     hooks:
       - id: ruff
         args: [--fix]
       - id: ruff-format
         types_or: [ python, pyi, jupyter ]
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: 'v1.11.2'  # Use the sha / tag you want to point at
+    hooks:
+    - id: mypy
+      args: [--strict, --ignore-missing-imports]
