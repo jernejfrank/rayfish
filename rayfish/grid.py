@@ -31,7 +31,10 @@ class LengthError(Exception):
     """Cannot distribute all the particles with minimal distance."""
 
     def __init__(
-        self, number_of_point_sources: int, minimal_spacing: int, maximal_length: int
+        self,
+        number_of_point_sources: int,
+        minimal_spacing: float,
+        maximal_length: float,
     ) -> None:
         """Raising error message."""
         super().__init__(

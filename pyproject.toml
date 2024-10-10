@@ -12,7 +12,7 @@ dependencies = [
     "dash",
     "loguru",
     "notebook",
-    "numpy",
+    "numpy>=1.21.3",
     "pandas",
     "pandera",
     "pyarrow",
@@ -34,25 +34,29 @@ dev-dependencies = [
     "pytest>=8.3.2",
     "pre-commit>=3.8.0",
     "tox>=4.18.1",
-    "mypy>=1.11.2",
     "ruff>=0.6.4",
     "coverage[toml]>=7.6.1",
     "pytest-cov>=5.0.0",
+    "pyright[nodejs]>=1.1.384",
 ]
 
 [build-system]
 requires = ["setuptools>=72.1"]
 build-backend = "setuptools.build_meta"
 
-[tool.mypy]
-files = ["rayfish"]
-disallow_untyped_defs = "True"
-disallow_any_unimported = "True"
-no_implicit_optional = "True"
-check_untyped_defs = "True"
-warn_return_any = "True"
-warn_unused_ignores = "True"
-show_error_codes = "True"
+[tool.pyright]
+include = [
+    "rayfish"
+  ]
+exclude = [
+  "tests",
+  "examples",
+  "docs"
+]
+venvPath = "."
+venv = ".venv"
+
+
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -74,32 +78,43 @@ fix = true
 
 [tool.ruff.lint]
 select = [
-  "YTT", # flake8-2020,
-  "E", "F", "W",  # flake8
-  "C",  # mccabe
-  "I",  # isort
-  "N",  # pep8-naming
-  "C4", # flake8-comprehensions
-  "D",  # flake8-docstrings
-  "ANN",  # flake8-annotations
-  "S",  # flake8-bandit
-  "BLE",  # flake8-blind-except
-  "B",  # flake8-bugbear
   "A",  # flake8-builtins
+  "ANN",  # flake8-annotations
+  "B",  # flake8-bugbear
+  "BLE",  # flake8-blind-except
+  "C4", # flake8-comprehensions
+  "C",  # mccabe
+  "D",  # flake8-docstrings
+  "E", "F",  # flake8
+  "FA",  # Verifies files use from __future__ import annotations if a type is used in the module that can be rewritten using PEP 563.
+  "FURB", # Refurbishing and modernizing Python codebases
   "G",  # flake8-logging-format
+  "I",  # isort
   "ISC",  # flake8-implicit-str-concat
-  "RUF",  # Ruff-specific rules
-  "T10", # flake8-debugger
-  "SIM",  # flake8-simplify
-  "UP", # pyupgrade
+  "LOG", # Checks for issues using the standard library logging module.
+  "N",  # pep8-naming
+  "NPY", # Linting rules for numpy
+  "PERF",# Linting rules for performance
   "PGH", # pygrep-hooks
+  "Q",   # Linting rules for quites
+  "RUF",  # Ruff-specific rules
+  "S",  # flake8-bandit
+  "SIM",  # flake8-simplify
+  "T10", # flake8-debugger
+  "T20", # Check for Print statements in python files.
+  "TCH", # Move type-only imports to a type-checking block.
+  "TID", # Helps you write tidier imports.
   "TRY", # tryceratops
+  "UP", # pyupgrade
+  "W",   # pycodestyle warnings
+  "YTT", # flake8-2020,
 ]
 
 ignore = [
     "ANN101",
     "E731",
     "F403",
+    "PGH003",
     "PGH004",
 ]
 
@@ -117,7 +132,12 @@ skip-magic-trailing-comma = false
 line-ending = "auto"
 
 [tool.ruff.lint.per-file-ignores]
-"tests/*" = ["S101"]
-
-[tool.ruff.lint.extend-per-file-ignores]
-"__init__.py" = ["D104"]
+"tests/*" = [
+    "S101", # asserts allowed in tests...
+    "ARG", # Unused function args -> fixtures nevertheless are functionally relevant...
+    "FBT", # Don't care about booleans as positional arguments in tests, e.g. via @pytest.mark.parametrize()
+]
+"__init__.py" = [
+    "F401",
+    "D104"
+]

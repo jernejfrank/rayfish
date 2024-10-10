@@ -41,3 +41,6 @@ jobs:
 
     - name: Lint with Ruff
       run: uv run ruff check --output-format=github .
+
+    - name: TypeChecking with PyRight
+      run: uv run pyright --outputjson > report.json

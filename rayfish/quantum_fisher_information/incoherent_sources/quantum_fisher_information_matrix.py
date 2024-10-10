@@ -467,4 +467,4 @@ def lyapunov_covariance_matrix_for_entire_distribution(
         A (M,*,*) array that concatenates the individual covariant matrices for
         the parameters of interest.
     """
-    return np.stack(lyapunov_covariance_matrix)
+    return np.stack(lyapunov_covariance_matrix)  # type: ignore
