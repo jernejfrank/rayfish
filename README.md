@@ -75,16 +75,15 @@ git push origin HEAD
 ## TODO
 Written in order of priority:
 * Sort out existing projects and create backend module
-    - coherent qfi
-    - olynomial measurement basis (general way to represnt any mode sorting basis)
+    - polynomial measurement basis (general way to represent any mode sorting basis)
     - intensity estimation as benchmark
+* Need some DB to save simulations
 * Create Dash frontend
 * Protect main branch
-* Create CI/CD with Github Actions
-    - automate changelog and semver
-    - run tests
-    - attempt to build
 * Create Docker container for the app and maybe use mounting drive for saving data locally for now
-* Use sphinx to create docs
+* CI/CD with Github Actions
+    - automate changelog and semver
+    - deployment of Docker container
+* Use [Material for MkDocs](https://squidfunk.github.io/mkdocs-material/) for documentation
 * Build package and publish to pypi
 * Sort out docs
