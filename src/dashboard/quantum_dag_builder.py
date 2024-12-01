@@ -41,12 +41,7 @@ def get_base_quantum_hamilton_builder(
     config: Dict[str, Any] | None = None,
 ) -> driver.Builder:
     """Base driver common to all simulation scenarios."""
-    dr = (
-        driver.Builder()
-        .enable_dynamic_execution(allow_experimental_mode=True)
-        .with_modules(rayfish, qfi)
-        .with_local_executor(executors.SynchronousLocalTaskExecutor())
-    )
+    dr = driver.Builder().with_modules(rayfish, qfi)
     if config:
         dr.with_config(config=config)
     return dr
@@ -56,7 +51,12 @@ def incoherent_hamilton_builder(base_dr: driver.Builder) -> driver.Builder:
     """Adding functions for incoherent sources."""
     from rayfish.quantum_fisher_information import incoherent_sources
 
-    return base_dr.with_modules(incoherent_sources)
+    dr = (
+        base_dr.with_modules(incoherent_sources)
+        .enable_dynamic_execution(allow_experimental_mode=True)
+        .with_local_executor(executors.SynchronousLocalTaskExecutor())
+    )
+    return dr
 
 
 def coherent_hamilton_builder(base_dr: driver.Builder) -> driver.Builder:

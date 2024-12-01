@@ -87,6 +87,7 @@ def get_distribution_figure(
             },
         ),
     )
+    base_fig.update_layout(width=800, height=600)
     return base_fig
 
 

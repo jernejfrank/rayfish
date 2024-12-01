@@ -1,12 +1,10 @@
 # rayfish
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![arXiv](https://img.shields.io/badge/arXiv-<INDEX>-<COLOR>.svg)](https://arxiv.org/abs/<INDEX>)
 [![python](https://img.shields.io/badge/Python-3.9%20%7C%203.10%20%7C%203.11%20%7C%203.12-blue)](https://www.python.org)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
 [![Checked with pyright](https://microsoft.github.io/pyright/img/pyright_badge.svg)](https://microsoft.github.io/pyright/)
-[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 
 Estimating parameters for discrete quantum imaging.
 
@@ -28,8 +26,6 @@ pip install .
 ```
 
 ## Development
-This repository follows [GitHub flow](https://docs.github.com/en/get-started/using-github/github-flow). Here is how to setup your work environment for contributing:
-
 1. Fork [GitHub instructions](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/about-forks)
 
 2. To access the contents on your computer run the following commands in your shell:
@@ -47,7 +43,7 @@ git remote add upstream https://github.com/jernejfrank/rayfish.git
 ```bash
 make install
 ```
-and check if the `pre-commit` hooks and tests are running
+and check both the `pre-commit` hooks and `tests` are running
 ```bash
 uv run pre-commit run -a
 uv run pytest tests
@@ -78,12 +74,11 @@ Written in order of priority:
     - polynomial measurement basis (general way to represent any mode sorting basis)
     - intensity estimation as benchmark
 * Need some DB to save simulations
-* Create Dash frontend
-* Protect main branch
 * Create Docker container for the app and maybe use mounting drive for saving data locally for now
 * CI/CD with Github Actions
     - automate changelog and semver
     - deployment of Docker container
+    - deployment to streamlit
 * Use [Material for MkDocs](https://squidfunk.github.io/mkdocs-material/) for documentation
 * Build package and publish to pypi
 * Sort out docs

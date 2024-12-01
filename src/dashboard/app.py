@@ -55,7 +55,7 @@ def app() -> None:
     col1, col2 = st.columns(2)
     with col1:
         select_light_characteristic = st.selectbox(
-            "Select a case:", ["Coherent", "Incoherent"], index=0
+            "Select a case:", ["Coherent", "Incoherent"], index=1
         )
     with col2:
         select_parameter_of_interest = st.selectbox(
@@ -64,12 +64,10 @@ def app() -> None:
 
     st.write("## Simulation Parameters")
     inputs_ = DEFAULT_SCENARIO
-    col1, col2 = st.columns(2)
-    with col1:
-        try:
-            inputs_ = ParametersInput(**st.data_editor(inputs_))  # type: ignore
-        except ValidationError as e:
-            st.error(f"You entered a wrong datatype: {e}")
+    try:
+        inputs_ = ParametersInput(**st.data_editor(inputs_))  # type: ignore
+    except ValidationError as e:
+        st.error(f"You entered a wrong datatype: {e}")
 
     quantum_dr = build_quantum_dag(
         light_characteristic=select_light_characteristic,
@@ -90,17 +88,15 @@ def app() -> None:
 
     distribution_df, base_fig = create_distribution_dataframe(result)
 
-    with col2:
+    if st.checkbox("Show Plot", value=False):
+        st.write("### Point source distribution preview")
         selected_indices = st.select_slider("Grid Spacing:", distribution_df.index)
         fig_distribution = get_distribution_figure(
             distribution_df.loc[selected_indices],
             result["number_of_point_sources"],
             base_fig,
         )
-
-    if st.checkbox("Show Plot", value=False):
-        st.write("### Point source distribution preview")
-        st.plotly_chart(fig_distribution)
+        st.plotly_chart(fig_distribution, use_container_width=True)
 
     covariance_matrix_df = create_covariance_dataframe(result)
 
@@ -113,7 +109,9 @@ def app() -> None:
 
     if selected_columns:
         fig_covariance = get_covariance_figure(covariance_matrix_df[selected_columns])
-        st.plotly_chart(fig_covariance)
+        st.plotly_chart(fig_covariance, use_container_width=True)
+
+    st.table(covariance_matrix_df)
 
 
 if __name__ == "__main__":
