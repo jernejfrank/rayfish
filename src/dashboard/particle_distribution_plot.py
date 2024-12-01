@@ -1,7 +1,5 @@
 """Dataframe manipulation to display the underlying distribution of point sources."""
 
-from __future__ import annotations
-
 import pandas as pd
 import plotly.graph_objects as go
 from beartype.typing import Any, Dict, Tuple
@@ -30,11 +28,14 @@ def _create_base_figure(df: pd.DataFrame, num_particles: int) -> go.Figure:
         ])
         scene[coord]["range"] = [min_coord - 0.5, max_coord + 0.5]
         scene[coord]["autorange"] = False
-        scene[coord]["title"] = coord
+
+    scene["xaxis"]["title"] = "x"
+    scene["yaxis"]["title"] = "y"
+    scene["zaxis"]["title"] = "z"
 
     scene["camera"] = {"eye": {"x": 2, "y": 2, "z": 1.5}}
     fig = go.Figure()
-    fig.update_layout(scene=scene, title="3D scatter")
+    fig.update_layout(scene=scene)
     return fig
 
 
