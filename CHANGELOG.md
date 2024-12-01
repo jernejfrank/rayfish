@@ -20,6 +20,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 
 
+## [0.3.0] - 2023-12-01
+
+### Added
+- streamlit dashboard webapp to run in local mode
+- automatic building of Hamilton driver based on scenario
+- on-demand computation using input/output
+- plotting helpers for transforming numpy results to pandas dataframes that are used in plotly
+
+### Changed
+- package structure redesign to have `src` as root
+
+### Removed
+- removed unnecessary packages that are not used
+
+
 ## [0.2.0] - 2023-10-03
 
 ### Added
@@ -32,6 +47,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 it doesn't occur as a use-case
 - refactored coherent and incoherent sources under same quantum_fisher_information folder
 and moved tau_submat into common submodule to share between them
+
 
 ## [0.1.1] - 2023-09-29
 

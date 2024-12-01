@@ -41,7 +41,7 @@ __all__ = (
     "all_density_derivatives",
     "lyapunov_operators",
     "lyapunov_covariance_matrix",
-    "lyapunov_covariance_matrix_for_entire_distribution",
+    "covariance_matrix_for_entire_distribution",
 )
 
 
@@ -454,7 +454,7 @@ def lyapunov_covariance_matrix(
     return covariance
 
 
-def lyapunov_covariance_matrix_for_entire_distribution(
+def covariance_matrix_for_entire_distribution(
     lyapunov_covariance_matrix: Collect[npt.NDArray[np.complex128]],
 ) -> npt.NDArray[np.complex128]:
     """Concatenates individual covariance matrices.
