@@ -44,7 +44,9 @@ build-backend = "setuptools.build_meta"
 
 [tool.pyright]
 include = [
-    "rayfish"
+    "src",
+    "rayfish",
+    "rayfish_api"
   ]
 exclude = [
   "tests",
@@ -109,10 +111,17 @@ select = [
 
 ignore = [
     "ANN101",
+    "ANN102",
+    "ANN204",
+    "B904",
+    "D107",
     "E731",
     "F403",
+    "F821",
+    "N802",
     "PGH003",
     "PGH004",
+    "TRY003",
 ]
 
 unfixable = [
