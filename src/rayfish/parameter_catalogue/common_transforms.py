@@ -12,11 +12,14 @@ ordering).
 We assume the parameter order: [x1,x2,...,xN,y1,y2,...,yN,,z1,z2,...,zN].
 """
 
+from enum import Enum
+
 import numpy as np
 import numpy.typing as npt
 
 # Public API
 __all__ = (
+    "ParameterCatalogue",
     "_matrix_multiplication",
     "jacobian_to_correct_sign",
     "jacobian_to_collapse_xy",
@@ -24,6 +27,13 @@ __all__ = (
     "jacobian_1d",
     "jacobian_2d",
 )
+
+
+class ParameterCatalogue(Enum):
+    """Collecting all reparametrization implementations."""
+
+    custom = "custom"
+    dist_2_src = "distance_2_sources"
 
 
 def _matrix_multiplication(
