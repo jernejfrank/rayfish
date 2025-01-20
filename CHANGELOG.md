@@ -20,7 +20,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 
 
-## [0.3.0] - 2023-12-01
+## [0.4.0] - 2025-12-01
+
+### Added
+- backend with RayfishApp to wire all DAGs and easier to plot data
+- sqlite database to persist simulation results
+- pydantic models for input verification
+
+### Changed
+- streamlit UI refactored to delegate execution to backend
+- examples refactored from manual DAGs to using RayfishApp api
+- minor typos and naming conventions fixed / tests updated
+
+### Security
+- injecting sql queries directly via strings since it is a local database
+
+
+## [0.3.0] - 2024-12-01
 
 ### Added
 - streamlit dashboard webapp to run in local mode
@@ -35,7 +51,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - removed unnecessary packages that are not used
 
 
-## [0.2.0] - 2023-10-03
+## [0.2.0] - 2024-10-03
 
 ### Added
 - collapse grid for x and y separately
@@ -49,7 +65,7 @@ it doesn't occur as a use-case
 and moved tau_submat into common submodule to share between them
 
 
-## [0.1.1] - 2023-09-29
+## [0.1.1] - 2024-09-29
 
 ### Added
 - creating 2D grid in x-y dimension
@@ -62,7 +78,7 @@ and moved tau_submat into common submodule to share between them
 - 2 sources Jacobian uses `pipe_output` since it was released in sf-hamilton v1.78
 
 
-## [0.0.1] - 2023-09-24
+## [0.0.1] - 2024-09-24
 
 ### Added
 - computing quantum covariance matrix for incoherent sources

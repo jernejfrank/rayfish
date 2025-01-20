@@ -73,7 +73,6 @@ Written in order of priority:
 * Sort out existing projects and create backend module
     - polynomial measurement basis (general way to represent any mode sorting basis)
     - intensity estimation as benchmark
-* Need some DB to save simulations
 * Create Docker container for the app and maybe use mounting drive for saving data locally for now
 * CI/CD with Github Actions
     - automate changelog and semver
