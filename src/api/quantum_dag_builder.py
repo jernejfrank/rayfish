@@ -8,42 +8,40 @@ from hamilton.execution import executors
 
 import rayfish
 import rayfish.quantum_fisher_information as qfi
-from rayfish import PARAMETER_CATALOGUE
+from api.pydantic_models import LightType, SimulationConfig
+from rayfish import ParameterCatalogue
 
 # Public API
 __all__ = ("build_quantum_dag",)
 
 
-def build_quantum_dag(
-    light_characteristic: str,
-    parameter_of_interest: str,
-    config: Dict[str, Any] | None = None,
-) -> driver.Driver:
+def build_quantum_dag(config: SimulationConfig) -> driver.Driver:
     """Builds correct hamilton driver for the simulation."""
-    base_dr = get_base_quantum_hamilton_builder(config=config)
+    dag_config = {"dimension": config.simulation_dimension}
+    base_dr = get_base_quantum_hamilton_builder(config=dag_config)
 
-    if light_characteristic == "Incoherent":
+    if config.light_type == LightType.INCOHERENT:
         base_dr = incoherent_hamilton_builder(base_dr=base_dr)
-    elif light_characteristic == "Coherent":
+    elif config.light_type == LightType.COHERENT:
         base_dr = coherent_hamilton_builder(base_dr=base_dr)
     else:
         raise NotImplementedError("Only Coherent and Incoherent cases implemented.")
 
-    if parameter_of_interest == "distance_2_sources":
+    if config.estimation_parameter == ParameterCatalogue.dist_2_src.value:
         return distance_2_sources_driver(base_dr=base_dr)
     else:
         raise NotImplementedError(
-            f"We currently support the following parameters: {PARAMETER_CATALOGUE}"
+            "We currently support the following "
+            f"parameters: {[i.value for i in ParameterCatalogue]}"
         )
 
 
 def get_base_quantum_hamilton_builder(
-    config: Dict[str, Any] | None = None,
+    config: Dict[str, Any],
 ) -> driver.Builder:
     """Base driver common to all simulation scenarios."""
     dr = driver.Builder().with_modules(rayfish, qfi)
-    if config:
-        dr.with_config(config=config)
+    dr.with_config(config=config)
     return dr
 
 
