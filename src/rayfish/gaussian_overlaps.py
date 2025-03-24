@@ -21,7 +21,8 @@ tau_µn: <∂_µ ψ(x+dx_1, y+dy_1, z+dz_1)|∂_n ψ(x+dx_2, y+dy_2, z+dz_2)> ;
 from functools import wraps
 
 import numpy as np
-from beartype.typing import Callable
+import numpy.typing as npt
+from beartype.typing import Callable, Dict
 
 # Public API
 __all__ = (
@@ -508,4 +509,118 @@ def tau_pp(
     )
     return prefactor * _exp_common_factor(
         s1=s1, s2=s2, t1=t1, t2=t2, p1=p1, p2=p2, k=k, zr=zr
+    )
+
+
+def _calculate_moments(
+    dxy: float, dz: float, mode_order: int
+) -> npt.NDArray[np.complex128]:
+    """Helper function to recursively calculate Gaussian moments."""
+    mean = -1j * dxy / (2 * 1j + dz)
+    variance = (1j + dz) / (2 * 1j + dz)
+
+    moments = np.zeros(mode_order, dtype=np.complex128)
+    moments[0] = 1
+
+    # Catching edge case for 0-mode
+    if len(moments) < 2:
+        return moments
+
+    moments[1] = mean
+    for i in range(2, mode_order):
+        moments[i] = mean * moments[i - 1] + (i - 1) * variance * moments[i - 2]
+
+    return moments
+
+
+@_vectorize
+def inner_product_measurement_mode_point_source_overlap(
+    s: float,
+    t: float,
+    p: float,
+    k: float,
+    zr: float,
+    mode_polynomial_coefficients: Dict[str, npt.NDArray[np.float64]],
+) -> complex:
+    """Calculates overlap between measurement mode and point source.
+
+    We assume the measurement mode is of the form phi(x,y) = g_m(x) f_n(y) psi(x,y,0),
+    where g_m(x) and f_n(y) are polynomials in x (resp. y) of order m (resp. n) and psi
+    is the Gaussian distribution matching the point-spread function of the system.
+
+    Args:
+       s: displacing derivative of the first Gaussian on x-axis by x+s1
+       t: displacing derivative of the first Gaussian on y-axis by y+t1
+       p: displacing derivative of the first Gaussian on z-axis by z+p1
+       k: wave vector = 2 pi / wavelength the point source emits in
+       zr: Rayleigh length. It is the distance along the propagation
+           direction of a beam from the waist to the place where the area of
+           1the cross section is doubled.
+       mode_polynomial_coefficients: Array of coefficients that defines the modes
+            in the x-dim and y-dim such dim1 equals g_m(x) and dim2 equals f_n(y)
+            coefficients.
+
+    Returns:
+      In general a complex number. The integral has a closed form expression
+      that we hard-code here for improved performance and accuracy.
+    """
+    prefactor = (
+        (2 * 1j)
+        / (2 * 1j + p)
+        * np.exp(-1j * k * zr * p)
+        * np.exp(-1j * (s**2 + t**2) / (2 * (2 * 1j + p)))
+    )
+
+    mode_x = mode_polynomial_coefficients["x"]
+    mode_y = mode_polynomial_coefficients["y"]
+
+    normal_distribution_moments_x = _calculate_moments(s, p, len(mode_x))
+    normal_distribution_moments_y = _calculate_moments(t, p, len(mode_y))
+    return (
+        prefactor
+        * np.sum(mode_x * normal_distribution_moments_x)
+        * np.sum(mode_y * normal_distribution_moments_y)
+    )
+
+
+@_vectorize
+def probability_measurement_mode_point_source_overlap(
+    s: float,
+    t: float,
+    p: float,
+    mode_polynomial_coefficients: Dict[str, npt.NDArray[np.float64]],
+) -> float:
+    """Calculates overlap between measurement mode and point source.
+
+    We assume the measurement mode is of the form phi(x,y) = g_m(x) f_n(y) psi(x,y,0),
+    where g_m(x) and f_n(y) are polynomials in x (resp. y) of order m (resp. n) and psi
+    is the Gaussian distribution matching the point-spread function of the system.
+
+    Args:
+       s: displacing derivative of the first Gaussian on x-axis by x+s1
+       t: displacing derivative of the first Gaussian on y-axis by y+t1
+       p: displacing derivative of the first Gaussian on z-axis by z+p1
+       k: wave vector = 2 pi / wavelength the point source emits in
+       zr: Rayleigh length. It is the distance along the propagation
+           direction of a beam from the waist to the place where the area of
+           1the cross section is doubled.
+       mode_polynomial_coefficients: Array of coefficients that defines the modes
+            in the x-dim and y-dim such dim1 equals g_m(x) and dim2 equals f_n(y)
+            coefficients.
+
+    Returns:
+      In general a complex number. The integral has a closed form expression
+      that we hard-code here for improved performance and accuracy.
+    """
+    prefactor = 4 / (4 + p**2) * np.exp(-2 * (s**2 + t**2) / (4 + p**2))
+
+    mode_x = mode_polynomial_coefficients["x"]
+    mode_y = mode_polynomial_coefficients["y"]
+
+    normal_distribution_moments_x = _calculate_moments(s, p, len(mode_x))
+    normal_distribution_moments_y = _calculate_moments(t, p, len(mode_y))
+    return (
+        prefactor
+        * np.abs(np.sum(mode_x * normal_distribution_moments_x)) ** 2
+        * np.abs(np.sum(mode_y * normal_distribution_moments_y)) ** 2
     )

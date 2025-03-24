@@ -661,3 +661,114 @@ def test_tau_pp_conjugate(
     )
     assert abs(np.real(actual) - expected_real) < tolerance
     assert abs(np.imag(actual) - expected_imag) < tolerance
+
+
+def test_calculate_moments(tolerance: float) -> None:
+    """Test helper function to calculate moments of gaussian distribution."""
+    dx = 0.23
+    dz = 0.121
+
+    expected_e0_real = 1
+    expected_e0_imag = 0
+
+    expected_e1_real = -0.114581
+    expected_e1_imag = -0.00693213
+
+    expected_e2_real = 0.514904
+    expected_e2_imag = -0.0285511
+
+    expected_e3_real = -0.174612
+    expected_e3_imag = -0.000348539
+
+    actual = gaussian_overlaps._calculate_moments(dx, dz, 4)
+
+    assert abs(np.real(actual[0]) - expected_e0_real) < tolerance
+    assert abs(np.imag(actual[0]) - expected_e0_imag) < tolerance
+
+    assert abs(np.real(actual[1]) - expected_e1_real) < tolerance
+    assert abs(np.imag(actual[1]) - expected_e1_imag) < tolerance
+
+    assert abs(np.real(actual[2]) - expected_e2_real) < tolerance
+    assert abs(np.imag(actual[2]) - expected_e2_imag) < tolerance
+
+    assert abs(np.real(actual[3]) - expected_e3_real) < tolerance
+    assert abs(np.imag(actual[3]) - expected_e3_imag) < tolerance
+
+
+def test_measurement_mode_point_source_overlap_only_x(
+    tolerance: float, mock_wave_vector: int, mock_rayleigh_length: int
+) -> None:
+    """Test only x dimension by using Hermite-Gaussian [1,0]-mode."""
+    mode_polynomial_coefficients = {"x": np.array([0, 2]), "y": np.array([1])}
+
+    expected_real = -0.224482
+    expected_imag = 0.0275108
+    actual = gaussian_overlaps.inner_product_measurement_mode_point_source_overlap(
+        0.23,
+        0,
+        0.121,
+        mock_wave_vector,
+        mock_rayleigh_length,
+        mode_polynomial_coefficients,
+    )
+    assert abs(np.real(actual) - expected_real) < tolerance
+    assert abs(np.imag(actual) - expected_imag) < tolerance
+
+
+def test_measurement_mode_point_source_overlap_xy(
+    tolerance: float, mock_wave_vector: int, mock_rayleigh_length: int
+) -> None:
+    """Test x and y dimension by using Hermite-Gaussian [3,2]-mode."""
+    mode_polynomial_coefficients = {
+        "x": np.array([0, -12, 0, 8]),
+        "y": np.array([-2, 0, 4]),
+    }
+
+    expected_real = 0.00898262
+    expected_imag = 0.00489801
+    actual = gaussian_overlaps.inner_product_measurement_mode_point_source_overlap(
+        0.23,
+        -0.21,
+        0.121,
+        mock_wave_vector,
+        mock_rayleigh_length,
+        mode_polynomial_coefficients,
+    )
+    assert abs(np.real(actual) - expected_real) < tolerance
+    assert abs(np.imag(actual) - expected_imag) < tolerance
+
+
+def test_probability_measurement_mode_point_source_overlap_only_x(
+    tolerance: float, mock_wave_vector: int, mock_rayleigh_length: int
+) -> None:
+    """Test only x dimension by using Hermite-Gaussian [1,0]-mode."""
+    mode_polynomial_coefficients = {"x": np.array([0, 2]), "y": np.array([1])}
+
+    expected = -0.224482 + 1j * 0.0275108
+
+    actual = gaussian_overlaps.probability_measurement_mode_point_source_overlap(
+        0.23,
+        0,
+        0.121,
+        mode_polynomial_coefficients,
+    )
+    assert (actual - np.abs(expected) ** 2) < tolerance
+
+
+def test_probability_measurement_mode_point_source_overlap_xy(
+    tolerance: float, mock_wave_vector: int, mock_rayleigh_length: int
+) -> None:
+    """Test x and y dimension by using Hermite-Gaussian [3,2]-mode."""
+    mode_polynomial_coefficients = {
+        "x": np.array([0, -12, 0, 8]),
+        "y": np.array([-2, 0, 4]),
+    }
+
+    expected_real = 0.00898262 + 1j * 0.00489801
+    actual = gaussian_overlaps.probability_measurement_mode_point_source_overlap(
+        0.23,
+        -0.21,
+        0.121,
+        mode_polynomial_coefficients,
+    )
+    assert (actual - np.abs(expected_real) ** 2) < tolerance
