@@ -23,6 +23,7 @@ from functools import wraps
 import numpy as np
 import numpy.typing as npt
 from beartype.typing import Callable, Dict
+from scipy.special import comb, factorial
 
 # Public API
 __all__ = (
@@ -533,6 +534,60 @@ def _calculate_moments(
     return moments
 
 
+def _calculate_moments_derivative_dxy(
+    dxy: float, dz: float, mode_order: int
+) -> complex:
+    """Helper function to calculate derivative w.r.t. dx or dy of Gaussian moments."""
+    mean = -1j * dxy / (2j + dz)
+    dmean = -1j / (2j + dz)
+    variance = (1j + dz) / (2j + dz)
+
+    result = 0
+    for j in range(mode_order + 1):
+        if (mode_order - j) % 2 == 0:
+            result += (
+                comb(mode_order, j)
+                * j
+                * mean ** (j - 1)
+                * dmean
+                * variance ** ((mode_order - j) // 2)
+                * (
+                    factorial(mode_order - j)
+                    / (2 ** ((mode_order - j) // 2) * factorial((mode_order - j) // 2))
+                )
+            )
+
+    return result
+
+
+def _calculate_moments_derivative_dz(dxy: float, dz: float, mode_order: int) -> complex:
+    """Helper function to calculate derivative w.r.t. dz of Gaussian moments."""
+    mean = -1j * dxy / (2j + dz)
+    dmean = 1j * dxy / (2j + dz) ** 2
+    variance = (1j + dz) / (2 * 1j + dz)
+    dvariance = 1j / (2j + dz) ** 2
+
+    result = 0
+    for j in range(0, mode_order + 1):
+        if (mode_order - j) % 2 == 0:
+            result += (
+                comb(mode_order, j)
+                * (
+                    factorial(mode_order - j)
+                    / (2 ** ((mode_order - j) // 2) * factorial((mode_order - j) // 2))
+                )
+                * (
+                    j * mean ** (j - 1) * dmean * variance ** ((mode_order - j) // 2)
+                    + mean**j
+                    * ((mode_order - j) // 2)
+                    * variance ** (((mode_order - j) // 2) - 1)
+                    * dvariance
+                )
+            )
+
+    return result
+
+
 @_vectorize
 def inner_product_measurement_mode_point_source_overlap(
     s: float,
@@ -578,8 +633,8 @@ def inner_product_measurement_mode_point_source_overlap(
     normal_distribution_moments_y = _calculate_moments(t, p, len(mode_y))
     return (
         prefactor
-        * np.sum(mode_x * normal_distribution_moments_x)
-        * np.sum(mode_y * normal_distribution_moments_y)
+        * np.sum(np.conj(mode_x) * normal_distribution_moments_x)
+        * np.sum(np.conj(mode_y) * normal_distribution_moments_y)
     )
 
 
@@ -590,7 +645,7 @@ def probability_measurement_mode_point_source_overlap(
     p: float,
     mode_polynomial_coefficients: Dict[str, npt.NDArray[np.float64]],
 ) -> float:
-    """Calculates overlap between measurement mode and point source.
+    """Calculates absolute value of overlap between measurement mode and point source.
 
     We assume the measurement mode is of the form phi(x,y) = g_m(x) f_n(y) psi(x,y,0),
     where g_m(x) and f_n(y) are polynomials in x (resp. y) of order m (resp. n) and psi
@@ -621,6 +676,188 @@ def probability_measurement_mode_point_source_overlap(
     normal_distribution_moments_y = _calculate_moments(t, p, len(mode_y))
     return (
         prefactor
-        * np.abs(np.sum(mode_x * normal_distribution_moments_x)) ** 2
-        * np.abs(np.sum(mode_y * normal_distribution_moments_y)) ** 2
+        * np.abs(np.sum(np.conj(mode_x) * normal_distribution_moments_x)) ** 2
+        * np.abs(np.sum(np.conj(mode_y) * normal_distribution_moments_y)) ** 2
+    )
+
+
+@_vectorize
+def derivate_s_inner_product_measurement_mode_point_source_overlap(
+    s: float,
+    t: float,
+    p: float,
+    k: float,
+    zr: float,
+    mode_polynomial_coefficients: Dict[str, npt.NDArray[np.float64]],
+) -> complex:
+    """Calculates derivative w.r.t. s of the measurement mode and point source overlap.
+
+    We assume the measurement mode is of the form phi(x,y) = g_m(x) f_n(y) psi(x,y,0),
+    where g_m(x) and f_n(y) are polynomials in x (resp. y) of order m (resp. n) and psi
+    is the Gaussian distribution matching the point-spread function of the system.
+
+    Args:
+       s: displacing derivative of the first Gaussian on x-axis by x+s1
+       t: displacing derivative of the first Gaussian on y-axis by y+t1
+       p: displacing derivative of the first Gaussian on z-axis by z+p1
+       k: wave vector = 2 pi / wavelength the point source emits in
+       zr: Rayleigh length. It is the distance along the propagation
+           direction of a beam from the waist to the place where the area of
+           1the cross section is doubled.
+       mode_polynomial_coefficients: Array of coefficients that defines the modes
+            in the x-dim and y-dim such dim1 equals g_m(x) and dim2 equals f_n(y)
+            coefficients.
+
+    Returns:
+      In general a complex number.
+    """
+    prefactor = (
+        (2j / (2j + p))
+        * np.exp(-1j * k * zr * p)
+        * np.exp(-1j * (s**2 + t**2) / (2 * (2j + p)))
+    )
+
+    mode_x = mode_polynomial_coefficients["x"]
+    mode_y = mode_polynomial_coefficients["y"]
+
+    normal_distribution_moments_x = _calculate_moments(s, p, len(mode_x))
+    normal_distribution_moments_y = _calculate_moments(t, p, len(mode_y))
+
+    term_1_ds = (-1j * s / (2j + p)) * np.sum(
+        np.conj(mode_x) * normal_distribution_moments_x
+    )
+
+    term_2_ds = 0
+    for mode_order, ci in enumerate(mode_x):
+        term_2_ds += np.conj(ci) * _calculate_moments_derivative_dxy(s, p, mode_order)
+
+    return (
+        prefactor
+        * np.sum(mode_y * normal_distribution_moments_y)
+        * (term_1_ds + term_2_ds)
+    )
+
+
+@_vectorize
+def derivate_t_inner_product_measurement_mode_point_source_overlap(
+    s: float,
+    t: float,
+    p: float,
+    k: float,
+    zr: float,
+    mode_polynomial_coefficients: Dict[str, npt.NDArray[np.float64]],
+) -> complex:
+    """Calculates derivative w.r.t. t of the measurement mode and point source overlap.
+
+    We assume the measurement mode is of the form phi(x,y) = g_m(x) f_n(y) psi(x,y,0),
+    where g_m(x) and f_n(y) are polynomials in x (resp. y) of order m (resp. n) and psi
+    is the Gaussian distribution matching the point-spread function of the system.
+
+    Args:
+       s: displacing derivative of the first Gaussian on x-axis by x+s1
+       t: displacing derivative of the first Gaussian on y-axis by y+t1
+       p: displacing derivative of the first Gaussian on z-axis by z+p1
+       k: wave vector = 2 pi / wavelength the point source emits in
+       zr: Rayleigh length. It is the distance along the propagation
+           direction of a beam from the waist to the place where the area of
+           1the cross section is doubled.
+       mode_polynomial_coefficients: Array of coefficients that defines the modes
+            in the x-dim and y-dim such dim1 equals g_m(x) and dim2 equals f_n(y)
+            coefficients.
+
+    Returns:
+      In general a complex number.
+    """
+    prefactor = (
+        (2j / (2j + p))
+        * np.exp(-1j * k * zr * p)
+        * np.exp(-1j * (s**2 + t**2) / (2 * (2 * 1j + p)))
+    )
+
+    mode_x = mode_polynomial_coefficients["x"]
+    mode_y = mode_polynomial_coefficients["y"]
+
+    normal_distribution_moments_x = _calculate_moments(s, p, len(mode_x))
+    normal_distribution_moments_y = _calculate_moments(t, p, len(mode_y))
+
+    term_1_dt = (-1j * t / (2j + p)) * np.sum(mode_y * normal_distribution_moments_y)
+
+    term_2_dt = 0
+    for mode_order, di in enumerate(mode_y):
+        term_2_dt += np.conj(di) * _calculate_moments_derivative_dxy(t, p, mode_order)
+
+    return (
+        prefactor
+        * np.sum(mode_x * normal_distribution_moments_x)
+        * (term_1_dt + term_2_dt)
+    )
+
+
+@_vectorize
+def derivate_p_inner_product_measurement_mode_point_source_overlap(
+    s: float,
+    t: float,
+    p: float,
+    k: float,
+    zr: float,
+    mode_polynomial_coefficients: Dict[str, npt.NDArray[np.float64]],
+) -> complex:
+    """Calculates derivative w.r.t. p of the measurement mode and point source overlap.
+
+    We assume the measurement mode is of the form phi(x,y) = g_m(x) f_n(y) psi(x,y,0),
+    where g_m(x) and f_n(y) are polynomials in x (resp. y) of order m (resp. n) and psi
+    is the Gaussian distribution matching the point-spread function of the system.
+
+    Args:
+       s: displacing derivative of the first Gaussian on x-axis by x+s1
+       t: displacing derivative of the first Gaussian on y-axis by y+t1
+       p: displacing derivative of the first Gaussian on z-axis by z+p1
+       k: wave vector = 2 pi / wavelength the point source emits in
+       zr: Rayleigh length. It is the distance along the propagation
+           direction of a beam from the waist to the place where the area of
+           1the cross section is doubled.
+       mode_polynomial_coefficients: Array of coefficients that defines the modes
+            in the x-dim and y-dim such dim1 equals g_m(x) and dim2 equals f_n(y)
+            coefficients.
+
+    Returns:
+      In general a complex number.
+    """
+    prefactor = (
+        2j
+        / (2j + p)
+        * np.exp(-1j * k * zr * p)
+        * np.exp(-1j * (s**2 + t**2) / (2 * (2j + p)))
+    )
+
+    mode_x = mode_polynomial_coefficients["x"]
+    mode_y = mode_polynomial_coefficients["y"]
+
+    normal_distribution_moments_x = _calculate_moments(s, p, len(mode_x))
+    normal_distribution_moments_y = _calculate_moments(t, p, len(mode_y))
+
+    sum_mode_x = np.sum(mode_x * normal_distribution_moments_x)
+    sum_mode_y = np.sum(mode_y * normal_distribution_moments_y)
+
+    der_non_sum_factors = (
+        np.exp(-1j * k * zr * p)
+        * np.exp(-1j * (s**2 + t**2) / (2 * (2j + p)))
+        * (4 - s**2 - t**2 - 2j * p + 2 * k * zr * (2j + p) ** 2)
+        / (2j + p) ** 3
+    )
+
+    der_sum_mode_x = 0
+    for mode_order, ci in enumerate(mode_x):
+        der_sum_mode_x += np.conj(ci) * _calculate_moments_derivative_dz(
+            s, p, mode_order
+        )
+
+    der_sum_mode_y = 0
+    for mode_order, di in enumerate(mode_y):
+        der_sum_mode_y += np.conj(di) * _calculate_moments_derivative_dz(
+            t, p, mode_order
+        )
+
+    return (der_non_sum_factors * sum_mode_x * sum_mode_y) + prefactor * (
+        der_sum_mode_x * sum_mode_y + sum_mode_x * der_sum_mode_y
     )
