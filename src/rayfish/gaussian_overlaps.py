@@ -37,6 +37,14 @@ __all__ = (
     "tau_tt",
     "tau_tp",
     "tau_pp",
+    "inner_product_measurement_mode_point_source_overlap",
+    "probability_measurement_mode_point_source_overlap",
+    "derivate_s_inner_product_measurement_mode_point_source_overlap",
+    "derivate_t_inner_product_measurement_mode_point_source_overlap",
+    "derivate_p_inner_product_measurement_mode_point_source_overlap",
+    "derivate_s_probability_measurement_mode_point_source_overlap",
+    "derivate_t_probability_measurement_mode_point_source_overlap",
+    "derivate_p_probability_measurement_mode_point_source_overlap",
 )
 
 
