@@ -552,7 +552,7 @@ def _calculate_moments_derivative_dxy(
 
     result = 0
     for j in range(mode_order + 1):
-        if (mode_order - j) % 2 == 0:
+        if (mode_order - j) % 2 == 0 and j > 0:
             result += (
                 comb(mode_order, j)
                 * j
@@ -578,20 +578,22 @@ def _calculate_moments_derivative_dz(dxy: float, dz: float, mode_order: int) -> 
     result = 0
     for j in range(0, mode_order + 1):
         if (mode_order - j) % 2 == 0:
-            result += (
-                comb(mode_order, j)
-                * (
-                    factorial(mode_order - j)
-                    / (2 ** ((mode_order - j) // 2) * factorial((mode_order - j) // 2))
-                )
-                * (
-                    j * mean ** (j - 1) * dmean * variance ** ((mode_order - j) // 2)
-                    + mean**j
-                    * ((mode_order - j) // 2)
-                    * variance ** (((mode_order - j) // 2) - 1)
-                    * dvariance
-                )
+            first_part = comb(mode_order, j) * (
+                factorial(mode_order - j)
+                / (2 ** ((mode_order - j) // 2) * factorial((mode_order - j) // 2))
             )
+            second_part = (
+                mean**j
+                * ((mode_order - j) // 2)
+                * variance ** (((mode_order - j) // 2) - 1)
+                * dvariance
+            )
+            if j > 0:
+                second_part += (
+                    j * mean ** (j - 1) * dmean * variance ** ((mode_order - j) // 2)
+                )
+
+            result += first_part * second_part
 
     return result
 
@@ -682,7 +684,7 @@ def probability_measurement_mode_point_source_overlap(
 
     normal_distribution_moments_x = _calculate_moments(s, p, len(mode_x))
     normal_distribution_moments_y = _calculate_moments(t, p, len(mode_y))
-    return (
+    return np.real(
         prefactor
         * np.abs(np.sum(np.conj(mode_x) * normal_distribution_moments_x)) ** 2
         * np.abs(np.sum(np.conj(mode_y) * normal_distribution_moments_y)) ** 2
@@ -921,8 +923,9 @@ def derivate_s_probability_measurement_mode_point_source_overlap(
         )
     )
 
-    return (der_s_overlap_inner_product * np.conjugate(overlap_inner_product)) + (
-        overlap_inner_product * np.conjugate(der_s_overlap_inner_product)
+    return np.real(
+        (der_s_overlap_inner_product * np.conjugate(overlap_inner_product))
+        + (overlap_inner_product * np.conjugate(der_s_overlap_inner_product))
     )
 
 
@@ -976,9 +979,9 @@ def derivate_t_probability_measurement_mode_point_source_overlap(
         )
     )
 
-    return (der_t_overlap_inner_product * np.conjugate(overlap_inner_product)) + (
-        overlap_inner_product * np.conjugate(der_t_overlap_inner_product)
-    )
+    return np.real(
+        der_t_overlap_inner_product * np.conjugate(overlap_inner_product)
+    ) + (overlap_inner_product * np.conjugate(der_t_overlap_inner_product))
 
 
 @_vectorize
@@ -1031,6 +1034,6 @@ def derivate_p_probability_measurement_mode_point_source_overlap(
         )
     )
 
-    return (der_p_overlap_inner_product * np.conjugate(overlap_inner_product)) + (
-        overlap_inner_product * np.conjugate(der_p_overlap_inner_product)
-    )
+    return np.real(
+        der_p_overlap_inner_product * np.conjugate(overlap_inner_product)
+    ) + (overlap_inner_product * np.conjugate(der_p_overlap_inner_product))

@@ -22,12 +22,16 @@ assumption that
 
 import numpy as np
 import numpy.typing as npt
+from beartype.typing import Dict, List
 from hamilton.function_modifiers import config
 
 from rayfish import gaussian_overlaps
 
 # Public API
-__all__ = ()
+__all__ = (
+    "probability__1D",
+    "covariance_matrix_for_entire_distribution",
+)
 
 
 @config.when_not(dimension=2)
@@ -35,7 +39,7 @@ def probability__1D(
     coordinates: npt.NDArray[np.float64],
     number_of_point_sources: int,
     number_of_point_source_distributions: int,
-    measurement_basis: npt.NDArray[np.float64],
+    measurement_basis: List[Dict[str, npt.NDArray[np.float64]]],
 ) -> npt.NDArray[np.float64]:
     """Probability of detecting a photon in a particular measurement mode.
 
@@ -60,30 +64,31 @@ def probability__1D(
         A (M,B) array of complex floats, where B is the number of measurement modes and
         M is the number of different distributions of the N point sources.
     """
-    n_measurement_basis = measurement_basis.shape[0]
+    n_measurement_basis = len(measurement_basis)
     prob = np.zeros((number_of_point_source_distributions, n_measurement_basis))
 
     for i, mode in enumerate(measurement_basis):
         for point_source in range(number_of_point_sources):
-            s = (coordinates[:, point_source],)
-            t = (coordinates[:, number_of_point_sources + point_source],)
-            p = (coordinates[:, 2 * number_of_point_sources + point_source],)
-
-            prob[:, i] += (
+            p_ = np.real(
                 gaussian_overlaps.probability_measurement_mode_point_source_overlap(
-                    s, t, p, mode
+                    coordinates[:, point_source],
+                    coordinates[:, number_of_point_sources + point_source],
+                    coordinates[:, 2 * number_of_point_sources + point_source],
+                    mode,
                 )
             )
+
+            prob[:, i] += p_
 
     # assume equal brightness for all sources for now
     return prob / number_of_point_sources
 
 
-def covariance_matrix(
+def covariance_matrix_for_entire_distribution(
     coordinates: npt.NDArray[np.float64],
     number_of_point_sources: int,
     number_of_point_source_distributions: int,
-    measurement_basis: npt.NDArray[np.float64],
+    measurement_basis: List[Dict[str, npt.NDArray[np.float64]]],
     probability: npt.NDArray[np.float64],
     wave_vector: float,
     rayleigh_length: float,
@@ -117,7 +122,7 @@ def covariance_matrix(
         distribution M and measurement mode B. We apply the jacobian transformation at
         the end to get the covariance matrix for parameters of interest.
     """
-    n_measurement_basis = measurement_basis.shape[0]
+    n_measurement_basis = len(measurement_basis)
     covariance = np.zeros((
         number_of_point_source_distributions,
         n_measurement_basis,
@@ -128,100 +133,136 @@ def covariance_matrix(
     for b, mode in enumerate(measurement_basis):
         prob = probability[:, b]
         for i in range(number_of_point_sources):
-            first_derivative_s = gaussian_overlaps.derivate_s_probability_measurement_mode_point_source_overlap(  # noqa: E501
-                s=coordinates[:, i],
-                t=coordinates[:, number_of_point_sources + i],
-                p=coordinates[:, 2 * number_of_point_sources + i],
-                k=wave_vector,
-                zr=rayleigh_length,
-                mode_polynomial_coefficients=mode,
+            first_derivative_s = (
+                np.real(
+                    gaussian_overlaps.derivate_s_probability_measurement_mode_point_source_overlap(
+                        s=coordinates[:, i],
+                        t=coordinates[:, number_of_point_sources + i],
+                        p=coordinates[:, 2 * number_of_point_sources + i],
+                        k=wave_vector,
+                        zr=rayleigh_length,
+                        mode_polynomial_coefficients=mode,
+                    )
+                )
+                / number_of_point_sources
             )
-            first_derivative_t = gaussian_overlaps.derivate_t_probability_measurement_mode_point_source_overlap(  # noqa: E501
-                s=coordinates[:, i],
-                t=coordinates[:, number_of_point_sources + i],
-                p=coordinates[:, 2 * number_of_point_sources + i],
-                k=wave_vector,
-                zr=rayleigh_length,
-                mode_polynomial_coefficients=mode,
+            first_derivative_t = (
+                np.real(
+                    gaussian_overlaps.derivate_t_probability_measurement_mode_point_source_overlap(
+                        s=coordinates[:, i],
+                        t=coordinates[:, number_of_point_sources + i],
+                        p=coordinates[:, 2 * number_of_point_sources + i],
+                        k=wave_vector,
+                        zr=rayleigh_length,
+                        mode_polynomial_coefficients=mode,
+                    )
+                )
+                / number_of_point_sources
             )
-            first_derivative_p = gaussian_overlaps.derivate_p_probability_measurement_mode_point_source_overlap(  # noqa: E501
-                s=coordinates[:, i],
-                t=coordinates[:, number_of_point_sources + i],
-                p=coordinates[:, 2 * number_of_point_sources + i],
-                k=wave_vector,
-                zr=rayleigh_length,
-                mode_polynomial_coefficients=mode,
+            first_derivative_p = (
+                np.real(
+                    gaussian_overlaps.derivate_p_probability_measurement_mode_point_source_overlap(
+                        s=coordinates[:, i],
+                        t=coordinates[:, number_of_point_sources + i],
+                        p=coordinates[:, 2 * number_of_point_sources + i],
+                        k=wave_vector,
+                        zr=rayleigh_length,
+                        mode_polynomial_coefficients=mode,
+                    )
+                )
+                / number_of_point_sources
             )
             for j in range(number_of_point_sources):
-                second_derivative_s = gaussian_overlaps.derivate_s_probability_measurement_mode_point_source_overlap(  # noqa: E501
-                    s=coordinates[:, j],
-                    t=coordinates[:, number_of_point_sources + j],
-                    p=coordinates[:, 2 * number_of_point_sources + j],
-                    k=wave_vector,
-                    zr=rayleigh_length,
-                    mode_polynomial_coefficients=mode,
+                second_derivative_s = (
+                    np.real(
+                        gaussian_overlaps.derivate_s_probability_measurement_mode_point_source_overlap(
+                            s=coordinates[:, j],
+                            t=coordinates[:, number_of_point_sources + j],
+                            p=coordinates[:, 2 * number_of_point_sources + j],
+                            k=wave_vector,
+                            zr=rayleigh_length,
+                            mode_polynomial_coefficients=mode,
+                        )
+                    )
+                    / number_of_point_sources
                 )
-                second_derivative_t = gaussian_overlaps.derivate_t_probability_measurement_mode_point_source_overlap(  # noqa: E501
-                    s=coordinates[:, j],
-                    t=coordinates[:, number_of_point_sources + j],
-                    p=coordinates[:, 2 * number_of_point_sources + j],
-                    k=wave_vector,
-                    zr=rayleigh_length,
-                    mode_polynomial_coefficients=mode,
+                second_derivative_t = (
+                    np.real(
+                        gaussian_overlaps.derivate_t_probability_measurement_mode_point_source_overlap(
+                            s=coordinates[:, j],
+                            t=coordinates[:, number_of_point_sources + j],
+                            p=coordinates[:, 2 * number_of_point_sources + j],
+                            k=wave_vector,
+                            zr=rayleigh_length,
+                            mode_polynomial_coefficients=mode,
+                        )
+                    )
+                    / number_of_point_sources
                 )
-                second_derivative_p = gaussian_overlaps.derivate_p_probability_measurement_mode_point_source_overlap(  # noqa: E501
-                    s=coordinates[:, j],
-                    t=coordinates[:, number_of_point_sources + j],
-                    p=coordinates[:, 2 * number_of_point_sources + j],
-                    k=wave_vector,
-                    zr=rayleigh_length,
-                    mode_polynomial_coefficients=mode,
+                second_derivative_p = (
+                    np.real(
+                        gaussian_overlaps.derivate_p_probability_measurement_mode_point_source_overlap(
+                            s=coordinates[:, j],
+                            t=coordinates[:, number_of_point_sources + j],
+                            p=coordinates[:, 2 * number_of_point_sources + j],
+                            k=wave_vector,
+                            zr=rayleigh_length,
+                            mode_polynomial_coefficients=mode,
+                        )
+                    )
+                    / number_of_point_sources
                 )
 
                 # ss
-                covariance[:, b, i, j] = first_derivative_s * second_derivative_s
+                covariance[:, b, i, j] = first_derivative_s * second_derivative_s / prob
                 # tt
                 covariance[
                     :, b, number_of_point_sources + i, number_of_point_sources + j
-                ] = first_derivative_t * second_derivative_t
+                ] = first_derivative_t * second_derivative_t / prob
                 # pp
                 covariance[
                     :,
                     b,
                     2 * number_of_point_sources + i,
                     2 * number_of_point_sources + j,
-                ] = first_derivative_p * second_derivative_p
+                ] = first_derivative_p * second_derivative_p / prob
 
                 # ts
                 covariance[:, b, number_of_point_sources + i, j] = (
-                    first_derivative_t * second_derivative_s
+                    first_derivative_t * second_derivative_s / prob
                 )
                 # st
                 covariance[:, b, i, number_of_point_sources + j] = (
-                    first_derivative_s * second_derivative_t
+                    first_derivative_s * second_derivative_t / prob
                 )
 
                 # ps
                 covariance[:, b, 2 * number_of_point_sources + i, j] = (
-                    first_derivative_p * second_derivative_s
+                    first_derivative_p * second_derivative_s / prob
                 )
                 # sp
                 covariance[:, b, i, 2 * number_of_point_sources + j] = (
-                    first_derivative_s * second_derivative_p
+                    first_derivative_s * second_derivative_p / prob
                 )
 
                 # tp
                 covariance[
                     :, b, number_of_point_sources + i, 2 * number_of_point_sources + j
-                ] = first_derivative_t * second_derivative_p
+                ] = first_derivative_t * second_derivative_p / prob
                 # pt
                 covariance[
                     :, b, 2 * number_of_point_sources + i, number_of_point_sources + j
-                ] = first_derivative_p * second_derivative_t
+                ] = first_derivative_p * second_derivative_t / prob
 
-        covariance[:, b, :, :] /= prob
-        covariance[:, b, :, :] = np.matmul(
-            coordinate_jacobian,
-            np.matmul(covariance[:, b, :, :], np.transpose(coordinate_jacobian)),
-        )
-    return covariance
+    cov_matrices = []
+    for _ in range(number_of_point_source_distributions):
+        cov_per_mode = []
+        for __ in range(n_measurement_basis):
+            temp = np.matmul(
+                coordinate_jacobian,
+                np.matmul(covariance[_, __, :, :], np.transpose(coordinate_jacobian)),
+            )
+            cov_per_mode.append(temp)
+        cov_matrices.append(np.stack(cov_per_mode))
+
+    return np.stack(cov_matrices)
