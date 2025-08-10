@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Classical fisher information matrix calculation for arbitrary seperable x-y polynomials
+- Hermite-Gaussian basis as an example to check validity
 
 ### Changed
 

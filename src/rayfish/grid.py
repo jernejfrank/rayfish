@@ -162,7 +162,7 @@ def grid__2d(
         grid__2D[M,2N:] = height_distribution.
     """
     if number_of_point_sources < 4:
-        raise ValueError("Minimal number of point sources for 2D is 4.")  # noqa
+        raise ValueError("Minimal number of point sources for 2D is 4.")
 
     # Make sure it is a perfect square - should work for realistic use cases but not
     # for gigantic numbers
