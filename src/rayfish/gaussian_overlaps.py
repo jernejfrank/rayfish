@@ -980,8 +980,9 @@ def derivate_t_probability_measurement_mode_point_source_overlap(
     )
 
     return np.real(
-        der_t_overlap_inner_product * np.conjugate(overlap_inner_product)
-    ) + (overlap_inner_product * np.conjugate(der_t_overlap_inner_product))
+        (der_t_overlap_inner_product * np.conjugate(overlap_inner_product))
+        + (overlap_inner_product * np.conjugate(der_t_overlap_inner_product))
+    )
 
 
 @_vectorize
@@ -1035,5 +1036,6 @@ def derivate_p_probability_measurement_mode_point_source_overlap(
     )
 
     return np.real(
-        der_p_overlap_inner_product * np.conjugate(overlap_inner_product)
-    ) + (overlap_inner_product * np.conjugate(der_p_overlap_inner_product))
+        (der_p_overlap_inner_product * np.conjugate(overlap_inner_product))
+        + (overlap_inner_product * np.conjugate(der_p_overlap_inner_product))
+    )
