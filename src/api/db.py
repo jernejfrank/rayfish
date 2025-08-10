@@ -80,10 +80,13 @@ class SQLiteClient:
         )
         query = f"SELECT id FROM simulations WHERE {where_clause}"  # noqa: S608
 
-        with self as conn:
-            cursor = conn.cursor()
-            cursor.execute(query, all_param_values)
-            sim_id = cursor.fetchone()
+        try:
+            with self as conn:
+                cursor = conn.cursor()
+                cursor.execute(query, all_param_values)
+                sim_id = cursor.fetchone()
+        except sqlite3.OperationalError:
+            sim_id = None
 
         if sim_id:
             return sim_id[0], True
