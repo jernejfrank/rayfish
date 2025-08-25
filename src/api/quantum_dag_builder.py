@@ -66,6 +66,6 @@ def coherent_hamilton_builder(base_dr: driver.Builder) -> driver.Builder:
 
 def distance_2_sources_driver(base_dr: driver.Builder) -> driver.Driver:
     """Builds driver that simulates distance between two point sources."""
-    from rayfish.parameter_catalogue import distance_2_sources
+    from rayfish.parameter_catalogue import distance_2_sources_xz
 
-    return base_dr.with_modules(distance_2_sources).build()
+    return base_dr.with_modules(distance_2_sources_xz).build()
