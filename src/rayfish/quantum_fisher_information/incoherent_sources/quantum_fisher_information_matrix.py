@@ -40,7 +40,8 @@ __all__ = (
     "density",
     "all_density_derivatives",
     "lyapunov_operators",
-    "lyapunov_covariance_matrix",
+    "fisher_information_matrix",
+    "fisher_information_matrix_for_entire_distribution",
     "covariance_matrix_for_entire_distribution",
 )
 
@@ -384,7 +385,7 @@ def _pad_operator(
     return matrix
 
 
-def lyapunov_covariance_matrix(
+def fisher_information_matrix(
     all_density_derivatives: npt.NDArray[np.float64],
     gramian_of_single_distribution: npt.NDArray[np.complex128],
     lyapunov_operators: npt.NDArray[np.complex128],
@@ -430,12 +431,12 @@ def lyapunov_covariance_matrix(
         A (*,*) array of complex floats encoding precision boundaries for
         parameters of interest that have been encoded into the `coordinate_jacobian`.
     """
-    covariance = (
+    fisher_information = (
         np.zeros((3 * number_of_point_sources, 3 * number_of_point_sources)) + 0j
     )
     for i in range(3 * number_of_point_sources):
         for j in range(3 * number_of_point_sources):
-            covariance[i, j] = np.trace(
+            fisher_information[i, j] = np.trace(
                 np.dot(
                     lyapunov_operators[i],
                     np.dot(
@@ -447,24 +448,48 @@ def lyapunov_covariance_matrix(
                 )
             )
 
-    covariance = np.matmul(
-        coordinate_jacobian, np.matmul(covariance, np.transpose(coordinate_jacobian))
+    fisher_information = np.matmul(
+        coordinate_jacobian,
+        np.matmul(fisher_information, np.transpose(coordinate_jacobian)),
     )
 
-    return covariance
+    return fisher_information
 
 
-def covariance_matrix_for_entire_distribution(
-    lyapunov_covariance_matrix: Collect[npt.NDArray[np.complex128]],
+def fisher_information_matrix_for_entire_distribution(
+    fisher_information_matrix: Collect[npt.NDArray[np.complex128]],
 ) -> npt.NDArray[np.complex128]:
-    """Concatenates individual covariance matrices.
+    """Concatenates individual fisher information matrices.
 
     Args:
-        lyapunov_covariance_matrix: (*,*) array, corresponding to the covariance
+        fisher_information_matrix: (*,*) array, corresponding to the fisher information
             matrix for a single point source distribution
 
     Returns:
-        A (M,*,*) array that concatenates the individual covariant matrices for
+        A (M,*,*) array that concatenates the individual fisher information matrices for
         the parameters of interest.
     """
-    return np.stack(lyapunov_covariance_matrix)  # type: ignore
+    return np.stack(fisher_information_matrix)  # type: ignore
+
+
+def covariance_matrix_for_entire_distribution(
+    fisher_information_matrix_for_entire_distribution: npt.NDArray[np.complex128],
+) -> npt.NDArray[np.float64]:
+    """The covariance matrix calculated as the inverse of the fisher information."""
+    cov_matrices = np.zeros_like(
+        fisher_information_matrix_for_entire_distribution, dtype=np.float64
+    )
+
+    fim_real = np.real(fisher_information_matrix_for_entire_distribution)
+
+    # only invert non-singular matrices
+    conds = np.linalg.cond(fim_real)
+    mask = conds < 1e12
+    inv_subset = np.linalg.inv(fim_real[mask])
+
+    cov_matrices[mask] = inv_subset
+
+    # set singular matrices to inf
+    cov_matrices[~mask] = np.inf
+
+    return cov_matrices
