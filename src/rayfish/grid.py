@@ -21,6 +21,7 @@ __all__ = (
     "spacing",
     "grid__1d",
     "grid__2d",
+    "number_of_point_source_distributions",
 )
 
 # Parameter order
@@ -58,7 +59,7 @@ class NumberNotSquareError(Exception):
 
 def spacing(
     number_of_point_sources: int,
-    number_of_point_source_distributions: int,
+    number_of_grids: int,
     minimal_spacing: float,
     maximal_length: float,
 ) -> npt.NDArray[np.float64]:
@@ -73,12 +74,12 @@ def spacing(
 
     Args:
         number_of_point_sources: number of point sources we use to model the object
-        number_of_point_source_distributions: number of discrete sampling states
+        number_of_grids: number of discrete sampling states
         minimal_spacing: lower bound of how close point sources can be located
         maximal_length: upper bound of how far apart the outer sources can be located
 
     Returns:
-        A (M,) array, where M = number_of_point_source_distributions, is the number of
+        A (M,) array, where M = number_of_grids, is the number of
         discrete sampling points in varying the distance between point sources.
     """
     if maximal_length / number_of_point_sources < minimal_spacing:
@@ -91,7 +92,7 @@ def spacing(
     return np.linspace(
         minimal_spacing,
         maximal_length / number_of_point_sources,
-        number_of_point_source_distributions,
+        number_of_grids,
         endpoint=True,
     )
 
@@ -196,3 +197,8 @@ def grid__2d(
         axis=0,
     )
     return spacing.reshape(-1, 1) * grid_relative_spacing.reshape(1, -1)
+
+
+def number_of_point_source_distributions(coordinates: npt.NDArray[np.float64]) -> int:
+    """Total number of point source distributions in the simulations."""
+    return coordinates.shape[0]
