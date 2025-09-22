@@ -97,9 +97,9 @@ def jacobian_to_collapse_xy(
         # x-dimnesion
         jacobian[0, point_source] = factor
         jacobian[0, point_source + 1] = factor
-        # y-dimnesion
-        jacobian[0, number_of_point_sources + point_source] = factor
-        jacobian[0, number_of_point_sources + point_source + 1] = factor
+        # # y-dimnesion
+        # jacobian[0, number_of_point_sources + point_source] = factor
+        # jacobian[0, number_of_point_sources + point_source + 1] = factor
 
         factor += 1 / 2
 
