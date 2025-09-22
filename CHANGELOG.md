@@ -11,9 +11,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Classical fisher information matrix calculation for arbitrary seperable x-y polynomials
 - Hermite-Gaussian basis as an example to check validity
 - Added 2 pt sources for only 1D x distance estimation
+- Added 3pt sources only x-z dim
+- Visualization helper for figure plots
+- covariance matrix as inverse of the fisher information
 
 ### Changed
 - renamed 2 pt sources to be specific its x-y dimension
+- old covariance matrix renamed to fisher information
 
 ### Deprecated
 
@@ -21,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Normalisation for classical FI
+- Number of simulations gets extracted from coordinates shape
 
 ### Security
 
