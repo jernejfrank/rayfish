@@ -25,7 +25,7 @@ class TestSpacing:
 
         actual = rayfish.spacing(
             number_of_point_sources=2,
-            number_of_point_source_distributions=3,
+            number_of_grids=3,
             minimal_spacing=0.2,
             maximal_length=1.2,
         )
@@ -41,7 +41,7 @@ class TestSpacing:
 
         actual = rayfish.spacing(
             number_of_point_sources=3,
-            number_of_point_source_distributions=4,
+            number_of_grids=4,
             minimal_spacing=3,
             maximal_length=36,
         )
@@ -56,7 +56,7 @@ class TestSpacing:
         with pytest.raises(rayfish.LengthError) as excinfo:
             actual = rayfish.spacing(  # noqa: F841
                 number_of_point_sources=n_point_sources,
-                number_of_point_source_distributions=4,
+                number_of_grids=4,
                 minimal_spacing=0.5,
                 maximal_length=1,
             )
