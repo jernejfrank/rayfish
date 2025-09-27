@@ -69,15 +69,5 @@ git push origin HEAD
 3. Open a [pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests):
 
 ## TODO
-Written in order of priority:
-* Sort out existing projects and create backend module
-    - polynomial measurement basis (general way to represent any mode sorting basis)
-    - intensity estimation as benchmark
-* Create Docker container for the app and maybe use mounting drive for saving data locally for now
-* CI/CD with Github Actions
-    - automate changelog and semver
-    - deployment of Docker container
-    - deployment to streamlit
 * Use [Material for MkDocs](https://squidfunk.github.io/mkdocs-material/) for documentation
 * Build package and publish to pypi
-* Sort out docs
