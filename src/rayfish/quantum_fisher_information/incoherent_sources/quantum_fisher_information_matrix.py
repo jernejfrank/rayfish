@@ -258,7 +258,7 @@ def density(number_of_point_sources: int) -> npt.NDArray[np.float64]:
     return r_full
 
 
-def all_density_derivatives(number_of_point_sources: int) -> npt.NDArray[np.float64]:
+def all_density_derivatives(number_of_point_sources: int) -> npt.NDArray[np.complex128]:
     """Derivatives of the density matrix w.r.t. all parameters.
 
     For now we assume all sources have equal probability of emitting a photon (they are
@@ -273,11 +273,14 @@ def all_density_derivatives(number_of_point_sources: int) -> npt.NDArray[np.floa
         derivatives. The sequence matches the coordinates sequence
         (s1,s2,...,t1,t2,...,p1,p2,...).
     """
-    d_tensor = np.zeros((
-        3 * number_of_point_sources,
-        4 * number_of_point_sources,
-        4 * number_of_point_sources,
-    ))
+    d_tensor = np.zeros(
+        (
+            3 * number_of_point_sources,
+            4 * number_of_point_sources,
+            4 * number_of_point_sources,
+        ),
+        dtype=np.complex128,
+    )
 
     for i in range(number_of_point_sources):
         d_s = np.zeros((4 * number_of_point_sources, 4 * number_of_point_sources))
@@ -297,7 +300,7 @@ def all_density_derivatives(number_of_point_sources: int) -> npt.NDArray[np.floa
 
 def lyapunov_operators(
     density: npt.NDArray[np.float64],
-    all_density_derivatives: npt.NDArray[np.float64],
+    all_density_derivatives: npt.NDArray[np.complex128],
     gramian_of_single_distribution: npt.NDArray[np.complex128],
     number_of_point_sources: int,
 ) -> npt.NDArray[np.complex128]:
@@ -386,7 +389,7 @@ def _pad_operator(
 
 
 def fisher_information_matrix(
-    all_density_derivatives: npt.NDArray[np.float64],
+    all_density_derivatives: npt.NDArray[np.complex128],
     gramian_of_single_distribution: npt.NDArray[np.complex128],
     lyapunov_operators: npt.NDArray[np.complex128],
     coordinate_jacobian: npt.NDArray[np.float64],

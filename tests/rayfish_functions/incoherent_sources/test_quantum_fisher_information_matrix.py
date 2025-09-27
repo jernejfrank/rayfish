@@ -392,7 +392,7 @@ def test_lyapunov_operators(
     assert np.allclose(actual, expected, atol=10 * tolerance)
 
 
-def test_lyapunov_covariance_matrix(
+def test_fisher_information_matrix(
     mock_covariance_matrix: npt.NDArray[np.complex128],
     mock_density_derivative: npt.NDArray[np.complex128],
     mock_gramian_scalar: npt.NDArray[np.complex128],
@@ -409,7 +409,7 @@ def test_lyapunov_covariance_matrix(
     """
     expected = mock_covariance_matrix
 
-    actual = incoherent_sources.lyapunov_covariance_matrix(
+    actual = incoherent_sources.fisher_information_matrix(
         all_density_derivatives=mock_density_derivative,
         gramian_of_single_distribution=mock_gramian_scalar,
         lyapunov_operators=mock_lyapunov_operators,
