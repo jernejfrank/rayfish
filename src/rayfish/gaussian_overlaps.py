@@ -45,6 +45,10 @@ __all__ = (
     "derivate_s_probability_measurement_mode_point_source_overlap",
     "derivate_t_probability_measurement_mode_point_source_overlap",
     "derivate_p_probability_measurement_mode_point_source_overlap",
+    "probability_measurement_di_point_source_overlap",
+    "derivative_s_probability_measurement_di_point_source_overlap",
+    "derivative_t_probability_measurement_di_point_source_overlap",
+    "derivative_p_probability_measurement_di_point_source_overlap",
 )
 
 
@@ -1039,3 +1043,112 @@ def derivate_p_probability_measurement_mode_point_source_overlap(
         (der_p_overlap_inner_product * np.conjugate(overlap_inner_product))
         + (overlap_inner_product * np.conjugate(der_p_overlap_inner_product))
     )
+
+
+@_vectorize
+def probability_measurement_di_point_source_overlap(
+    s: float,
+    t: float,
+    p: float,
+) -> float:
+    """Calculates absolute value of directly measuring the point source.
+
+    We assume the measurement mode is of the form phi(x,y) = psi(x,y,0), where psi
+    is the Gaussian distribution matching the point-spread function of the system.
+
+    This is a simplification of the generalised delta submat formula.
+
+    Args:
+       s: displacing point source on the x-axis by x+s
+       t: displacing point source on the y-axis by y+t
+       p: displacing point source on the z-axis by x+p
+
+    Returns:
+      In general a real number. The integral has a closed form expression
+      that we hard-code here for improved performance and accuracy.
+    """
+    prefactor = 4 / (4 + p**2)
+    exp = -2 * (s**2 + t**2) / (4 + p**2)
+
+    return np.real(prefactor * np.exp(exp))
+
+
+@_vectorize
+def derivative_s_probability_measurement_di_point_source_overlap(
+    s: float,
+    t: float,
+    p: float,
+) -> float:
+    """Calculates derivative w.r.t. s of directly measuring the point source..
+
+    We assume the measurement mode is of the form phi(x,y) = psi(x,y,0), where psi
+    is the Gaussian distribution matching the point-spread function of the system.
+
+    Args:
+       s: displacing point source on the x-axis by x+s
+       t: displacing point source on the y-axis by y+t
+       p: displacing point source on the z-axis by x+p
+
+
+    Returns:
+      In general a real number. The integral has a closed form expression
+      that we hard-code here for improved performance and accuracy.
+    """
+    prefactor = (-16 * s) / (4 + p**2) ** 2
+    exp = -2 * (s**2 + t**2) / (4 + p**2)
+
+    return np.real(prefactor * np.exp(exp))
+
+
+@_vectorize
+def derivative_t_probability_measurement_di_point_source_overlap(
+    s: float,
+    t: float,
+    p: float,
+) -> float:
+    """Calculates derivative w.r.t. t of directly measuring the point source..
+
+    We assume the measurement mode is of the form phi(x,y) = psi(x,y,0), where psi
+    is the Gaussian distribution matching the point-spread function of the system.
+
+    Args:
+       s: displacing point source on the x-axis by x+s
+       t: displacing point source on the y-axis by y+t
+       p: displacing point source on the z-axis by x+p
+
+
+    Returns:
+      In general a real number. The integral has a closed form expression
+      that we hard-code here for improved performance and accuracy.
+    """
+    prefactor = (-16 * t) / (4 + p**2) ** 2
+    exp = -2 * (s**2 + t**2) / (4 + p**2)
+
+    return np.real(prefactor * np.exp(exp))
+
+
+@_vectorize
+def derivative_p_probability_measurement_di_point_source_overlap(
+    s: float,
+    t: float,
+    p: float,
+) -> float:
+    """Calculates derivative w.r.t. p of directly measuring the point source..
+
+    We assume the measurement mode is of the form phi(x,y) = psi(x,y,0), where psi
+    is the Gaussian distribution matching the point-spread function of the system.
+
+    Args:
+       s: displacing point source on the x-axis by x+s
+       t: displacing point source on the y-axis by y+t
+       p: displacing point source on the z-axis by x+p
+
+
+    Returns:
+      In general a real number. The integral has a closed form expression
+      that we hard-code here for improved performance and accuracy.
+    """
+    prefactor = -8 * p * (4 - 2 * s**2 - 2 * t**2 + p**2) / (4 + p**2) ** 3
+    exp = -2 * (s**2 + t**2) / (4 + p**2)
+
+    return np.real(prefactor * np.exp(exp))
