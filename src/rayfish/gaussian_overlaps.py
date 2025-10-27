@@ -1047,6 +1047,8 @@ def derivate_p_probability_measurement_mode_point_source_overlap(
 
 @_vectorize
 def probability_measurement_di_point_source_overlap(
+    x: float,
+    y: float,
     s: float,
     t: float,
     p: float,
@@ -1059,22 +1061,26 @@ def probability_measurement_di_point_source_overlap(
     This is a simplification of the generalised delta submat formula.
 
     Args:
+       x: x grid of the object
+       y: y grid of the object
        s: displacing point source on the x-axis by x+s
        t: displacing point source on the y-axis by y+t
-       p: displacing point source on the z-axis by x+p
+       p: displacing point source on the z-axis by p (z=0)
 
     Returns:
       In general a real number. The integral has a closed form expression
       that we hard-code here for improved performance and accuracy.
     """
-    prefactor = 4 / (4 + p**2)
-    exp = -2 * (s**2 + t**2) / (4 + p**2)
+    prefactor = 1 / (np.pi * (1 + p**2))
+    exp = -((x + s) ** 2 + (y + t) ** 2) / (1 + p**2)
 
     return np.real(prefactor * np.exp(exp))
 
 
 @_vectorize
 def derivative_s_probability_measurement_di_point_source_overlap(
+    x: float,
+    y: float,
     s: float,
     t: float,
     p: float,
@@ -1085,23 +1091,29 @@ def derivative_s_probability_measurement_di_point_source_overlap(
     is the Gaussian distribution matching the point-spread function of the system.
 
     Args:
+       x: x grid of the object
+       y: y grid of the object
        s: displacing point source on the x-axis by x+s
        t: displacing point source on the y-axis by y+t
-       p: displacing point source on the z-axis by x+p
+       p: displacing point source on the z-axis by p (z=0)
 
 
     Returns:
       In general a real number. The integral has a closed form expression
       that we hard-code here for improved performance and accuracy.
     """
-    prefactor = (-16 * s) / (4 + p**2) ** 2
-    exp = -2 * (s**2 + t**2) / (4 + p**2)
+    prefactor = -2 * (x + s) / (1 + p**2)
 
-    return np.real(prefactor * np.exp(exp))
+    return np.real(
+        prefactor
+        * probability_measurement_di_point_source_overlap(x=x, y=y, s=s, t=t, p=p)
+    )
 
 
 @_vectorize
 def derivative_t_probability_measurement_di_point_source_overlap(
+    x: float,
+    y: float,
     s: float,
     t: float,
     p: float,
@@ -1112,23 +1124,29 @@ def derivative_t_probability_measurement_di_point_source_overlap(
     is the Gaussian distribution matching the point-spread function of the system.
 
     Args:
+       x: x grid of the object
+       y: y grid of the object
        s: displacing point source on the x-axis by x+s
        t: displacing point source on the y-axis by y+t
-       p: displacing point source on the z-axis by x+p
+       p: displacing point source on the z-axis by p (z=0)
 
 
     Returns:
       In general a real number. The integral has a closed form expression
       that we hard-code here for improved performance and accuracy.
     """
-    prefactor = (-16 * t) / (4 + p**2) ** 2
-    exp = -2 * (s**2 + t**2) / (4 + p**2)
+    prefactor = -2 * (y + t) / (1 + p**2)
 
-    return np.real(prefactor * np.exp(exp))
+    return np.real(
+        prefactor
+        * probability_measurement_di_point_source_overlap(x=x, y=y, s=s, t=t, p=p)
+    )
 
 
 @_vectorize
 def derivative_p_probability_measurement_di_point_source_overlap(
+    x: float,
+    y: float,
     s: float,
     t: float,
     p: float,
@@ -1139,16 +1157,22 @@ def derivative_p_probability_measurement_di_point_source_overlap(
     is the Gaussian distribution matching the point-spread function of the system.
 
     Args:
+       x: x grid of the object
+       y: y grid of the object
        s: displacing point source on the x-axis by x+s
        t: displacing point source on the y-axis by y+t
-       p: displacing point source on the z-axis by x+p
+       p: displacing point source on the z-axis by p (z=0)
 
 
     Returns:
       In general a real number. The integral has a closed form expression
       that we hard-code here for improved performance and accuracy.
     """
-    prefactor = -8 * p * (4 - 2 * s**2 - 2 * t**2 + p**2) / (4 + p**2) ** 3
-    exp = -2 * (s**2 + t**2) / (4 + p**2)
+    prefactor = (
+        -2 * p * ((1 / (1 + p**2)) - (((x + s) ** 2 + (y + t) ** 2) / (1 + p**2) ** 2))
+    )
 
-    return np.real(prefactor * np.exp(exp))
+    return np.real(
+        prefactor
+        * probability_measurement_di_point_source_overlap(x=x, y=y, s=s, t=t, p=p)
+    )
