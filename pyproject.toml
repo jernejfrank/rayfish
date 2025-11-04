@@ -8,6 +8,8 @@ keywords = ['python']
 requires-python = ">=3.9,<4.0"
 dependencies = [
     "beartype >= 0.18.0",
+    "ipympl>=0.9.8",
+    "ipywidgets>=8.1.7",
     "loguru>=0.7.3",
     "matplotlib>=3.9.4",
     "notebook",
