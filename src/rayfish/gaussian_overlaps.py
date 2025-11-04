@@ -1045,14 +1045,14 @@ def derivate_p_probability_measurement_mode_point_source_overlap(
     )
 
 
-@_vectorize
+# @_vectorize
 def probability_measurement_di_point_source_overlap(
-    x: float,
-    y: float,
-    s: float,
-    t: float,
-    p: float,
-) -> float:
+    x: npt.NDArray[np.float64],
+    y: npt.NDArray[np.float64],
+    s: npt.NDArray[np.float64],
+    t: npt.NDArray[np.float64],
+    p: npt.NDArray[np.float64],
+) -> npt.NDArray[np.float64]:
     """Calculates absolute value of directly measuring the point source.
 
     We assume the measurement mode is of the form phi(x,y) = psi(x,y,0), where psi
@@ -1071,21 +1071,28 @@ def probability_measurement_di_point_source_overlap(
       In general a real number. The integral has a closed form expression
       that we hard-code here for improved performance and accuracy.
     """
-    prefactor = 1 / (np.pi * (1 + p**2))
-    exp = -((x + s) ** 2 + (y + t) ** 2) / (1 + p**2)
+    s_, t_, p_ = (
+        s[:, None, None],
+        t[:, None, None],
+        p[:, None, None],
+    )
+
+    prefactor = 1 / (np.pi * (1 + p_**2))
+    exp = -((x + s_) ** 2 + (y + t_) ** 2) / (1 + p_**2)
 
     return np.real(prefactor * np.exp(exp))
 
 
-@_vectorize
+# @_vectorize
 def derivative_s_probability_measurement_di_point_source_overlap(
-    x: float,
-    y: float,
-    s: float,
-    t: float,
-    p: float,
-) -> float:
-    """Calculates derivative w.r.t. s of directly measuring the point source..
+    x: npt.NDArray[np.float64],
+    y: npt.NDArray[np.float64],
+    s: npt.NDArray[np.float64],
+    t: npt.NDArray[np.float64],
+    p: npt.NDArray[np.float64],
+    probability: npt.NDArray[np.float64],
+) -> npt.NDArray[np.float64]:
+    """Calculates derivative w.r.t. s of directly measuring the point source.
 
     We assume the measurement mode is of the form phi(x,y) = psi(x,y,0), where psi
     is the Gaussian distribution matching the point-spread function of the system.
@@ -1096,28 +1103,31 @@ def derivative_s_probability_measurement_di_point_source_overlap(
        s: displacing point source on the x-axis by x+s
        t: displacing point source on the y-axis by y+t
        p: displacing point source on the z-axis by p (z=0)
-
+       probability: the direct imaging probability.
 
     Returns:
       In general a real number. The integral has a closed form expression
       that we hard-code here for improved performance and accuracy.
     """
-    prefactor = -2 * (x + s) / (1 + p**2)
-
-    return np.real(
-        prefactor
-        * probability_measurement_di_point_source_overlap(x=x, y=y, s=s, t=t, p=p)
+    s_, p_ = (
+        s[:, None, None],
+        p[:, None, None],
     )
 
+    prefactor = -2 * (x + s_) / (1 + p_**2)
 
-@_vectorize
+    return np.real(prefactor * probability)
+
+
+# @_vectorize
 def derivative_t_probability_measurement_di_point_source_overlap(
-    x: float,
-    y: float,
-    s: float,
-    t: float,
-    p: float,
-) -> float:
+    x: npt.NDArray[np.float64],
+    y: npt.NDArray[np.float64],
+    s: npt.NDArray[np.float64],
+    t: npt.NDArray[np.float64],
+    p: npt.NDArray[np.float64],
+    probability: npt.NDArray[np.float64],
+) -> npt.NDArray[np.float64]:
     """Calculates derivative w.r.t. t of directly measuring the point source..
 
     We assume the measurement mode is of the form phi(x,y) = psi(x,y,0), where psi
@@ -1129,28 +1139,31 @@ def derivative_t_probability_measurement_di_point_source_overlap(
        s: displacing point source on the x-axis by x+s
        t: displacing point source on the y-axis by y+t
        p: displacing point source on the z-axis by p (z=0)
+       probability: the direct imaging probability.
 
 
     Returns:
       In general a real number. The integral has a closed form expression
       that we hard-code here for improved performance and accuracy.
     """
-    prefactor = -2 * (y + t) / (1 + p**2)
-
-    return np.real(
-        prefactor
-        * probability_measurement_di_point_source_overlap(x=x, y=y, s=s, t=t, p=p)
+    t_, p_ = (
+        t[:, None, None],
+        p[:, None, None],
     )
+    prefactor = -2 * (y + t_) / (1 + p_**2)
+
+    return np.real(prefactor * probability)
 
 
-@_vectorize
+# @_vectorize
 def derivative_p_probability_measurement_di_point_source_overlap(
-    x: float,
-    y: float,
-    s: float,
-    t: float,
-    p: float,
-) -> float:
+    x: npt.NDArray[np.float64],
+    y: npt.NDArray[np.float64],
+    s: npt.NDArray[np.float64],
+    t: npt.NDArray[np.float64],
+    p: npt.NDArray[np.float64],
+    probability: npt.NDArray[np.float64],
+) -> npt.NDArray[np.float64]:
     """Calculates derivative w.r.t. p of directly measuring the point source..
 
     We assume the measurement mode is of the form phi(x,y) = psi(x,y,0), where psi
@@ -1162,17 +1175,23 @@ def derivative_p_probability_measurement_di_point_source_overlap(
        s: displacing point source on the x-axis by x+s
        t: displacing point source on the y-axis by y+t
        p: displacing point source on the z-axis by p (z=0)
+       probability: the direct imaging probability.
 
 
     Returns:
       In general a real number. The integral has a closed form expression
       that we hard-code here for improved performance and accuracy.
     """
-    prefactor = (
-        -2 * p * ((1 / (1 + p**2)) - (((x + s) ** 2 + (y + t) ** 2) / (1 + p**2) ** 2))
+    s_, t_, p_ = (
+        s[:, None, None],
+        t[:, None, None],
+        p[:, None, None],
     )
 
-    return np.real(
-        prefactor
-        * probability_measurement_di_point_source_overlap(x=x, y=y, s=s, t=t, p=p)
+    prefactor = (
+        -2
+        * p_
+        * ((1 / (1 + p_**2)) - (((x + s_) ** 2 + (y + t_) ** 2) / (1 + p_**2) ** 2))
     )
+
+    return np.real(prefactor * probability)
