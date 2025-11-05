@@ -1018,14 +1018,18 @@ def test_probability_measurement_di_point_source_overlap(
     tolerance: float,
 ) -> None:
     """Test centered gaussian and displaced gaussian overlap."""
-    expected_real = 0.949351
+    expected_real = 0.117434
     expected_imag = 0.0
 
     _f = gaussian_overlaps.probability_measurement_di_point_source_overlap
+
+    x_, y_ = np.meshgrid(np.array([-1.1]), np.array([0.7]), indexing="xy")
     actual = _f(
-        0.23,
-        -0.21,
-        0.121,
+        x_,
+        y_,
+        np.array([0.23]),
+        np.array([-0.21]),
+        np.array([0.121]),
     )
 
     assert abs(np.real(actual) - expected_real) < tolerance
@@ -1036,15 +1040,20 @@ def test_derivative_s_probability_measurement_di_point_source_overlap(
     tolerance: float,
 ) -> None:
     """Test centered gaussian and displaced gaussian overlap."""
-    expected_real = -0.217554
+    expected_real = 0.201387
     expected_imag = 0.0
 
     _f = gaussian_overlaps.derivative_s_probability_measurement_di_point_source_overlap
-    actual = _f(
-        0.23,
-        -0.21,
-        0.121,
+
+    x_, y_ = np.meshgrid(np.array([-1.1]), np.array([0.7]), indexing="xy")
+    p = gaussian_overlaps.probability_measurement_di_point_source_overlap(
+        x_,
+        y_,
+        np.array([0.23]),
+        np.array([-0.21]),
+        np.array([0.121]),
     )
+    actual = _f(x_, y_, np.array([0.23]), np.array([-0.21]), np.array([0.121]), p)
 
     assert abs(np.real(actual) - expected_real) < tolerance
     assert abs(np.imag(actual) - expected_imag) < tolerance
@@ -1054,15 +1063,19 @@ def test_derivative_t_probability_measurement_di_point_source_overlap(
     tolerance: float,
 ) -> None:
     """Test centered gaussian and displaced gaussian overlap."""
-    expected_real = 0.198637
+    expected_real = -0.113425
     expected_imag = 0.0
 
     _f = gaussian_overlaps.derivative_t_probability_measurement_di_point_source_overlap
-    actual = _f(
-        0.23,
-        -0.21,
-        0.121,
+    x_, y_ = np.meshgrid(np.array([-1.1]), np.array([0.7]), indexing="xy")
+    p = gaussian_overlaps.probability_measurement_di_point_source_overlap(
+        x_,
+        y_,
+        np.array([0.23]),
+        np.array([-0.21]),
+        np.array([0.121]),
     )
+    actual = _f(x_, y_, np.array([0.23]), np.array([-0.21]), np.array([0.121]), p)
 
     assert abs(np.real(actual) - expected_real) < tolerance
     assert abs(np.imag(actual) - expected_imag) < tolerance
@@ -1072,15 +1085,19 @@ def test_derivative_p_probability_measurement_di_point_source_overlap(
     tolerance: float,
 ) -> None:
     """Test centered gaussian and displaced gaussian overlap."""
-    expected_real = -0.0544609
+    expected_real = -0.000486976
     expected_imag = 0.0
 
     _f = gaussian_overlaps.derivative_p_probability_measurement_di_point_source_overlap
-    actual = _f(
-        0.23,
-        -0.21,
-        0.121,
+    x_, y_ = np.meshgrid(np.array([-1.1]), np.array([0.7]), indexing="xy")
+    p = gaussian_overlaps.probability_measurement_di_point_source_overlap(
+        x_,
+        y_,
+        np.array([0.23]),
+        np.array([-0.21]),
+        np.array([0.121]),
     )
+    actual = _f(x_, y_, np.array([0.23]), np.array([-0.21]), np.array([0.121]), p)
 
     assert abs(np.real(actual) - expected_real) < tolerance
     assert abs(np.imag(actual) - expected_imag) < tolerance

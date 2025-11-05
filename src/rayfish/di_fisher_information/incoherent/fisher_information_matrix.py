@@ -23,23 +23,139 @@ exp[-i ((x-dx)^2 + (y-dy)^2) / (2 (z-dz+i))] exp[-i k zr (z-dz)].
 
 import numpy as np
 import numpy.typing as npt
-from hamilton.function_modifiers import config
 
 from rayfish import gaussian_overlaps
 
 # Public API
 __all__ = (
-    "probability__1D",
     "fisher_information_matrix_for_entire_distribution",
     "covariance_matrix_for_entire_distribution",
+    "numerical_grid",
 )
 
 
-@config.when_not(dimension=2)
-def probability__1D(
+def numerical_grid(
+    min_z_displacement: float,
+    max_z_displacement: float,
+    maximal_length: float,
+    numerical_integration_resolution: int,
+    numerical_integration_support: float,
+) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
+    """Creates the underlying x-y plane for numerical integration."""
+    sigma_min = np.sqrt((1.0 + min_z_displacement**2) / 2.0)
+    sigma_max = np.sqrt((1.0 + max_z_displacement**2) / 2.0)
+
+    measure_x = sigma_min / numerical_integration_resolution
+    measure_y = measure_x
+
+    pad = sigma_max * numerical_integration_support
+
+    xmin = -maximal_length - pad
+    xmax = maximal_length + pad
+    ymin = -maximal_length - pad
+    ymax = maximal_length + pad
+
+    x = np.arange(xmin, xmax + measure_x / 2.0, measure_x)
+    y = np.arange(ymin, ymax + measure_y / 2.0, measure_y)
+
+    x_grid, y_grid = np.meshgrid(x, y, indexing="xy")
+
+    return x_grid, y_grid
+
+
+def _total_probability(
+    x_: npt.NDArray[np.float64],
+    y_: npt.NDArray[np.float64],
+    coordinates: npt.NDArray[np.float64],
+    number_of_point_sources: int,
+) -> npt.NDArray[np.float64]:
+    ny, nx = x_.shape
+    prob = np.zeros((coordinates.shape[0], ny, nx))
+    for point_source in range(number_of_point_sources):
+        p_ = np.real(
+            gaussian_overlaps.probability_measurement_di_point_source_overlap(
+                x_,
+                y_,
+                coordinates[:, point_source],
+                coordinates[:, number_of_point_sources + point_source],
+                coordinates[:, 2 * number_of_point_sources + point_source],
+            )
+        )
+
+        # Unnormalized probability
+        prob += p_
+    return prob
+
+
+def _probability_derivatives(
+    x_: npt.NDArray[np.float64],
+    y_: npt.NDArray[np.float64],
+    coordinates: npt.NDArray[np.float64],
+    number_of_point_sources: int,
+) -> npt.NDArray[np.float64]:
+    ny, nx = x_.shape
+    dprob = np.zeros((
+        coordinates.shape[0],
+        3 * number_of_point_sources,
+        ny,
+        nx,
+    ))
+    for i in range(number_of_point_sources):
+        prob = np.real(
+            gaussian_overlaps.probability_measurement_di_point_source_overlap(
+                x_,
+                y_,
+                coordinates[:, i],
+                coordinates[:, number_of_point_sources + i],
+                coordinates[:, 2 * number_of_point_sources + i],
+            )
+        )
+        ds = np.real(
+            gaussian_overlaps.derivative_s_probability_measurement_di_point_source_overlap(
+                x_,
+                y_,
+                s=coordinates[:, i],
+                t=coordinates[:, number_of_point_sources + i],
+                p=coordinates[:, 2 * number_of_point_sources + i],
+                probability=prob,
+            )
+        )
+        dt = np.real(
+            gaussian_overlaps.derivative_t_probability_measurement_di_point_source_overlap(
+                x_,
+                y_,
+                s=coordinates[:, i],
+                t=coordinates[:, number_of_point_sources + i],
+                p=coordinates[:, 2 * number_of_point_sources + i],
+                probability=prob,
+            )
+        )
+        dp = np.real(
+            gaussian_overlaps.derivative_p_probability_measurement_di_point_source_overlap(
+                x_,
+                y_,
+                s=coordinates[:, i],
+                t=coordinates[:, number_of_point_sources + i],
+                p=coordinates[:, 2 * number_of_point_sources + i],
+                probability=prob,
+            )
+        )
+
+        # Unnormalized probability derivatives
+        dprob[:, i] = ds
+        dprob[:, number_of_point_sources + i] = dt
+        dprob[:, 2 * number_of_point_sources + i] = dp
+
+    return dprob
+
+
+def fisher_information_matrix_for_entire_distribution(
     coordinates: npt.NDArray[np.float64],
     number_of_point_sources: int,
     number_of_point_source_distributions: int,
+    coordinate_jacobian: npt.NDArray[np.float64],
+    numerical_grid: tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]],
+    batch_size: int,
 ) -> npt.NDArray[np.float64]:
     """Probability of detecting a photon via direct imaging.
 
@@ -56,195 +172,97 @@ def probability__1D(
             M >= 1 distributions of particles.
         number_of_point_sources: how many point sources we use to model the object
         number_of_point_source_distributions: how many different point source
-            distributions we are computing for
+            distributions we are computing for.
+        coordinate_jacobian: transformation from 3N parameters to the parameters of
+            interest.
+        numerical_grid: the underliying x-y discretized plane for numerical integration.
+        batch_size: size of a single batch to avoid memory issues during computation.
+
 
     Returns:
         A (M,) array of complex floats, where B is the number of measurement modes and
         M is the number of different distributions of the N point sources.
     """
-    prob = np.zeros(number_of_point_source_distributions)
+    x_, y_ = numerical_grid
+    dx = float(x_[0, 1] - x_[0, 0])
+    dy = float(y_[1, 0] - y_[0, 0])
+    pixel_area = dx * dy
+    ny, nx = x_.shape
+    n_params_interests = coordinate_jacobian.shape[0]
 
-    for point_source in range(number_of_point_sources):
-        p_ = np.real(
-            gaussian_overlaps.probability_measurement_di_point_source_overlap(
-                coordinates[:, point_source],
-                coordinates[:, number_of_point_sources + point_source],
-                coordinates[:, 2 * number_of_point_sources + point_source],
-            )
-        )
-
-        prob[:] += p_
-
-    return prob / number_of_point_sources
-
-
-def fisher_information_matrix_for_entire_distribution(
-    coordinates: npt.NDArray[np.float64],
-    number_of_point_sources: int,
-    number_of_point_source_distributions: int,
-    probability: npt.NDArray[np.float64],
-    coordinate_jacobian: npt.NDArray[np.float64],
-) -> npt.NDArray[np.float64]:
-    """Calculates fisher information matrix for direct imaging.
-
-    Args:
-        coordinates: (M, 3N) array. The position of individual Gaussians. N is the
-            number of point sources in the form
-            coordinates = [s1,s2,...,sN,t1,t2,...,tN,,p1,p2,...,pN] for each of the
-            M >= 1 distributions of particles.
-        number_of_point_sources: how many point sources we use to model the object
-        number_of_point_source_distributions: how many different point source
-            distributions we are computing for
-        probability: the direct imaging probability.
-        coordinate_jacobian: transformation from 3N parameters to the parameters of
-            interest.
-
-    Returns:
-        A (M,B,*,*) array that calculates the covariance matrix for each point source
-        distribution M and measurement mode B. We apply the jacobian transformation at
-        the end to get the covariance matrix for parameters of interest.
-    """
     fisher_information = np.zeros((
         number_of_point_source_distributions,
-        3 * number_of_point_sources,
-        3 * number_of_point_sources,
+        n_params_interests,
+        n_params_interests,
     ))
-
-    for i in range(number_of_point_sources):
-        first_derivative_s = (
-            np.real(
-                gaussian_overlaps.derivative_s_probability_measurement_di_point_source_overlap(
-                    s=coordinates[:, i],
-                    t=coordinates[:, number_of_point_sources + i],
-                    p=coordinates[:, 2 * number_of_point_sources + i],
-                )
-            )
-            / number_of_point_sources
-        )
-        first_derivative_t = (
-            np.real(
-                gaussian_overlaps.derivative_t_probability_measurement_di_point_source_overlap(
-                    s=coordinates[:, i],
-                    t=coordinates[:, number_of_point_sources + i],
-                    p=coordinates[:, 2 * number_of_point_sources + i],
-                )
-            )
-            / number_of_point_sources
-        )
-        first_derivative_p = (
-            np.real(
-                gaussian_overlaps.derivative_p_probability_measurement_di_point_source_overlap(
-                    s=coordinates[:, i],
-                    t=coordinates[:, number_of_point_sources + i],
-                    p=coordinates[:, 2 * number_of_point_sources + i],
-                )
-            )
-            / number_of_point_sources
-        )
-        for j in range(number_of_point_sources):
-            second_derivative_s = (
-                np.real(
-                    gaussian_overlaps.derivative_s_probability_measurement_di_point_source_overlap(
-                        s=coordinates[:, j],
-                        t=coordinates[:, number_of_point_sources + j],
-                        p=coordinates[:, 2 * number_of_point_sources + j],
-                    )
-                )
-                / number_of_point_sources
-            )
-            second_derivative_t = (
-                np.real(
-                    gaussian_overlaps.derivative_t_probability_measurement_di_point_source_overlap(
-                        s=coordinates[:, j],
-                        t=coordinates[:, number_of_point_sources + j],
-                        p=coordinates[:, 2 * number_of_point_sources + j],
-                    )
-                )
-                / number_of_point_sources
-            )
-            second_derivative_p = (
-                np.real(
-                    gaussian_overlaps.derivative_p_probability_measurement_di_point_source_overlap(
-                        s=coordinates[:, j],
-                        t=coordinates[:, number_of_point_sources + j],
-                        p=coordinates[:, 2 * number_of_point_sources + j],
-                    )
-                )
-                / number_of_point_sources
-            )
-
-            # ss
-            fisher_information[:, i, j] = (
-                first_derivative_s * second_derivative_s
-            ) / probability
-            # tt
-            fisher_information[
-                :, number_of_point_sources + i, number_of_point_sources + j
-            ] = (first_derivative_t * second_derivative_t) / probability
-            # pp
-            fisher_information[
-                :,
-                2 * number_of_point_sources + i,
-                2 * number_of_point_sources + j,
-            ] = (first_derivative_p * second_derivative_p) / probability
-
-            # ts
-            fisher_information[:, number_of_point_sources + i, j] = (
-                first_derivative_t * second_derivative_s
-            ) / probability
-            # st
-            fisher_information[:, i, number_of_point_sources + j] = (
-                first_derivative_s * second_derivative_t
-            ) / probability
-
-            # ps
-            fisher_information[:, 2 * number_of_point_sources + i, j] = (
-                first_derivative_p * second_derivative_s
-            ) / probability
-            # sp
-            fisher_information[:, i, 2 * number_of_point_sources + j] = (
-                first_derivative_s * second_derivative_p
-            ) / probability
-
-            # tp
-            fisher_information[
-                :, number_of_point_sources + i, 2 * number_of_point_sources + j
-            ] = (first_derivative_t * second_derivative_p) / probability
-            # pt
-            fisher_information[
-                :, 2 * number_of_point_sources + i, number_of_point_sources + j
-            ] = (first_derivative_p * second_derivative_t) / probability
-
-    fi_matrices = []
-    for _ in range(number_of_point_source_distributions):
-        temp = np.matmul(
-            coordinate_jacobian,
-            np.matmul(fisher_information[_, :, :], np.transpose(coordinate_jacobian)),
+    for start in range(0, number_of_point_source_distributions, batch_size):
+        stop = min(start + batch_size, number_of_point_source_distributions)
+        actual_batch_size = stop - start
+        # Compute probability
+        prob = _total_probability(
+            x_, y_, coordinates[start:stop], number_of_point_sources
         )
 
-        fi_matrices.append(temp)
+        # Compute derivatives
+        dprob = _probability_derivatives(
+            x_, y_, coordinates[start:stop], number_of_point_sources
+        )
 
-    return np.stack(fi_matrices)
+        fi = np.zeros((actual_batch_size, n_params_interests, n_params_interests))
+        p_flat = prob.reshape(actual_batch_size, ny * nx)
+        dp_flat = dprob.reshape(actual_batch_size, 3 * number_of_point_sources, ny * nx)
+        for bi in range(actual_batch_size):
+            mask = p_flat[bi] > 1e-16
+            if not np.any(mask):
+                continue
+
+            dp_flat_masked = dp_flat[bi, :, mask]
+            p_flat_masked = (p_flat[bi])[mask]
+            w = dp_flat_masked / np.sqrt(p_flat_masked)[:, None]
+
+            # The actual integral
+            wrong_fi = np.matmul(np.transpose(w), w)
+            wrong_fi *= pixel_area / number_of_point_sources
+
+            # Symmetrize for numerical accuracy
+            wrong_fi = 0.5 * (wrong_fi + wrong_fi.T)
+
+            # Coordinate transformation to account for minus signs and collapse to
+            # parameters of interest
+            fi[bi] = np.matmul(
+                coordinate_jacobian, np.matmul(wrong_fi, coordinate_jacobian.T)
+            )
+
+        fisher_information[start:stop] = fi
+
+    return fisher_information
 
 
 def covariance_matrix_for_entire_distribution(
     fisher_information_matrix_for_entire_distribution: npt.NDArray[np.float64],
 ) -> npt.NDArray[np.float64]:
     """The covariance matrix calculated as the inverse of the fisher information."""
-    # cov_matrices = np.zeros_like(
-    #     fisher_information_matrix_for_entire_distribution, dtype=np.float64
-    # )
+    cov_matrices = np.zeros_like(
+        fisher_information_matrix_for_entire_distribution, dtype=np.float64
+    )
 
     # # only invert non-singular matrices
-    # conds = np.linalg.cond(fisher_information_matrix_for_entire_distribution)
-    # mask = conds < 1e16
-    # inv_subset = np.linalg.pinv(
-    #     fisher_information_matrix_for_entire_distribution[mask])
+    # for i in range(number_of_point_source_distributions):
+    #     fisher_information = fisher_information_matrix_for_entire_distribution[i]
+    #     try:
+    #         cov = np.linalg.inv(fisher_information)
+    #     except np.linalg.LinAlgError:
+    #         cov = np.linalg.pinv(fisher_information)
 
-    # cov_matrices[mask] = inv_subset
+    #     cov_matrices[i] = cov
 
-    # # set singular matrices to inf
-    # cov_matrices[~mask] = np.inf
+    conds = np.linalg.cond(fisher_information_matrix_for_entire_distribution)
+    mask = conds < 1e16
+    inv_subset = np.linalg.inv(fisher_information_matrix_for_entire_distribution[mask])
 
-    # return cov_matrices
-    return np.linalg.pinv(fisher_information_matrix_for_entire_distribution)
+    cov_matrices[mask] = inv_subset
+
+    # set singular matrices to inf
+    cov_matrices[~mask] = np.inf
+
+    return cov_matrices
