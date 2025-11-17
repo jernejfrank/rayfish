@@ -132,6 +132,10 @@ def fisher_information_matrix_for_entire_distribution(
 
     for b, mode in enumerate(measurement_basis):
         prob = probability[:, b]
+        # Here to avoid division by 0, we know if P=0 then dP=0
+        mask = prob > 1e-16
+        if not np.any(mask):
+            continue
         for i in range(number_of_point_sources):
             first_derivative_s = (
                 np.real(
@@ -215,46 +219,46 @@ def fisher_information_matrix_for_entire_distribution(
 
                 # ss
                 fisher_information[:, b, i, j] = (
-                    first_derivative_s * second_derivative_s
-                ) / prob
+                    first_derivative_s[mask] * second_derivative_s[mask]
+                ) / prob[mask]
                 # tt
                 fisher_information[
                     :, b, number_of_point_sources + i, number_of_point_sources + j
-                ] = (first_derivative_t * second_derivative_t) / prob
+                ] = (first_derivative_t[mask] * second_derivative_t[mask]) / prob[mask]
                 # pp
                 fisher_information[
                     :,
                     b,
                     2 * number_of_point_sources + i,
                     2 * number_of_point_sources + j,
-                ] = (first_derivative_p * second_derivative_p) / prob
+                ] = (first_derivative_p[mask] * second_derivative_p[mask]) / prob[mask]
 
                 # ts
                 fisher_information[:, b, number_of_point_sources + i, j] = (
-                    first_derivative_t * second_derivative_s
-                ) / prob
+                    first_derivative_t[mask] * second_derivative_s[mask]
+                ) / prob[mask]
                 # st
                 fisher_information[:, b, i, number_of_point_sources + j] = (
-                    first_derivative_s * second_derivative_t
-                ) / prob
+                    first_derivative_s[mask] * second_derivative_t[mask]
+                ) / prob[mask]
 
                 # ps
                 fisher_information[:, b, 2 * number_of_point_sources + i, j] = (
-                    first_derivative_p * second_derivative_s
-                ) / prob
+                    first_derivative_p[mask] * second_derivative_s[mask]
+                ) / prob[mask]
                 # sp
                 fisher_information[:, b, i, 2 * number_of_point_sources + j] = (
-                    first_derivative_s * second_derivative_p
-                ) / prob
+                    first_derivative_s[mask] * second_derivative_p[mask]
+                ) / prob[mask]
 
                 # tp
                 fisher_information[
                     :, b, number_of_point_sources + i, 2 * number_of_point_sources + j
-                ] = (first_derivative_t * second_derivative_p) / prob
+                ] = (first_derivative_t[mask] * second_derivative_p[mask]) / prob[mask]
                 # pt
                 fisher_information[
                     :, b, 2 * number_of_point_sources + i, number_of_point_sources + j
-                ] = (first_derivative_p * second_derivative_t) / prob
+                ] = (first_derivative_p[mask] * second_derivative_t[mask]) / prob[mask]
 
     fi_matrices = []
     for _ in range(number_of_point_source_distributions):
@@ -281,7 +285,7 @@ def covariance_matrix_for_entire_distribution(
 
     # only invert non-singular matrices
     conds = np.linalg.cond(combined_fi)
-    mask = conds < 1e12
+    mask = conds < 1e16
     inv_subset = np.linalg.inv(combined_fi[mask])
 
     cov_matrices[mask] = inv_subset
