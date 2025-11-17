@@ -98,6 +98,8 @@ def plot_individual_fi(
     cb_ax: int,
     label: str,
     hide_ticks: bool = True,
+    rotation: int = 0,
+    offset: float = 0.0,
 ) -> cm.ScalarMappable:
     """Plots qfi for a specific parameter.
 
@@ -121,5 +123,8 @@ def plot_individual_fi(
     cb = fig.colorbar(sm, cax=ax[cb_ax])
     if hide_ticks:
         cb.set_ticks([])
-    ax[cb_ax].set_xlabel(label)
+    ax[cb_ax].set_xlabel(label).set_rotation(rotation)
+    x, y = ax[cb_ax].xaxis.label.get_position()
+    ax[cb_ax].xaxis.set_label_coords(x, y - offset)  # adjust offset to taste
+
     return sm
