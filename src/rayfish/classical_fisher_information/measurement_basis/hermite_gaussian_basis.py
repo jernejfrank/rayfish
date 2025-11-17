@@ -18,14 +18,14 @@ import numpy.typing as npt
 from scipy.special import hermite
 
 
-def measurement_basis(number_of_modes: int) -> List[Dict[str, npt.NDArray[np.float64]]]:
+def measurement_basis(mode_degree: int) -> List[Dict[str, npt.NDArray[np.float64]]]:
     """Encodes the coefficients of the Hermite-Gaussian modes."""
-    basis = [{"x": np.array([1]), "y": np.array([1])}]
-    for i in range(1, number_of_modes):
-        b = {}
-        coeffs = hermite(i).coeffs[::-1]
-        b["x"] = coeffs / np.sqrt(2**i * factorial(i))
-        b["y"] = np.array([1])
-        basis.append(b)
+    basis = []
+    for i in range(mode_degree):
+        for j in range(mode_degree):
+            b = {}
+            b["x"] = hermite(i).coeffs[::-1] / np.sqrt(2**i * factorial(i))
+            b["y"] = hermite(j).coeffs[::-1] / np.sqrt(2**j * factorial(j))
+            basis.append(b)
 
     return basis
