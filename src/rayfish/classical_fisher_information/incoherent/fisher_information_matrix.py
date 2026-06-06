@@ -25,7 +25,7 @@ import numpy.typing as npt
 from beartype.typing import Dict, List
 from hamilton.function_modifiers import config
 
-from rayfish import gaussian_overlaps
+from rayfish.classical_fisher_information.incoherent import amplitude_measurement_model
 
 # Public API
 __all__ = (
@@ -41,6 +41,8 @@ def probability__1D(
     number_of_point_sources: int,
     number_of_point_source_distributions: int,
     measurement_basis: List[Dict[str, npt.NDArray[np.float64]]],
+    wave_vector: float = 0.0,
+    rayleigh_length: float = 1.0,
 ) -> npt.NDArray[np.float64]:
     """Probability of detecting a photon in a particular measurement mode.
 
@@ -60,28 +62,23 @@ def probability__1D(
         number_of_point_source_distributions: how many different point source
             distributions we are computing for
         measurement_basis: the measurement modes encoded as polynomial coefficients.
+        wave_vector: phase parameter carried by the amplitude-level overlap model.
+        rayleigh_length: length scale carried by the amplitude-level overlap model.
 
     Returns:
         A (M,B) array of complex floats, where B is the number of measurement modes and
         M is the number of different distributions of the N point sources.
     """
-    n_measurement_basis = len(measurement_basis)
-    prob = np.zeros((number_of_point_source_distributions, n_measurement_basis))
-
-    for i, mode in enumerate(measurement_basis):
-        for point_source in range(number_of_point_sources):
-            p_ = np.real(
-                gaussian_overlaps.probability_measurement_mode_point_source_overlap(
-                    coordinates[:, point_source],
-                    coordinates[:, number_of_point_sources + point_source],
-                    coordinates[:, 2 * number_of_point_sources + point_source],
-                    mode,
-                )
-            )
-
-            prob[:, i] += p_
-
-    return prob / number_of_point_sources
+    amplitudes = amplitude_measurement_model.mode_amplitudes(
+        coordinates=coordinates,
+        number_of_point_sources=number_of_point_sources,
+        measurement_basis=measurement_basis,
+        wave_vector=wave_vector,
+        rayleigh_length=rayleigh_length,
+    )
+    return amplitude_measurement_model.probabilities_from_amplitudes(
+        amplitudes=amplitudes, number_of_point_sources=number_of_point_sources
+    )
 
 
 def fisher_information_matrix_for_entire_distribution(
@@ -122,158 +119,39 @@ def fisher_information_matrix_for_entire_distribution(
         distribution M and measurement mode B. We apply the jacobian transformation at
         the end to get the covariance matrix for parameters of interest.
     """
-    n_measurement_basis = len(measurement_basis)
-    fisher_information = np.zeros((
-        number_of_point_source_distributions,
-        n_measurement_basis,
-        3 * number_of_point_sources,
-        3 * number_of_point_sources,
-    ))
+    amplitudes = amplitude_measurement_model.mode_amplitudes(
+        coordinates=coordinates,
+        number_of_point_sources=number_of_point_sources,
+        measurement_basis=measurement_basis,
+        wave_vector=wave_vector,
+        rayleigh_length=rayleigh_length,
+    )
+    derivatives_s, derivatives_t, derivatives_p = (
+        amplitude_measurement_model.mode_amplitude_derivatives(
+            coordinates=coordinates,
+            number_of_point_sources=number_of_point_sources,
+            measurement_basis=measurement_basis,
+            wave_vector=wave_vector,
+            rayleigh_length=rayleigh_length,
+        )
+    )
+    probability_derivatives = (
+        amplitude_measurement_model.probability_derivatives_from_amplitudes(
+            amplitudes=amplitudes,
+            derivatives_s=derivatives_s,
+            derivatives_t=derivatives_t,
+            derivatives_p=derivatives_p,
+            number_of_point_sources=number_of_point_sources,
+        )
+    )
 
-    for b, mode in enumerate(measurement_basis):
-        prob = probability[:, b]
-        # Here to avoid division by 0, we know if P=0 then dP=0
-        mask = prob > 1e-16
-        if not np.any(mask):
-            continue
-        for i in range(number_of_point_sources):
-            first_derivative_s = (
-                np.real(
-                    gaussian_overlaps.derivate_s_probability_measurement_mode_point_source_overlap(
-                        s=coordinates[:, i],
-                        t=coordinates[:, number_of_point_sources + i],
-                        p=coordinates[:, 2 * number_of_point_sources + i],
-                        k=wave_vector,
-                        zr=rayleigh_length,
-                        mode_polynomial_coefficients=mode,
-                    )
-                )
-                / number_of_point_sources
-            )
-            first_derivative_t = (
-                np.real(
-                    gaussian_overlaps.derivate_t_probability_measurement_mode_point_source_overlap(
-                        s=coordinates[:, i],
-                        t=coordinates[:, number_of_point_sources + i],
-                        p=coordinates[:, 2 * number_of_point_sources + i],
-                        k=wave_vector,
-                        zr=rayleigh_length,
-                        mode_polynomial_coefficients=mode,
-                    )
-                )
-                / number_of_point_sources
-            )
-            first_derivative_p = (
-                np.real(
-                    gaussian_overlaps.derivate_p_probability_measurement_mode_point_source_overlap(
-                        s=coordinates[:, i],
-                        t=coordinates[:, number_of_point_sources + i],
-                        p=coordinates[:, 2 * number_of_point_sources + i],
-                        k=wave_vector,
-                        zr=rayleigh_length,
-                        mode_polynomial_coefficients=mode,
-                    )
-                )
-                / number_of_point_sources
-            )
-            for j in range(number_of_point_sources):
-                second_derivative_s = (
-                    np.real(
-                        gaussian_overlaps.derivate_s_probability_measurement_mode_point_source_overlap(
-                            s=coordinates[:, j],
-                            t=coordinates[:, number_of_point_sources + j],
-                            p=coordinates[:, 2 * number_of_point_sources + j],
-                            k=wave_vector,
-                            zr=rayleigh_length,
-                            mode_polynomial_coefficients=mode,
-                        )
-                    )
-                    / number_of_point_sources
-                )
-                second_derivative_t = (
-                    np.real(
-                        gaussian_overlaps.derivate_t_probability_measurement_mode_point_source_overlap(
-                            s=coordinates[:, j],
-                            t=coordinates[:, number_of_point_sources + j],
-                            p=coordinates[:, 2 * number_of_point_sources + j],
-                            k=wave_vector,
-                            zr=rayleigh_length,
-                            mode_polynomial_coefficients=mode,
-                        )
-                    )
-                    / number_of_point_sources
-                )
-                second_derivative_p = (
-                    np.real(
-                        gaussian_overlaps.derivate_p_probability_measurement_mode_point_source_overlap(
-                            s=coordinates[:, j],
-                            t=coordinates[:, number_of_point_sources + j],
-                            p=coordinates[:, 2 * number_of_point_sources + j],
-                            k=wave_vector,
-                            zr=rayleigh_length,
-                            mode_polynomial_coefficients=mode,
-                        )
-                    )
-                    / number_of_point_sources
-                )
-
-                # ss
-                fisher_information[:, b, i, j] = (
-                    first_derivative_s[mask] * second_derivative_s[mask]
-                ) / prob[mask]
-                # tt
-                fisher_information[
-                    :, b, number_of_point_sources + i, number_of_point_sources + j
-                ] = (first_derivative_t[mask] * second_derivative_t[mask]) / prob[mask]
-                # pp
-                fisher_information[
-                    :,
-                    b,
-                    2 * number_of_point_sources + i,
-                    2 * number_of_point_sources + j,
-                ] = (first_derivative_p[mask] * second_derivative_p[mask]) / prob[mask]
-
-                # ts
-                fisher_information[:, b, number_of_point_sources + i, j] = (
-                    first_derivative_t[mask] * second_derivative_s[mask]
-                ) / prob[mask]
-                # st
-                fisher_information[:, b, i, number_of_point_sources + j] = (
-                    first_derivative_s[mask] * second_derivative_t[mask]
-                ) / prob[mask]
-
-                # ps
-                fisher_information[:, b, 2 * number_of_point_sources + i, j] = (
-                    first_derivative_p[mask] * second_derivative_s[mask]
-                ) / prob[mask]
-                # sp
-                fisher_information[:, b, i, 2 * number_of_point_sources + j] = (
-                    first_derivative_s[mask] * second_derivative_p[mask]
-                ) / prob[mask]
-
-                # tp
-                fisher_information[
-                    :, b, number_of_point_sources + i, 2 * number_of_point_sources + j
-                ] = (first_derivative_t[mask] * second_derivative_p[mask]) / prob[mask]
-                # pt
-                fisher_information[
-                    :, b, 2 * number_of_point_sources + i, number_of_point_sources + j
-                ] = (first_derivative_p[mask] * second_derivative_t[mask]) / prob[mask]
-
-    fi_matrices = []
-    for _ in range(number_of_point_source_distributions):
-        cov_per_mode = []
-        for __ in range(n_measurement_basis):
-            temp = np.matmul(
-                coordinate_jacobian,
-                np.matmul(
-                    fisher_information[_, __, :, :], np.transpose(coordinate_jacobian)
-                ),
-            )
-            cov_per_mode.append(temp)
-        fi_matrices.append(np.stack(cov_per_mode))
-
-    return np.stack(fi_matrices)
+    return amplitude_measurement_model.projected_fisher_information_per_mode(
+        probability=probability,
+        derivatives_s=probability_derivatives[0],
+        derivatives_t=probability_derivatives[1],
+        derivatives_p=probability_derivatives[2],
+        coordinate_jacobian=coordinate_jacobian,
+    )
 
 
 def covariance_matrix_for_entire_distribution(
