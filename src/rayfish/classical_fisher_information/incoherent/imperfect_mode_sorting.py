@@ -74,9 +74,9 @@ def probability__1D(
     number_of_point_source_distributions: int,
     measurement_basis: List[Dict[str, npt.NDArray[np.float64]]],
     mode_mixing_matrix: npt.NDArray[np.float64] | npt.NDArray[np.complex128],
-    include_loss_channel: bool = False,
-    wave_vector: float = 0.0,
-    rayleigh_length: float = 1.0,
+    include_loss_channel: bool,
+    wave_vector: float,
+    rayleigh_length: float,
 ) -> npt.NDArray[np.float64]:
     """Probability of detecting a photon with imperfect mode sorting.
 
@@ -136,7 +136,7 @@ def fisher_information_matrix_for_entire_distribution(
     rayleigh_length: float,
     coordinate_jacobian: npt.NDArray[np.float64],
     mode_mixing_matrix: npt.NDArray[np.float64] | npt.NDArray[np.complex128],
-    include_loss_channel: bool = False,
+    include_loss_channel: bool,
 ) -> npt.NDArray[np.float64]:
     """Classical FI with amplitude-level mode mixing and optional truncation loss."""
     amplitudes = amplitude_measurement_model.mode_amplitudes(

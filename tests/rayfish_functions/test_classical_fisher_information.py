@@ -45,6 +45,8 @@ def _total_fisher_information(
         number_of_point_sources=number_of_point_sources,
         number_of_point_source_distributions=1,
         measurement_basis=basis,
+        wave_vector=wave_vector,
+        rayleigh_length=rayleigh_length,
     )
     fisher_information = fisher_information_matrix_for_entire_distribution(
         coordinates=coordinates,
@@ -59,7 +61,10 @@ def _total_fisher_information(
     return np.sum(fisher_information, axis=1)[0]
 
 
-def test_two_point_sources_x_fisher_information_is_constant() -> None:
+def test_two_point_sources_x_fisher_information_is_constant(
+    mock_wave_vector: int,
+    mock_rayleigh_length: int,
+) -> None:
     """The x-separation FI stays at the expected Tsang limit."""
     expected = 0.5
     matrices = []
@@ -72,8 +77,8 @@ def test_two_point_sources_x_fisher_information_is_constant() -> None:
                 number_of_point_sources=2,
                 measurement_basis_modes=10,
                 coordinate_jacobian=_two_source_coordinate_jacobian(coordinates),
-                wave_vector=2.0,
-                rayleigh_length=1.0,
+                wave_vector=mock_wave_vector,
+                rayleigh_length=mock_rayleigh_length,
             )
         )
 
@@ -81,7 +86,10 @@ def test_two_point_sources_x_fisher_information_is_constant() -> None:
     np.testing.assert_allclose(actual=actual, desired=expected, atol=1e-8)
 
 
-def test_two_point_sources_z_fisher_information_is_constant() -> None:
+def test_two_point_sources_z_fisher_information_is_constant(
+    mock_wave_vector: int,
+    mock_rayleigh_length: int,
+) -> None:
     """The z-separation FI stays close to the small-separation limit."""
     expected = 0.125
     matrices = []
@@ -94,8 +102,8 @@ def test_two_point_sources_z_fisher_information_is_constant() -> None:
                 number_of_point_sources=2,
                 measurement_basis_modes=10,
                 coordinate_jacobian=_two_source_coordinate_jacobian(coordinates),
-                wave_vector=2.0,
-                rayleigh_length=1.0,
+                wave_vector=mock_wave_vector,
+                rayleigh_length=mock_rayleigh_length,
             )
         )
 
@@ -103,7 +111,10 @@ def test_two_point_sources_z_fisher_information_is_constant() -> None:
     np.testing.assert_allclose(actual=actual, desired=expected, atol=3.5e-4)
 
 
-def test_three_point_sources_z_information_stays_constant_when_only_x_varies() -> None:
+def test_three_point_sources_z_information_stays_constant_when_only_x_varies(
+    mock_wave_vector: int,
+    mock_rayleigh_length: int,
+) -> None:
     """The z FI is stable when only the in-plane pair moves near the origin."""
     expected = 0.1607563154810208
     matrices = []
@@ -118,8 +129,8 @@ def test_three_point_sources_z_information_stays_constant_when_only_x_varies() -
                 number_of_point_sources=3,
                 measurement_basis_modes=10,
                 coordinate_jacobian=coordinate_jacobian(),
-                wave_vector=2.0,
-                rayleigh_length=1.0,
+                wave_vector=mock_wave_vector,
+                rayleigh_length=mock_rayleigh_length,
             )
         )
 
@@ -127,7 +138,10 @@ def test_three_point_sources_z_information_stays_constant_when_only_x_varies() -
     np.testing.assert_allclose(actual=actual, desired=expected, atol=5e-6)
 
 
-def test_three_point_sources_x_information_stays_constant_when_only_z_varies() -> None:
+def test_three_point_sources_x_information_stays_constant_when_only_z_varies(
+    mock_wave_vector: int,
+    mock_rayleigh_length: int,
+) -> None:
     """The x FI stays stable for a small z-displacement sweep."""
     expected = 0.3282331528359046
     matrices = []
@@ -142,8 +156,8 @@ def test_three_point_sources_x_information_stays_constant_when_only_z_varies() -
                 number_of_point_sources=3,
                 measurement_basis_modes=10,
                 coordinate_jacobian=coordinate_jacobian(),
-                wave_vector=2.0,
-                rayleigh_length=1.0,
+                wave_vector=mock_wave_vector,
+                rayleigh_length=mock_rayleigh_length,
             )
         )
 

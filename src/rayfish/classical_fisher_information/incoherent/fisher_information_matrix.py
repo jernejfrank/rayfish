@@ -41,8 +41,8 @@ def probability__1D(
     number_of_point_sources: int,
     number_of_point_source_distributions: int,
     measurement_basis: List[Dict[str, npt.NDArray[np.float64]]],
-    wave_vector: float = 0.0,
-    rayleigh_length: float = 1.0,
+    wave_vector: float,
+    rayleigh_length: float,
 ) -> npt.NDArray[np.float64]:
     """Probability of detecting a photon in a particular measurement mode.
 

@@ -28,7 +28,10 @@ def _two_source_coordinate_jacobian(
     )
 
 
-def test_identity_mode_mixing_reproduces_ideal_probability_and_fi() -> None:
+def test_identity_mode_mixing_reproduces_ideal_probability_and_fi(
+    mock_wave_vector: int,
+    mock_rayleigh_length: int,
+) -> None:
     """Identity mode mixing should match the ideal pipeline exactly."""
     coordinates = np.array([[-0.1, 0.1, 0.0, 0.0, 0.0, 0.0]])
     basis = hermite_gaussian_basis_x_only.measurement_basis(number_of_modes=10)
@@ -39,8 +42,8 @@ def test_identity_mode_mixing_reproduces_ideal_probability_and_fi() -> None:
         number_of_point_sources=2,
         number_of_point_source_distributions=1,
         measurement_basis=basis,
-        wave_vector=2.0,
-        rayleigh_length=1.0,
+        wave_vector=mock_wave_vector,
+        rayleigh_length=mock_rayleigh_length,
     )
     imperfect_probability = imperfect_mode_sorting.probability__1D(
         coordinates=coordinates,
@@ -48,8 +51,9 @@ def test_identity_mode_mixing_reproduces_ideal_probability_and_fi() -> None:
         number_of_point_source_distributions=1,
         measurement_basis=basis,
         mode_mixing_matrix=mixing,
-        wave_vector=2.0,
-        rayleigh_length=1.0,
+        include_loss_channel=False,
+        wave_vector=mock_wave_vector,
+        rayleigh_length=mock_rayleigh_length,
     )
 
     np.testing.assert_allclose(actual=imperfect_probability, desired=ideal_probability)
@@ -62,8 +66,8 @@ def test_identity_mode_mixing_reproduces_ideal_probability_and_fi() -> None:
             number_of_point_source_distributions=1,
             measurement_basis=basis,
             probability=ideal_probability,
-            wave_vector=2.0,
-            rayleigh_length=1.0,
+            wave_vector=mock_wave_vector,
+            rayleigh_length=mock_rayleigh_length,
             coordinate_jacobian=jacobian,
         )
     )
@@ -74,17 +78,21 @@ def test_identity_mode_mixing_reproduces_ideal_probability_and_fi() -> None:
             number_of_point_source_distributions=1,
             measurement_basis=basis,
             probability=imperfect_probability,
-            wave_vector=2.0,
-            rayleigh_length=1.0,
+            wave_vector=mock_wave_vector,
+            rayleigh_length=mock_rayleigh_length,
             coordinate_jacobian=jacobian,
             mode_mixing_matrix=mixing,
+            include_loss_channel=False,
         )
     )
 
     np.testing.assert_allclose(actual=imperfect_fi, desired=ideal_fi)
 
 
-def test_unitary_mode_mixing_preserves_total_probability() -> None:
+def test_unitary_mode_mixing_preserves_total_probability(
+    mock_wave_vector: int,
+    mock_rayleigh_length: int,
+) -> None:
     """Orthogonal mode mixing should preserve total retained probability."""
     coordinates = np.array([[0.0, 0.0, 0.0, 0.0, 0.0, 0.0]])
     basis = hermite_gaussian_basis_x_only.measurement_basis(number_of_modes=4)
@@ -101,8 +109,9 @@ def test_unitary_mode_mixing_preserves_total_probability() -> None:
         number_of_point_source_distributions=1,
         measurement_basis=basis,
         mode_mixing_matrix=mixing,
-        wave_vector=2.0,
-        rayleigh_length=1.0,
+        include_loss_channel=False,
+        wave_vector=mock_wave_vector,
+        rayleigh_length=mock_rayleigh_length,
     )
 
     np.testing.assert_allclose(
