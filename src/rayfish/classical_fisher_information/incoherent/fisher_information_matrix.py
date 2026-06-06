@@ -35,7 +35,7 @@ __all__ = (
 )
 
 
-@config.when_not(dimension=2)
+@config.when_not(dimension=2, imperfect_mode_sorting=True)
 def probability__1D(
     coordinates: npt.NDArray[np.float64],
     number_of_point_sources: int,
