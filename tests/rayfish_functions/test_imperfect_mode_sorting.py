@@ -8,6 +8,7 @@ from rayfish.classical_fisher_information.incoherent import (
 )
 from rayfish.classical_fisher_information.incoherent import imperfect_mode_sorting
 from rayfish.classical_fisher_information.measurement_basis import (
+    hermite_gaussian_basis,
     hermite_gaussian_basis_x_only,
 )
 from rayfish.parameter_catalogue.common_transforms import (
@@ -15,6 +16,7 @@ from rayfish.parameter_catalogue.common_transforms import (
     jacobian_to_collapse_xy,
     jacobian_to_correct_sign,
 )
+from rayfish.parameter_catalogue.distance_3_sources_xz import coordinate_jacobian
 
 
 def _two_source_coordinate_jacobian(
@@ -150,3 +152,63 @@ def test_loss_channel_captures_truncation_and_derivative_conservation() -> None:
     np.testing.assert_allclose(
         actual=np.sum(derivatives_p_with_loss, axis=1), desired=np.zeros((1, 1))
     )
+
+
+def test_identity_mode_mixing_reproduces_ideal_xy_three_source_fi(
+    mock_wave_vector: int,
+    mock_rayleigh_length: int,
+) -> None:
+    """Identity mixing should preserve the xy three-source measurement baseline."""
+    coordinates = np.array([[0.0, -0.15, 0.15, 0.0, 0.0, 0.0, -0.22, 0.0, 0.0]])
+    basis = hermite_gaussian_basis.measurement_basis(mode_degree=3)
+    mixing = np.eye(len(basis))
+
+    ideal_probability = ideal_fisher_information.probability__1D(
+        coordinates=coordinates,
+        number_of_point_sources=3,
+        number_of_point_source_distributions=1,
+        measurement_basis=basis,
+        wave_vector=mock_wave_vector,
+        rayleigh_length=mock_rayleigh_length,
+    )
+    imperfect_probability = imperfect_mode_sorting.probability__1D(
+        coordinates=coordinates,
+        number_of_point_sources=3,
+        number_of_point_source_distributions=1,
+        measurement_basis=basis,
+        mode_mixing_matrix=mixing,
+        include_loss_channel=False,
+        wave_vector=mock_wave_vector,
+        rayleigh_length=mock_rayleigh_length,
+    )
+
+    np.testing.assert_allclose(actual=imperfect_probability, desired=ideal_probability)
+
+    ideal_fi = (
+        ideal_fisher_information.fisher_information_matrix_for_entire_distribution(
+            coordinates=coordinates,
+            number_of_point_sources=3,
+            number_of_point_source_distributions=1,
+            measurement_basis=basis,
+            probability=ideal_probability,
+            wave_vector=mock_wave_vector,
+            rayleigh_length=mock_rayleigh_length,
+            coordinate_jacobian=coordinate_jacobian(),
+        )
+    )
+    imperfect_fi = (
+        imperfect_mode_sorting.fisher_information_matrix_for_entire_distribution(
+            coordinates=coordinates,
+            number_of_point_sources=3,
+            number_of_point_source_distributions=1,
+            measurement_basis=basis,
+            probability=imperfect_probability,
+            wave_vector=mock_wave_vector,
+            rayleigh_length=mock_rayleigh_length,
+            coordinate_jacobian=coordinate_jacobian(),
+            mode_mixing_matrix=mixing,
+            include_loss_channel=False,
+        )
+    )
+
+    np.testing.assert_allclose(actual=imperfect_fi, desired=ideal_fi)

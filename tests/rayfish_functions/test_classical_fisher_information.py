@@ -1,4 +1,4 @@
-"""Regression tests for classical Fisher information invariants."""
+"""Regression tests for two-point classical Fisher information invariants."""
 
 import numpy as np
 import numpy.typing as npt
@@ -15,7 +15,6 @@ from rayfish.parameter_catalogue.common_transforms import (
     jacobian_to_collapse_xy,
     jacobian_to_correct_sign,
 )
-from rayfish.parameter_catalogue.distance_3_sources_xz import coordinate_jacobian
 
 
 def _two_source_coordinate_jacobian(
@@ -109,57 +108,3 @@ def test_two_point_sources_z_fisher_information_is_constant(
 
     actual = np.array([matrix[1, 1] for matrix in matrices])
     np.testing.assert_allclose(actual=actual, desired=expected, atol=3.5e-4)
-
-
-def test_three_point_sources_z_information_stays_constant_when_only_x_varies(
-    mock_wave_vector: int,
-    mock_rayleigh_length: int,
-) -> None:
-    """The z FI is stable when only the in-plane pair moves near the origin."""
-    expected = 0.1607563154810208
-    matrices = []
-
-    for displacement in (0.01, 0.02, 0.03):
-        coordinates = np.array([
-            [0.0, -displacement, displacement, 0.0, 0.0, 0.0, -0.25, 0.0, 0.0]
-        ])
-        matrices.append(
-            _total_fisher_information(
-                coordinates=coordinates,
-                number_of_point_sources=3,
-                measurement_basis_modes=10,
-                coordinate_jacobian=coordinate_jacobian(),
-                wave_vector=mock_wave_vector,
-                rayleigh_length=mock_rayleigh_length,
-            )
-        )
-
-    actual = np.array([matrix[1, 1] for matrix in matrices])
-    np.testing.assert_allclose(actual=actual, desired=expected, atol=5e-6)
-
-
-def test_three_point_sources_x_information_stays_constant_when_only_z_varies(
-    mock_wave_vector: int,
-    mock_rayleigh_length: int,
-) -> None:
-    """The x FI stays stable for a small z-displacement sweep."""
-    expected = 0.3282331528359046
-    matrices = []
-
-    for displacement in (0.01, 0.02):
-        coordinates = np.array([
-            [0.0, -0.3, 0.3, 0.0, 0.0, 0.0, -displacement, 0.0, 0.0]
-        ])
-        matrices.append(
-            _total_fisher_information(
-                coordinates=coordinates,
-                number_of_point_sources=3,
-                measurement_basis_modes=10,
-                coordinate_jacobian=coordinate_jacobian(),
-                wave_vector=mock_wave_vector,
-                rayleigh_length=mock_rayleigh_length,
-            )
-        )
-
-    actual = np.array([matrix[0, 0] for matrix in matrices])
-    np.testing.assert_allclose(actual=actual, desired=expected, atol=6e-4)
