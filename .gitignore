@@ -1,4 +1,6 @@
 docs/source
+thesis_figures/
+DS_Store
 
 # From https://raw.githubusercontent.com/github/gitignore/main/Python.gitignore
 
