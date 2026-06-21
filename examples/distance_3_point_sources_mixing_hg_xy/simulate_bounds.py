@@ -14,7 +14,7 @@ from rayfish.classical_fisher_information.measurement_basis import (
 from rayfish.parameter_catalogue import distance_3_sources_xz
 
 N_PT_SRC = 3
-EPS_INTERVAL = [0.0, 0.1, 0.3, 0.6, 1.0]
+EPS_INTERVAL = [0.04, 0.07]
 CONF = {
     "simulation_dimension": 1,
 }
