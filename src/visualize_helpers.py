@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import itertools
 from math import sqrt
 
 import matplotlib
@@ -12,9 +13,15 @@ import matplotlib.figure
 import matplotlib.pyplot as plt
 import numpy as np
 import numpy.typing as npt
-from beartype.typing import Callable
+from beartype.typing import Callable, Sequence
 from loguru import logger
+from matplotlib.lines import Line2D
 from numpy.polynomial.polynomial import polyval
+
+# Default colormap families, one per cross-talk level (index-aligned with the
+# eps values passed to ``plot_fi_comparison``). Same order used across the
+# example notebooks so figures stay visually consistent.
+DEFAULT_FI_CMAPS = ("Greens", "Reds", "Purples", "Oranges", "Blues")
 
 MAX_HEIGHT_INCHES = 8.0
 
@@ -63,7 +70,7 @@ def latexify(
         "axes.labelsize": 30,  # fontsize for x and y labels (was 30)
         "axes.titlesize": 30,  # was 30
         "font.size": 30,  # was 30
-        "legend.fontsize": 30,  # was 30
+        "legend.fontsize": 20,  # was 30
         "xtick.labelsize": 30,
         "ytick.labelsize": 30,
         "text.usetex": False,
@@ -314,3 +321,154 @@ def plot_individual_fi(
     ax[cb_ax].xaxis.set_label_coords(x, y - offset)  # adjust offset to taste
 
     return sm
+
+
+def eps_to_db(eps: float) -> float:
+    """Convert a mode-mixing angle ``eps`` to cross-talk in decibels.
+
+    The baseline ``eps == 0`` maps to ``-inf`` (no cross-talk).
+    """
+    return 20 * np.log10(np.sin(eps)) if eps > 0 else -np.inf
+
+
+def _clipped_cmap(name: str) -> mcolors.ListedColormap:
+    """Colormap with the darkest 30% clipped out (matches ``plot_individual_fi``)."""
+    return mcolors.ListedColormap(cm.get_cmap(name)(np.linspace(0.3, 1.0, 256)))
+
+
+def _rep_color(name: str, t: float = 0.85) -> tuple[float, float, float, float]:
+    """A single representative color from a colormap family, for legend swatches."""
+    return _clipped_cmap(name)(t)
+
+
+def plot_fi_comparison(
+    fi_fields: Sequence[npt.NDArray],
+    x_range: npt.NDArray,
+    gradient_range: npt.NDArray,
+    eps_values: Sequence[float],
+    *,
+    cmaps: Sequence[str] | None = None,
+    xlabel: str = "",
+    ylabel: str = "",
+    gradient_label: str = "",
+    ylim: tuple[float, float] | None = None,
+    legend_title: str = "cross-talk (dB)",
+    legend_ncol: int = 2,
+    baseline_first: bool = False,
+    gradient_cmap: str = "Greys",
+) -> tuple[matplotlib.figure.Figure, tuple[matplotlib.axes.Axes, ...]]:
+    """Overlay Fisher-information curves for several cross-talk levels.
+
+    Each entry in ``fi_fields`` is a 2D array of shape
+    ``[len(x_range), len(gradient_range)]`` drawn as a family of curves: one
+    line per value of ``gradient_range``, colored light->dark within a single
+    colormap family. The *family* (hue) encodes the cross-talk level and is
+    decoded by the legend; the light->dark progression encodes
+    ``gradient_range`` and is decoded by a single shared (neutral) colorbar --
+    replacing the redundant per-level colorbars, since every level shares the
+    same ``gradient_range`` normalization.
+
+    Parameters
+    ----------
+    fi_fields :
+        One 2D field per cross-talk level, index-aligned with ``eps_values``.
+    x_range :
+        Horizontal-axis values (shared by every curve).
+    gradient_range :
+        The swept parameter encoded by the within-family gradient / colorbar.
+    eps_values :
+        Mode-mixing angles, index-aligned with ``fi_fields``; ``eps == 0`` is
+        the baseline and is labelled as such (and placed last in the legend).
+    cmaps :
+        Colormap family names, index-aligned with ``fi_fields``. Defaults to
+        :data:`DEFAULT_FI_CMAPS`.
+    legend_ncol :
+        Number of legend columns. Entries read left-to-right, top-to-bottom in
+        order of increasing cross-talk (dB), with the baseline last.
+    baseline_first :
+        If True, the baseline sits alone in the first row (its row padded with
+        blank entries) and the cross-talk levels follow in ascending dB order.
+    """
+    if cmaps is None:
+        cmaps = DEFAULT_FI_CMAPS[: len(fi_fields)]
+    if not (len(fi_fields) == len(eps_values) == len(cmaps)):
+        raise ValueError(
+            "fi_fields, eps_values and cmaps must have the same length, got "
+            f"{len(fi_fields)}, {len(eps_values)}, {len(cmaps)}"
+        )
+
+    fig, axs = create_fig_and_ax(1)
+    main, cax = axs[0], axs[1]
+
+    norm = mcolors.Normalize(
+        vmin=float(np.min(gradient_range)), vmax=float(np.max(gradient_range))
+    )
+
+    for field, name in zip(fi_fields, cmaps):
+        colors = _clipped_cmap(name)(norm(gradient_range))
+        for j in range(len(gradient_range)):
+            main.plot(x_range, field[:, j], "-", color=colors[j])
+
+    # single neutral colorbar showing the gradient direction
+    sm = cm.ScalarMappable(cmap=_clipped_cmap(gradient_cmap), norm=norm)
+    sm.set_array(gradient_range)
+    fig.colorbar(sm, cax=cax)
+    cax.set_ylabel(gradient_label)
+
+    # legend: color family -> cross-talk level, ordered by increasing dB with
+    # the baseline last. Reorder so matplotlib's column-major fill reads
+    # left-to-right, top-to-bottom.
+    labelled = [
+        (
+            eps,
+            Line2D(
+                [],
+                [],
+                color=_rep_color(name),
+                lw=6,
+                label="baseline" if eps == 0 else f"{eps_to_db(eps):.2f}",
+            ),
+        )
+        for eps, name in zip(eps_values, cmaps)
+    ]
+    nonbaseline = sorted((h for h in labelled if h[0] != 0), key=lambda h: h[0])
+    baseline = [h for h in labelled if h[0] == 0]
+    if baseline_first and baseline:
+        # baseline alone on the top row; pad the rest of that row with blanks
+        blanks = [
+            Line2D([], [], linestyle="none", label="")
+            for _ in range(max(0, legend_ncol - len(baseline)))
+        ]
+        reading = [h for _, h in baseline] + blanks + [h for _, h in nonbaseline]
+    else:
+        reading = [handle for _, handle in (*nonbaseline, *baseline)]
+    column_major = list(
+        itertools.chain(*[reading[i::legend_ncol] for i in range(legend_ncol)])
+    )
+    main.legend(
+        handles=column_major,
+        title=legend_title,
+        frameon=False,
+        loc="best",
+        ncol=legend_ncol,
+        handlelength=0.5,
+        handletextpad=0.4,
+        columnspacing=0.5,
+    )
+
+    if ylim is not None:
+        main.set_ylim(*ylim)
+    main.set_xlabel(xlabel)
+    main.set_ylabel(ylabel)
+
+    pos_main = axs[0].get_position()
+    pos_cbar = axs[1].get_position()
+    gap = 0.01  # in figure fraction; smaller = tighter
+    axs[1].set_position((
+        pos_main.x1 + gap,
+        pos_cbar.y0,
+        pos_cbar.width,
+        pos_cbar.height,
+    ))
+
+    return fig, axs
