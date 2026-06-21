@@ -12,7 +12,9 @@ import matplotlib.figure
 import matplotlib.pyplot as plt
 import numpy as np
 import numpy.typing as npt
+from beartype.typing import Callable
 from loguru import logger
+from numpy.polynomial.polynomial import polyval
 
 MAX_HEIGHT_INCHES = 8.0
 
@@ -72,6 +74,190 @@ def latexify(
     }
 
     matplotlib.rcParams.update(params)
+
+
+def measurement_mode_field(
+    mode: dict[str, npt.NDArray],
+    extent: float = 4.0,
+    resolution: int = 200,
+) -> tuple[npt.NDArray, npt.NDArray, npt.NDArray]:
+    """Reconstruct the real-space field of a single measurement mode.
+
+    A mode is phi(x, y) = g(x) f(y) sqrt(1/pi) exp(-(x^2 + y^2) / 2), where g and f are
+    polynomials whose ascending-power coefficients are stored under the "x" and "y" keys
+    of the mode dict (as produced by ``measurement_basis``). The Gaussian envelope is
+    the point-spread function the modes are matched to.
+
+    Args:
+        mode: a single ``{"x": coeffs, "y": coeffs}`` entry of the measurement basis.
+        extent: half-width of the square plotting window in normalized units.
+        resolution: number of grid points per axis.
+
+    Returns:
+        The ``(X, Y, field)`` meshgrid arrays, with ``field`` the (real) mode amplitude.
+    """
+    axis = np.linspace(-extent, extent, resolution)
+    x_grid, y_grid = np.meshgrid(axis, axis)
+    envelope = np.sqrt(1.0 / np.pi) * np.exp(-(x_grid**2 + y_grid**2) / 2.0)
+    field = polyval(x_grid, mode["x"]) * polyval(y_grid, mode["y"]) * envelope
+    return x_grid, y_grid, np.real(field)
+
+
+def plot_measurement_modes(
+    modes: list[dict[str, npt.NDArray]],
+    mode_degree: int | None = None,
+    extent: float = 4.0,
+    resolution: int = 200,
+    intensity: bool = False,
+    cmap: str | None = None,
+) -> tuple[matplotlib.figure.Figure, npt.NDArray]:
+    """Plot every measurement mode on a ``mode_degree x mode_degree`` grid.
+
+    Handy for eyeballing how the mode-mixing strength epsilon distorts the
+    Hermite-Gaussian modes: pass the (possibly mixed) basis straight from
+    ``measurement_basis``. Subplot ``(i, j)`` shows mode ``modes[i * mode_degree + j]``.
+    Amplitude is drawn with a symmetric diverging colormap so sign changes are visible;
+    set ``intensity=True`` to show ``|phi|^2`` instead.
+
+    Args:
+        modes: the measurement basis list (length ``mode_degree**2``).
+        mode_degree: grid size; inferred from ``len(modes)`` when omitted.
+        extent: half-width of each subplot window in normalized units.
+        resolution: number of grid points per axis.
+        intensity: plot ``|phi|^2`` instead of the signed amplitude.
+        cmap: matplotlib colormap name; defaults to a diverging/intensity map.
+
+    Returns:
+        The created ``(figure, axes)``, where ``axes`` is a 2D array of shape
+        ``(mode_degree, mode_degree)``.
+    """
+    if mode_degree is None:
+        mode_degree = round(len(modes) ** 0.5)
+    if cmap is None:
+        cmap = "viridis" if intensity else "RdBu_r"
+
+    fig, axes = plt.subplots(
+        mode_degree,
+        mode_degree,
+        figsize=(2.2 * mode_degree, 2.2 * mode_degree),
+        squeeze=False,
+    )
+    window = [-extent, extent, -extent, extent]
+    for i in range(mode_degree):
+        for j in range(mode_degree):
+            _, _, field = measurement_mode_field(
+                modes[i * mode_degree + j], extent, resolution
+            )
+            data = field**2 if intensity else field
+            ax = axes[i, j]
+            if intensity:
+                ax.imshow(data, origin="lower", extent=window, cmap=cmap)
+            else:
+                vmax = np.max(np.abs(data)) or 1.0
+                ax.imshow(
+                    data,
+                    origin="lower",
+                    extent=window,
+                    cmap=cmap,
+                    vmin=-vmax,
+                    vmax=vmax,
+                )
+            ax.set_title(f"({i},{j})", fontsize=9)
+            ax.set_xticks([])
+            ax.set_yticks([])
+    fig.tight_layout()
+    return fig, axes
+
+
+def plot_mode_mixing_sweep(
+    base_modes: list[dict[str, npt.NDArray]],
+    epsilons: list[float],
+    mix_fn: Callable,
+    mode_indices: list[int] | None = None,
+    mode_degree: int | None = None,
+    extent: float = 4.0,
+    resolution: int = 160,
+    intensity: bool = False,
+    cmap: str | None = None,
+) -> tuple[matplotlib.figure.Figure, npt.NDArray]:
+    """Grid of modes (rows) versus mixing strength (columns).
+
+    Each row fixes one measurement mode and shows how it is progressively distorted as
+    the mixing strength epsilon increases left to right, so cross-talk transferred into
+    a mode is read along a single row. The amplitude colour scale is shared within each
+    row so brightness changes across epsilon are comparable for that mode.
+
+    Args:
+        base_modes: the unmixed measurement basis (length ``mode_degree**2``).
+        epsilons: mixing strengths for the columns, lowest to highest.
+        mix_fn: callable ``mix_fn(modes, epsilon) -> mixed_modes`` (e.g. the basis
+            module's ``_mix_modes_via_unitary``).
+        mode_indices: flat indices of the modes to show as rows; defaults to all.
+        mode_degree: grid size; inferred from ``len(base_modes)`` when omitted.
+        extent: half-width of each subplot window in normalized units.
+        resolution: number of grid points per axis.
+        intensity: plot ``|phi|^2`` instead of the signed amplitude.
+        cmap: matplotlib colormap name; defaults to a diverging/intensity map.
+
+    Returns:
+        The created ``(figure, axes)``, where ``axes`` is a 2D array of shape
+        ``(len(mode_indices), len(epsilons))``.
+    """
+    if mode_degree is None:
+        mode_degree = round(len(base_modes) ** 0.5)
+    if mode_indices is None:
+        mode_indices = list(range(len(base_modes)))
+    if cmap is None:
+        cmap = "viridis" if intensity else "RdBu_r"
+
+    # Mix once per column, then index the chosen modes out of each mixed basis.
+    mixed_per_eps = [mix_fn(base_modes, eps) for eps in epsilons]
+    window = [-extent, extent, -extent, extent]
+
+    n_rows, n_cols = len(mode_indices), len(epsilons)
+    fig, axes = plt.subplots(
+        n_rows,
+        n_cols,
+        figsize=(1.7 * n_cols, 1.7 * n_rows),
+        squeeze=False,
+    )
+    for row, mode_idx in enumerate(mode_indices):
+        fields = [
+            measurement_mode_field(mixed[mode_idx], extent, resolution)[2]
+            for mixed in mixed_per_eps
+        ]
+        data = [f**2 if intensity else f for f in fields]
+        # Shared colour scale per row so the same mode is comparable across epsilon.
+        row_vmax = max((np.max(np.abs(d)) for d in data), default=1.0) or 1.0
+        for col in range(n_cols):
+            ax = axes[row, col]
+            if intensity:
+                ax.imshow(
+                    data[col],
+                    origin="lower",
+                    extent=window,
+                    cmap=cmap,
+                    vmin=0.0,
+                    vmax=row_vmax,
+                )
+            else:
+                ax.imshow(
+                    data[col],
+                    origin="lower",
+                    extent=window,
+                    cmap=cmap,
+                    vmin=-row_vmax,
+                    vmax=row_vmax,
+                )
+            ax.set_xticks([])
+            ax.set_yticks([])
+            if col == 0:
+                i, j = divmod(mode_idx, mode_degree)
+                ax.set_ylabel(f"({i},{j})", fontsize=10, rotation=0, labelpad=18)
+            if row == 0:
+                ax.set_title(rf"$\epsilon$={epsilons[col]:g}", fontsize=10)
+    fig.tight_layout()
+    return fig, axes
 
 
 def create_fig_and_ax(
