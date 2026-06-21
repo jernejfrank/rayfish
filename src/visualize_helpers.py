@@ -352,6 +352,7 @@ def plot_fi_comparison(
     ylabel: str = "",
     gradient_label: str = "",
     ylim: tuple[float, float] | None = None,
+    xlim: tuple[float, float] | None = None,
     legend_title: str = "cross-talk (dB)",
     legend_ncol: int = 2,
     baseline_first: bool = False,
@@ -441,7 +442,7 @@ def plot_fi_comparison(
         ]
         reading = [h for _, h in baseline] + blanks + [h for _, h in nonbaseline]
     else:
-        reading = [handle for _, handle in (*nonbaseline, *baseline)]
+        reading = [handle for _, handle in (*baseline, *nonbaseline)]
     column_major = list(
         itertools.chain(*[reading[i::legend_ncol] for i in range(legend_ncol)])
     )
@@ -458,6 +459,9 @@ def plot_fi_comparison(
 
     if ylim is not None:
         main.set_ylim(*ylim)
+    if xlim is not None:
+        main.set_xlim(*xlim)
+
     main.set_xlabel(xlabel)
     main.set_ylabel(ylabel)
 
