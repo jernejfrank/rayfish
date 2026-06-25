@@ -69,7 +69,9 @@ def mode_mixing_strength(mode_mixing_eps: float = 0.0) -> float:
 @pipe_output(
     step(_mix_modes_via_unitary, mode_mixing_strength=source("mode_mixing_strength"))
 )
-def measurement_basis(mode_degree: int) -> List[Dict[str, npt.NDArray[np.float64]]]:
+def measurement_basis(
+    mode_degree: int,
+) -> List[Dict[str, npt.NDArray[np.float64]]]:
     """Encodes the coefficients of the Hermite-Gaussian modes."""
     basis = []
     for i in range(mode_degree):
