@@ -55,31 +55,37 @@ def _measurement_basis(
 
 def simulate_bounds() -> None:
     """Simulates FI for MS and saves to file."""
-    logger.info(f"Simulation for modes {IMPORTANT_MODES}")
-    input_ = dict(INPUT_.items())
-    input_["measurement_basis"] = _measurement_basis(IMPORTANT_MODES)
-    classical_result = classical_dr.execute(
-        inputs=input_,
-        final_vars=[
-            "fisher_information_matrix_for_entire_distribution",
-            "covariance_matrix_for_entire_distribution",
-        ],
-    )
-    fi_ms_ = classical_result[
-        "fisher_information_matrix_for_entire_distribution"
-    ].reshape(N_GRIDS, N_GRIDS, len(IMPORTANT_MODES) + 1, 2, 2)
-    np.save(
-        "fi_ms_important_modes.npy",
-        fi_ms_,
-    )
+    for i in [-1, 2, 3, 4, 5, 6]:
+        if i == -1:
+            individual_modes = IMPORTANT_MODES
+        else:
+            individual_modes = tuple((k_, l_) for k_ in range(i) for l_ in range(i))
 
-    fi_ms_inv_ = classical_result["covariance_matrix_for_entire_distribution"].reshape(
-        N_GRIDS, N_GRIDS, 2, 2
-    )
-    np.save(
-        "fi_ms_inv_important_modes.npy",
-        fi_ms_inv_,
-    )
+        logger.info(f"Simulation for mode order {i}")
+        input_ = dict(INPUT_.items())
+        input_["measurement_basis"] = _measurement_basis(individual_modes)
+        classical_result = classical_dr.execute(
+            inputs=input_,
+            final_vars=[
+                "fisher_information_matrix_for_entire_distribution",
+                "covariance_matrix_for_entire_distribution",
+            ],
+        )
+        fi_ms_ = classical_result[
+            "fisher_information_matrix_for_entire_distribution"
+        ].reshape(N_GRIDS, N_GRIDS, len(individual_modes) + 1, 2, 2)
+        np.save(
+            f"fi_ms_{i}.npy",
+            fi_ms_,
+        )
+
+        fi_ms_inv_ = classical_result[
+            "covariance_matrix_for_entire_distribution"
+        ].reshape(N_GRIDS, N_GRIDS, 2, 2)
+        np.save(
+            f"fi_ms_inv_{i}_with_remainder.npy",
+            fi_ms_inv_,
+        )
 
 
 if __name__ == "__main__":

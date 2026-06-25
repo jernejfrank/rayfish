@@ -346,7 +346,7 @@ def draw_fi_curves(
     fi_fields: Sequence[npt.NDArray],
     x_range: npt.NDArray,
     gradient_range: npt.NDArray,
-    eps_values: Sequence[float],
+    n_eps: int,
     *,
     cmaps: Sequence[str] | None = None,
     xlabel: str = "",
@@ -368,10 +368,10 @@ def draw_fi_curves(
     """
     if cmaps is None:
         cmaps = DEFAULT_FI_CMAPS[: len(fi_fields)]
-    if not (len(fi_fields) == len(eps_values) == len(cmaps)):
+    if not (len(fi_fields) == n_eps == len(cmaps)):
         raise ValueError(
             "fi_fields, eps_values and cmaps must have the same length, got "
-            f"{len(fi_fields)}, {len(eps_values)}, {len(cmaps)}"
+            f"{len(fi_fields)}, {n_eps}, {len(cmaps)}"
         )
 
     norm = mcolors.Normalize(
@@ -444,6 +444,116 @@ def fi_legend_handles(
     return list(itertools.chain(*[reading[i::legend_ncol] for i in range(legend_ncol)]))
 
 
+def fi_legend_handles_labeled(
+    labels: Sequence[str],
+    *,
+    cmaps: Sequence[str] | None = None,
+    legend_ncol: int = 2,
+) -> list[Line2D]:
+    """Build legend handles from explicit string labels (one per curve family).
+
+    The string-label counterpart of :func:`fi_legend_handles`. Use this when the
+    curve families are not a single swept mode-mixing angle -- e.g. the
+    "remainder" comparison, where each field is a differently-defined
+    measurement (full baseline vs. a retained-mode subset) that has a *name*
+    rather than a numeric cross-talk level. Labels are drawn verbatim and kept in
+    the order given (no dB conversion, no baseline reordering).
+
+    Entries are reordered column-major so matplotlib's ``ncol`` legend fills
+    left-to-right, top-to-bottom in the supplied order.
+    """
+    if cmaps is None:
+        cmaps = DEFAULT_FI_CMAPS[: len(labels)]
+    if len(labels) != len(cmaps):
+        raise ValueError(
+            "labels and cmaps must have the same length, got "
+            f"{len(labels)}, {len(cmaps)}"
+        )
+    handles = [
+        Line2D([], [], color=_rep_color(name), lw=6, label=label)
+        for label, name in zip(labels, cmaps)
+    ]
+    return list(itertools.chain(*[handles[i::legend_ncol] for i in range(legend_ncol)]))
+
+
+def plot_fi_comparison_labeled(
+    fi_fields: Sequence[npt.NDArray],
+    x_range: npt.NDArray,
+    gradient_range: npt.NDArray,
+    labels: Sequence[str],
+    *,
+    cmaps: Sequence[str] | None = None,
+    xlabel: str = "",
+    ylabel: str = "",
+    gradient_label: str = "",
+    ylim: tuple[float, float] | None = None,
+    xlim: tuple[float, float] | None = None,
+    legend_title: str = "",
+    legend_ncol: int = 2,
+    gradient_cmap: str = "Greys",
+) -> tuple[matplotlib.figure.Figure, tuple[matplotlib.axes.Axes, ...]]:
+    """Overlay FI curve families identified by explicit string ``labels``.
+
+    Identical to :func:`plot_fi_comparison` except the families are labelled by
+    the caller-supplied strings (decoded by the legend in the given order)
+    rather than by mode-mixing angle in dB. See that function for the curve /
+    gradient / shared-colorbar encoding.
+
+    Parameters
+    ----------
+    labels :
+        One legend label per field, index-aligned with ``fi_fields`` (e.g.
+        ``["baseline", "important modes"]``).
+    """
+    fig, axs = create_fig_and_ax(1)
+    main, cax = axs[0], axs[1]
+
+    sm = draw_fi_curves(
+        main,
+        fi_fields,
+        x_range,
+        gradient_range,
+        len(labels),
+        cmaps=cmaps,
+        xlabel=xlabel,
+        ylabel=ylabel,
+        ylim=ylim,
+        xlim=xlim,
+        gradient_cmap=gradient_cmap,
+    )
+
+    # single neutral colorbar showing the gradient direction
+    fig.colorbar(sm, cax=cax)
+    cax.set_ylabel(gradient_label)
+
+    main.legend(
+        handles=fi_legend_handles_labeled(
+            labels,
+            cmaps=cmaps,
+            legend_ncol=legend_ncol,
+        ),
+        title=legend_title,
+        frameon=False,
+        loc="center",
+        ncol=legend_ncol,
+        handlelength=0.5,
+        handletextpad=0.4,
+        columnspacing=0.5,
+    )
+
+    pos_main = axs[0].get_position()
+    pos_cbar = axs[1].get_position()
+    gap = 0.01  # in figure fraction; smaller = tighter
+    axs[1].set_position((
+        pos_main.x1 + gap,
+        pos_cbar.y0,
+        pos_cbar.width,
+        pos_cbar.height,
+    ))
+
+    return fig, axs
+
+
 def plot_fi_comparison(
     fi_fields: Sequence[npt.NDArray],
     x_range: npt.NDArray,
@@ -501,7 +611,7 @@ def plot_fi_comparison(
         fi_fields,
         x_range,
         gradient_range,
-        eps_values,
+        len(eps_values),
         cmaps=cmaps,
         xlabel=xlabel,
         ylabel=ylabel,

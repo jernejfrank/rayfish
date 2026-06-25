@@ -236,7 +236,7 @@ def fisher_information_matrix_for_entire_distribution(
                 prob_sum[mask] += prob[mask]
 
                 # ss
-                fisher_information[:, b, i, j] = (
+                fisher_information[mask, b, i, j] = (
                     derivatives_probability[mask, b, i]
                     * derivatives_probability[mask, b, j]
                     / prob[mask]
@@ -244,7 +244,7 @@ def fisher_information_matrix_for_entire_distribution(
 
                 # tt
                 fisher_information[
-                    :, b, number_of_point_sources + i, number_of_point_sources + j
+                    mask, b, number_of_point_sources + i, number_of_point_sources + j
                 ] = (
                     derivatives_probability[mask, b, number_of_point_sources + i]
                     * derivatives_probability[mask, b, number_of_point_sources + j]
@@ -253,7 +253,7 @@ def fisher_information_matrix_for_entire_distribution(
 
                 # pp
                 fisher_information[
-                    :,
+                    mask,
                     b,
                     2 * number_of_point_sources + i,
                     2 * number_of_point_sources + j,
@@ -264,32 +264,35 @@ def fisher_information_matrix_for_entire_distribution(
                 )
 
                 # ts
-                fisher_information[:, b, number_of_point_sources + i, j] = (
+                fisher_information[mask, b, number_of_point_sources + i, j] = (
                     derivatives_probability[mask, b, number_of_point_sources + i]
                     * derivatives_probability[mask, b, j]
                     / prob[mask]
                 )
                 # st
-                fisher_information[:, b, i, j + number_of_point_sources] = (
+                fisher_information[mask, b, i, j + number_of_point_sources] = (
                     derivatives_probability[mask, b, i]
                     * derivatives_probability[mask, b, number_of_point_sources + j]
                     / prob[mask]
                 )
                 # ps
-                fisher_information[:, b, 2 * number_of_point_sources + i, j] = (
+                fisher_information[mask, b, 2 * number_of_point_sources + i, j] = (
                     derivatives_probability[mask, b, 2 * number_of_point_sources + i]
                     * derivatives_probability[mask, b, j]
                     / prob[mask]
                 )
                 # sp
-                fisher_information[:, b, i, j + 2 * number_of_point_sources] = (
+                fisher_information[mask, b, i, j + 2 * number_of_point_sources] = (
                     derivatives_probability[mask, b, i]
                     * derivatives_probability[mask, b, 2 * number_of_point_sources + j]
                     / prob[mask]
                 )
                 # tp
                 fisher_information[
-                    :, b, number_of_point_sources + i, j + 2 * number_of_point_sources
+                    mask,
+                    b,
+                    number_of_point_sources + i,
+                    j + 2 * number_of_point_sources,
                 ] = (
                     derivatives_probability[mask, b, number_of_point_sources + i]
                     * derivatives_probability[mask, b, 2 * number_of_point_sources + j]
@@ -297,7 +300,10 @@ def fisher_information_matrix_for_entire_distribution(
                 )
                 # pt
                 fisher_information[
-                    :, b, 2 * number_of_point_sources + i, j + number_of_point_sources
+                    mask,
+                    b,
+                    2 * number_of_point_sources + i,
+                    j + number_of_point_sources,
                 ] = (
                     derivatives_probability[mask, b, 2 * number_of_point_sources + i]
                     * derivatives_probability[mask, b, number_of_point_sources + j]
