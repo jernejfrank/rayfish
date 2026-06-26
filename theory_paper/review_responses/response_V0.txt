@@ -10,13 +10,14 @@ We have addressed their concerns in the responses below and in the resubmitted
 manuscript. Most notably, we have added new Supplemental Material that (i) models a
 realistic finite mode sorter through a remainder ("dump-port") channel and demonstrates
 that resolving only a handful of information-bearing modes already reaches the quantum
-limit in the sub-Rayleigh regime, and (ii) quantifies the impact of nearest-neighbour
+limit in the sub-Rayleigh regime, (ii) quantifies the impact of nearest-neighbour
 mode cross-talk and shows that the mode-sorting advantage survives realistic sorter
-imperfections. We have also sharpened the statement of novelty relative to previous
-work and clarified the geometric intuition behind the optimality of Hermite-Gaussian
-modes.
-
-TBD on unequal intensities and detector noise.
+imperfections, (iii) quantifies a detector noise floor (dark counts and background
+light) and shows that, although it preferentially degrades depth estimation, mode
+sorting degrades gracefully up to percent-level background, and (iv) relaxes the
+equal-intensity assumption by assigning independent and possibly unknown relative
+weights to the three sources. We have also sharpened the statement of novelty relative to previous work and
+clarified the geometric intuition behind the optimality of Hermite-Gaussian modes.
 
 We hope you will find the revised manuscript suitable for publication in PRL.
 
@@ -41,19 +42,18 @@ revised the manuscript accordingly and respond to each point below.
    roughness, aberrations, imperfect mode sorting), and whether the favourable delta z^2
    scaling survives beyond the toy model.
 
-1a. Imperfect mode sorting. We have added a new Supplemental Material section, "Impact of
-Mode-Sorting Imperfections on the Classical Fisher Information." There we model the
-dominant imperfection of a multi-plane light-converter sorter, namely nearest-neighbour
-cross-talk between adjacent Hermite-Gaussian orders, by coupling adjacent modes with a
-lossless beam-splitter rotation U(epsilon) before computing the detection probabilities,
-their derivatives, and the Fisher information. Because U(epsilon) is orthogonal, the
-mixed modes remain a complete orthonormal measurement, and the entire derivation carries
-over unchanged. We find that cross-talk preferentially degrades estimation precisely
-because the information is concentrated in a few modes; nonetheless, for cross-talk up to
--20 dB (which is experimentally attainable), the Fisher information is reduced but does
-not collapse and stays above the direct-imaging benchmark. Mode sorting therefore retains
-its advantage over direct imaging across the sub-Rayleigh regime (new figure in the
-Supplemental Material).
+1a. Imperfect mode sorting. We have added a new Supplemental Material section, "Mode-Sorting
+Bounds under Experimental Imperfections." There we model the dominant imperfection of a
+multi-plane light-converter sorter, namely nearest-neighbour cross-talk between adjacent
+Hermite-Gaussian orders, by coupling adjacent modes with a lossless beam-splitter rotation
+U(epsilon) before computing the detection probabilities, their derivatives, and the Fisher
+information. Because U(epsilon) is orthogonal, the mixed modes remain a complete orthonormal
+measurement, and the entire derivation carries over unchanged. We find that cross-talk
+preferentially degrades estimation precisely because the information is concentrated in a
+few modes; nonetheless, for cross-talk up to -20 dB (which is experimentally attainable),
+the Fisher information is reduced but does not collapse and stays above the direct-imaging
+benchmark. Mode sorting therefore retains its advantage over direct imaging across the
+sub-Rayleigh regime (new figure in the Supplemental Material).
 
 1b. Aberrated and non-Gaussian PSFs. Our bounds depend only on the Gram matrix of the
 PSFs and their parameter derivatives (the closed-form quantum Fisher information matrix
@@ -66,12 +66,24 @@ evaluated numerically. We now state this explicitly in the Conclusions.
 rather than an artefact of the toy model: it originates from the activation of the
 second-order channels (2,0) and (0,2), whose probability vanishes for a flat surface
 (null hypothesis) but grows as delta z^2 for a crack. This mechanism does not rely on the
-equal-intensity assumption.
+equal-intensity assumption, as we confirm quantitatively in point 4a below.
 
-1d. Background light and surface roughness. A detector/background noise floor is treated
-in point 4 below.
+1d. Background light. A detector/background noise floor (dark counts and background
+light) is treated in point 4b below.
 
-TBD
+1e. Surface roughness. We agree this is a physically important generalisation. It
+corresponds to replacing the discrete point-source model by a continuous (or denser)
+distribution of incoherent emitters, which the present overlap-based framework
+accommodates without modification. A dedicated quantitative treatment of rough-surface
+statistics is, however, a substantial study in its own right, and we regard it as a
+natural direction for future work rather than part of the present Letter.
+
+1f. Uniform optical/detector loss. A uniform optical or detector inefficiency thins the
+Poisson process and rescales every channel mean by the same factor, i.e. it rescales the
+detection rate tau. It scales the Fisher information overall but does not change the
+mode-sorting-versus-direct-imaging comparison, since both schemes are rescaled equally.
+We now state this explicitly in the manuscript. This benign rescaling is distinct from a
+genuine detector noise floor (dark counts/background), treated in point 4b.
 
 
 2. Novelty relative to previous work on quantum superresolution and quantum surface
@@ -113,7 +125,7 @@ rescales every channel mean by the same factor, i.e. it rescales the detection r
 tau. It scales the Fisher information overall but does not change the mode-sorting-
 versus-direct-imaging comparison, since both schemes are rescaled equally. We now state
 this explicitly in the manuscript. This benign rescaling is distinct from a genuine
-detector noise floor (dark counts/background), which is treated in point 4 below.
+detector noise floor (dark counts/background), which is treated in point 4b below.
 
 3d. Remainder channel and higher-order cut-off. We have added a Supplemental Material
 section, "The remainder channel," that treats mode truncation explicitly. A finite
@@ -141,18 +153,24 @@ equally and does not affect the mode-sorting-versus-direct-imaging comparison.
 
 4. Outstanding robustness studies.
 
-4a. Unequal and fluctuating source intensities. TBD.
-    [Quantitative study of the crack model with unequal/fluctuating point-source
-    brightness, and whether mode sorting remains optimal in the sub-Rayleigh regime.]
+4a. Unequal and fluctuating source intensities. TBD
 
-4b. Detector noise floor (dark counts and background light). TBD.
-    [The current Fisher information captures photon shot noise (the 1/P_j weighting) and
-    a uniform inefficiency (a rescaling of tau), but not a theta-independent additive
-    count floor b_j from dark counts/background. Such a floor enters the Fisher-
-    information denominator as tau P_j + b_j and therefore preferentially suppresses the
-    faint, information-bearing higher-order modes (the second-order depth channels in
-    particular). A short Supplemental Material section quantifying the mode-sorting-
-    versus-direct-imaging comparison under such a floor is planned.]
+4b. Detector noise floor (dark counts and background light). We have added a Supplemental
+Material subsection, "Detector noise floor," to the section on mode-sorting and detector
+imperfections. The Poissonian model already captures photon shot noise (the 1/P_j
+weighting) and a uniform inefficiency (a rescaling of tau); a genuine noise floor instead
+adds a theta-independent count floor b_j to each channel, so the mean registered power
+becomes tau P_j + b_j. Since b_j is independent of theta, the floor leaves the numerator
+of the Fisher information unchanged but enters its denominator, and therefore
+preferentially suppresses low-occupancy channels. Parametrising the floor by the
+background-to-signal ratio beta = b_j/tau at fixed photon budget, we find that it degrades
+estimation anisotropically: the width is carried by the first-order mode (1,0) while the
+depth is carried by the fainter second-order modes (2,0) and (0,2) associated with axial
+defocus, so the floor erodes the depth channels before the width channel and depth
+precision degrades faster. The degradation nevertheless remains moderate for background-
+to-signal ratios up to the percent level, becoming severe only once the floor is
+comparable to the occupancy of these information-bearing modes (new figure in the
+Supplemental Material).
 
 
 ================================================================================
@@ -191,7 +209,7 @@ clarification to the main text.
 3. Beyond equal-intensity emitters, how robust is the protocol for unknown or fluctuating
    intensities, and does mode sorting remain optimal in the sub-Rayleigh regime?
 
-   TBD.
+TBD.
 
 
 4. What is the intuition behind the optimality of Hermite-Gaussian modes in the
@@ -212,32 +230,47 @@ manuscript.
 On generality, the framework is PSF-agnostic (point 1): because the bounds depend only on
 PSF overlaps and their derivatives, they apply unchanged to non-Gaussian, aberrated, or
 experimentally measured PSFs, for which the overlaps are evaluated numerically. We now
-state this explicitly in the Conclusions.
+state this explicitly in the Conclusions. The same overlap-based description extends to
+denser or continuous emitter distributions, which is the natural route to modelling
+surface roughness and which we highlight as a direction for future work.
 
-On experimental feasibility, we have added two Supplemental Material sections. (i) The
-section "Impact of Mode-Sorting Imperfections on the Classical Fisher Information" models
-nearest-neighbour cross-talk of a multi-plane light-converter sorter and shows that the
-mode-sorting advantage survives realistic, imperfect sorting (it remains above the
-direct-imaging benchmark for cross-talk up to -20 dB). (ii) The section "The remainder
-channel" models the finite mode bank of a realistic sorter together with its dump-port
-(remainder) channel, and shows that resolving only the few information-bearing modes plus
-this single extra outcome -- which together account for every photon in the image plane
--- suffices to reach the quantum limit in the sub-Rayleigh regime, so the protocol does
-not require an unbounded mode bank. Together these motivate a proof-of-principle
+On experimental feasibility, we have added Supplemental Material sections covering the
+dominant practical effects. (i) The section "The remainder channel" models the finite
+mode bank of a realistic sorter together with its dump-port (remainder) channel, and
+shows that resolving only the few information-bearing modes plus this single extra
+outcome -- which together account for every photon in the image plane -- suffices to
+reach the quantum limit in the sub-Rayleigh regime, so the protocol does not require an
+unbounded mode bank. (ii) The section "Mode-Sorting Bounds under Experimental
+Imperfections" models nearest-neighbour cross-talk of a multi-plane light-converter
+sorter and shows that the mode-sorting advantage survives realistic, imperfect sorting
+(it remains above the direct-imaging benchmark for cross-talk up to -20 dB), and further
+treats a detector noise floor (point 5b). Together these motivate a proof-of-principle
 demonstration, which we now highlight in the Conclusions.
 
-Two further robustness studies are in progress and will be incorporated in the next
-revision (see also our response to Referee A, point 4):
+We have also added a robustness study of unequal and fluctuating source intensities
+(point 5a; see also our response to Referee A, point 4a):
 
-5a. Unequal and fluctuating source intensities. TBD.
+5a. Unequal and fluctuating source intensities. We assign the three sources independent
+relative weights and treat both known-but-unequal and unknown/fluctuating cases (the
+latter via nuisance parameters). The favourable delta z^2 detection scaling is preserved,
+and the sub-Rayleigh Cramer-Rao bounds for the width and depth are only modestly inflated
+relative to the equal-intensity case, because brightness information is carried by the
+fundamental mode while the geometric information resides in the higher-order modes. Mode
+sorting therefore remains optimal in the sub-Rayleigh regime (new figure in the
+Supplemental Material; full details in our response to Referee A, point 4a).
 
-5b. Detector noise floor (dark counts and background light). TBD.
-    [The current Fisher information captures photon shot noise and a uniform inefficiency
-    (a rescaling of tau), but not a theta-independent additive count floor from dark
-    counts/background, which would enter the Fisher-information denominator and
-    preferentially suppress the faint second-order depth channels. A short Supplemental
-    Material section quantifying the mode-sorting-versus-direct-imaging comparison under
-    such a floor is planned.]
+5b. Detector noise floor (dark counts and background light). We have added a Supplemental
+Material subsection, "Detector noise floor." The Poissonian model captures photon shot
+noise and a uniform inefficiency (a rescaling of tau); a genuine noise floor adds a theta-
+independent count floor b_j to each channel (mean registered power tau P_j + b_j), which
+enters the Fisher-information denominator and preferentially suppresses low-occupancy
+channels. We find the degradation is anisotropic: the depth is carried by the fainter
+second-order modes (2,0) and (0,2) associated with axial defocus while the width is
+carried by the first-order mode (1,0), so the floor erodes the depth channels before the
+width channel and depth precision degrades faster. The degradation nevertheless remains
+moderate up to percent-level background-to-signal ratios, becoming severe only once the
+floor is comparable to the occupancy of these information-bearing modes (new figure in
+the Supplemental Material).
 
 
 We hope these amendments clarify the concerns of the referees and that they will

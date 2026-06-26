@@ -365,8 +365,8 @@ Applied to a minimal surface crack model, our analysis shows that specific spati
 
 Taken together, these results demonstrate that quantum-limited performance in surface metrology is, in principle, achievable with purely passive measurements in the image plane. More broadly, they show how quantum estimation and detection theory can be used not only to bound performance, but also to identify physically interpretable measurement bases tailored to specific quality control and surface analysis tasks.
 
-{\color{red} Because our bounds depend only on point-spread-function overlaps and their derivatives, the framework applies unchanged to non-Gaussian, aberrated, or experimentally measured PSFs, for which the overlaps are evaluated numerically rather than in closed form. On the experimental side, the cross-talk analysis in the Supplemental Material indicates that the mode-sorting advantage is robust to realistic sorter imperfections, motivating a proof-of-principle demonstration.}
-
+% {\color{red} Because our bounds depend only on point-spread-function overlaps and their derivatives, the framework applies unchanged to non-Gaussian, aberrated, or experimentally measured PSFs, for which the overlaps are evaluated numerically rather than in closed form. On the experimental side, the cross-talk analysis in the Supplemental Material indicates that the mode-sorting advantage is robust to realistic sorter imperfections, motivating a proof-of-principle demonstration.}
+{\color{red} Because our bounds depend only on point-spread-function overlaps and their derivatives, the framework applies unchanged to non-Gaussian, aberrated, or experimentally measured PSFs, for which the overlaps are evaluated numerically rather than in closed form. On the experimental side, Appendix~\ref{app:ms_errors} analyses the impact of nearest-neighbour mode cross-talk and an additive detector noise floor (from dark counts and background light) on the Fisher information. It is shown that the mode sorting remains robust to realistic imperfections, motivating a proof-of-principle demonstration.}
 
 
 
@@ -602,7 +602,7 @@ As an example, the Fisher information matrix elements for the estimation of the 
 \end{figure*}
 
 
-\section{The remainder channel\label{app:remainder}}
+\section{{\color{red}The remainder channel}\label{app:remainder}}
 {\color{red}
 A mode sorter resolves only a set $\mathcal{M}$ of Hermite-Gaussian modes. As these modes are complete, the unresolved light forms a single positive outcome $\Pi_{\rm rem}=\openone-\sum_{(j,l)\in\mathcal{M}}\Pi_{j,l}$, so $\{\Pi_{j,l}\}_{\mathcal{M}}\cup\{\Pi_{\rm rem}\}$ is a complete POVM with remainder probability
 \begin{equation}
@@ -636,7 +636,11 @@ The leaked fraction $P_{\rm rem}$ measures the collected light that is not resol
 }
 
 
-\section{Impact of Mode-Sorting Imperfections on the Classical Fisher Information\label{app:ms_errors}}
+% \section{Impact of Mode-Sorting Imperfections on the Classical Fisher Information\label{app:ms_errors}}
+\section{{\color{red}Mode-Sorting Bounds under Experimental Imperfections}\label{app:ms_errors}}
+{\color{red}
+A realistic mode-sorting measurement is subject to two distinct imperfections, which we treat in turn: (i) imperfect sorting, in which the device leaks amplitude between neighbouring Hermite-Gaussian orders (cross-talk), and (ii) a detector noise floor of $\theta$-independent counts arising from dark counts and background light. The former corrupts the measurement basis itself, whereas the latter adds a noise background to otherwise ideal channels; we show that the mode-sorting advantage survives both.}
+\paragraph{{\color{red}(i) Mode cross-talk.}}
 {\color{red}
 A practical mode sorter does not project onto perfectly resolved Hermite-Gaussian modes. The most common experimental realisation of mode sorting is achieved via Multi-plane light converters. Such devices are known to exhibit finite {\em cross-talk}, in which a small fraction of the light intended for one mode is registered in a mode of neighbouring order~\cite{gessner2020spadeerror,modes,MPLC}. Since this leakage is (to leading order) a {\em nearest-neighbour} effect, we model it as such here.
 
@@ -659,7 +663,7 @@ so that a fraction $\sin^2\epsilon=10^{\,\mathrm{xt}/10}$ of the power leaks acr
 \begin{figure*}[h]
 \centering
 \includegraphics[width=0.9\columnwidth]{combined_fi_crb_mixing.pdf}
-\caption{Effect of nearest-neighbour mode cross-talk on the classical Fisher information of the Hermite-Gaussian mode-sorting measurement, for the incoherent three-source crack model. Left column: Fisher information; right column: the associated Cram\'er-Rao bound. Top row: estimation of the width parameter $\delta x$ for various depths $\delta z$; bottom row: depth parameter $\delta z$ for various widths $\delta x$. For each colour family the gradient encodes the value of the secondary parameter (grayscale colorbar to the right). Curve colour encodes the cross-talk strength $20\log_{10}(\sin\epsilon)$ in dB (legend), from the ideal baseline ($\epsilon=0$) up to $\approx-5$~dB. Increasing cross-talk lowers the Fisher information and raises the Cram\'er-Rao bound, but the degradation remains moderate up to $-20$~dB.}
+\caption{{\color{red}Effect of nearest-neighbour mode cross-talk on the classical Fisher information of the Hermite-Gaussian mode-sorting measurement, for the incoherent three-source crack model. Left column: Fisher information; right column: the associated Cram\'er-Rao bound. Top row: estimation of the width parameter $\delta x$ for various depths $\delta z$; bottom row: depth parameter $\delta z$ for various widths $\delta x$. For each colour family the gradient encodes the value of the secondary parameter (grayscale colorbar to the right). Curve colour encodes the cross-talk strength $20\log_{10}(\sin\epsilon)$ in dB (legend), from the ideal baseline ($\epsilon=0$) up to $\approx-5$~dB. Increasing cross-talk lowers the Fisher information and raises the Cram\'er-Rao bound, but the degradation remains moderate up to $-20$~dB.}}
 \label{fig:ms_errors}
 \end{figure*}
 
@@ -667,6 +671,25 @@ so that a fraction $\sin^2\epsilon=10^{\,\mathrm{xt}/10}$ of the power leaks acr
 Figure~\ref{fig:ms_errors} shows the effect of cross-talk on the Fisher information (left column) and the corresponding Cram\'er-Rao bound (right column) for the width parameter $\delta x$ (top row) and the depth parameter $\delta z$ (bottom row), as the cross-talk is swept from the ideal baseline (no cross-talk) up to $\approx-5$~dB. As anticipated, stronger cross-talk degrades the Fisher information and inflates the Cram\'er-Rao bound. The degradation is pronounced precisely because the parameter information is concentrated in a small number of modes: the width $\delta x$ is carried almost entirely by the first-order mode $(1,0)$, while the depth $\delta z$ is carried by the second-order modes $(0,2)$ and $(2,0)$ associated with axial defocus (cf.\ Fig.~\ref{fig:supp4figs}). Mixing rotates amplitude out of these information-bearing modes into neighbours that carry little or no information about the respective parameter, so the measurement loses sensitivity faster than a uniform-loss model would predict. The effect is sharpest where essentially a single mode is responsible for estimating a given parameter.
 
 However, for cross-talk up to $-20$~dB, which is experimentally attainable~\cite{bearne2026ModeSorting,kupianskyi2023MS,Fontaine2017DesignOH}, the Fisher information is reduced but does not collapse. Across a useful range of $\delta x$ and $\delta z$ in the sub-Rayleigh regime it remains a substantial fraction of its ideal value and stays above the direct-imaging benchmark established in Fig.~\ref{fig:supp4figs}. Mode sorting therefore retains its advantage over conventional direct imaging under realistic, imperfect sorting; only with larger cross-talk does this advantage erode.}
+
+\paragraph{{\color{red}(ii) Detector noise floor.}}
+{\color{red}
+The Poissonian model in Eq.~\eqref{eq:FI_MS} already captures photon shot noise. A uniform optical or detector inefficiency $\eta$ simply thins the Poisson process, $\tau\to\eta\tau$, rescaling every channel mean by the same factor; it scales the overall Fisher information but leaves the mode-sorting-versus-direct-imaging comparison unchanged, since both schemes are rescaled equally. A genuine detector noise floor is qualitatively different: dark counts and background light add a $\theta$-independent count floor $b_j$ to each channel, so the mean registered power becomes $\lambda_j=\tau P_j(\theta)+b_j$. Because $b_j$ is independent of $\theta$ we have $\partial_a\lambda_j=\tau\,\partial_a P_j$, and the Fisher information Eq.~\eqref{eq:FI_MS} generalises to
+\begin{equation}
+({J_\Pi})_{a,b}=\tau^2\sum_j^M\frac{1}{\tau P_j(\theta)+b_j}\pdv{P_j(\theta)}{\theta_a}\pdv{P_j(\theta)}{\theta_b}.
+\label{eq:FI_MS_noise}
+\end{equation}
+We parametrise the floor by the background-to-signal ratio $\beta_j\equiv b_j/\tau$ and take it uniform across the measurement channels, $\beta_j=\beta$, at fixed photon budget $\tau$.}
+
+\begin{figure*}[h]
+\centering
+\includegraphics[width=0.9\columnwidth]{combined_fi_crb_noise.pdf}
+\caption{{\color{red}Effect of an additive detector noise floor (dark counts and background light) on the classical Fisher information of the Hermite-Gaussian mode-sorting measurement: left column, Fisher information; right column, the associated Cram\'er-Rao bound; top row, the width parameter $\delta x$ for various depths $\delta z$; bottom row, the depth parameter $\delta z$ for various widths $\delta x$. For each colour family the gradient encodes the value of the secondary parameter (grayscale colorbar to the right). Curve colour encodes the background-to-signal ratio $\beta=b_j/\tau$ (legend), from the ideal baseline ($\beta=0$) up to $\beta=10^{-1}$. The floor enters the Fisher-information denominator and suppresses low-occupancy channels first, so the depth bound is inflated faster than the width bound.}}
+\label{fig:ms_noise}
+\end{figure*}
+
+{\color{red}
+Figure~\ref{fig:ms_noise} shows that the background noise lowers the Fisher information, with the depth estimation degrading faster than width. This follows directly from the denominator of Eq.~\eqref{eq:FI_MS_noise}, in which a count floor preferentially suppresses the channels of small occupancy $P_j$ that carry the sub-Rayleigh parameter information. As established above (cf.\ Fig.~\ref{fig:supp4figs}), the width is carried by the first-order mode $(1,0)$ while the depth is carried by the fainter second-order modes $(2,0)$ and $(0,2)$. The degradation nevertheless remains moderate for background-to-signal ratios up to the percent level, becoming severe only once $\beta$ is comparable to the occupancy of these information-bearing modes.}
 
 \section{QCB Calculation} \label{app:QCB_calculation}
 
