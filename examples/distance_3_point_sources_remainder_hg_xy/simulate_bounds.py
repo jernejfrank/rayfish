@@ -23,7 +23,6 @@ CONF: dict[str, Any] = {"simulation_dimension": 1}
 # inputs
 N_GRIDS = 50
 IMPORTANT_MODES = ((0, 0), (1, 0), (2, 0), (0, 2))
-MODE_DEGREE = 4
 INPUT_: dict[str, object] = {
     "wave_vector": 2.0,
     "rayleigh_length": 1.0,

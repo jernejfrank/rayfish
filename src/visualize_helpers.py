@@ -534,7 +534,7 @@ def plot_fi_comparison_labeled(
         ),
         title=legend_title,
         frameon=False,
-        loc="center",
+        loc="best",
         ncol=legend_ncol,
         handlelength=0.5,
         handletextpad=0.4,
