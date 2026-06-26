@@ -22,7 +22,7 @@ The calculations are for an arbitrary measurement basis in the transverse dimens
 
 import numpy as np
 import numpy.typing as npt
-from beartype.typing import Dict, List
+from beartype.typing import Dict, List, Tuple
 from hamilton.function_modifiers import config
 
 from rayfish import gaussian_overlaps
@@ -173,7 +173,7 @@ def fisher_information_matrix_for_entire_distribution(
     derivatives_probability: npt.NDArray[np.float64],
     coordinate_jacobian: npt.NDArray[np.float64],
     poisson_rate_tau: float = 1.0,
-    background_noise: tuple[float, ...] = (0.0,),
+    background_noise: Tuple = (0.0,),
 ) -> npt.NDArray[np.float64]:
     """Per-channel Fisher information including an unresolved remainder channel.
 
