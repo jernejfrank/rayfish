@@ -172,6 +172,8 @@ def fisher_information_matrix_for_entire_distribution(
     probability: npt.NDArray[np.float64],
     derivatives_probability: npt.NDArray[np.float64],
     coordinate_jacobian: npt.NDArray[np.float64],
+    poisson_rate_tau: float = 1.0,
+    background_noise: tuple[float, ...] = (0.0,),
 ) -> npt.NDArray[np.float64]:
     """Per-channel Fisher information including an unresolved remainder channel.
 
@@ -189,12 +191,34 @@ def fisher_information_matrix_for_entire_distribution(
             the ``3N`` source coordinates, with shape ``(M, B, 3N)``.
         coordinate_jacobian: transformation from 3N parameters to the parameters of
             interest.
+        poisson_rate_tau: total photon budget ``tau`` multiplying the channel means
+            ``lambda_j = tau P_j + b_j``. Scales the Fisher information overall.
+        background_noise: theta-independent additive count floor ``b_j`` per channel
+            (dark counts + background light), entering the denominator as
+            ``tau P_j + b_j``. A single-element tuple is broadcast to all measurement
+            channels plus the remainder bucket; otherwise its length must equal the
+            number of measurement modes plus one.
 
     Returns:
         A ``(M, B + 1, K, K)`` array of per-channel Fisher information matrices after
         Jacobian transformation to the parameters of interest. The final channel
         ``B`` is the remainder bucket with probability ``1 - sum_b P_b``.
     """
+    if len(background_noise) == 1:
+        noise_factor = background_noise[0]
+        background_noise = tuple(
+            noise_factor for _ in range(len(measurement_basis) + 1)
+        )
+
+    if (
+        len(background_noise)
+        != len(measurement_basis) + 1  # accounting for remainder channel
+    ):
+        raise ValueError(
+            "Mismatch, expecting background noise to be the same length as "
+            "measurement basis."
+        )
+
     n_measurement_basis = len(measurement_basis)
     fisher_information = np.zeros((
         number_of_point_source_distributions,
@@ -235,20 +259,22 @@ def fisher_information_matrix_for_entire_distribution(
                 ]
                 prob_sum[mask] += prob[mask]
 
+                background_beta = background_noise[b] / poisson_rate_tau
+
                 # ss
-                fisher_information[mask, b, i, j] = (
+                fisher_information[mask, b, i, j] = poisson_rate_tau * (
                     derivatives_probability[mask, b, i]
                     * derivatives_probability[mask, b, j]
-                    / prob[mask]
+                    / (prob[mask] + background_beta)
                 )
 
                 # tt
                 fisher_information[
                     mask, b, number_of_point_sources + i, number_of_point_sources + j
-                ] = (
+                ] = poisson_rate_tau * (
                     derivatives_probability[mask, b, number_of_point_sources + i]
                     * derivatives_probability[mask, b, number_of_point_sources + j]
-                    / prob[mask]
+                    / (prob[mask] + background_beta)
                 )
 
                 # pp
@@ -257,35 +283,51 @@ def fisher_information_matrix_for_entire_distribution(
                     b,
                     2 * number_of_point_sources + i,
                     2 * number_of_point_sources + j,
-                ] = (
+                ] = poisson_rate_tau * (
                     derivatives_probability[mask, b, 2 * number_of_point_sources + i]
                     * derivatives_probability[mask, b, 2 * number_of_point_sources + j]
-                    / prob[mask]
+                    / (prob[mask] + background_beta)
                 )
 
                 # ts
                 fisher_information[mask, b, number_of_point_sources + i, j] = (
-                    derivatives_probability[mask, b, number_of_point_sources + i]
-                    * derivatives_probability[mask, b, j]
-                    / prob[mask]
+                    poisson_rate_tau
+                    * (
+                        derivatives_probability[mask, b, number_of_point_sources + i]
+                        * derivatives_probability[mask, b, j]
+                        / (prob[mask] + background_beta)
+                    )
                 )
                 # st
                 fisher_information[mask, b, i, j + number_of_point_sources] = (
-                    derivatives_probability[mask, b, i]
-                    * derivatives_probability[mask, b, number_of_point_sources + j]
-                    / prob[mask]
+                    poisson_rate_tau
+                    * (
+                        derivatives_probability[mask, b, i]
+                        * derivatives_probability[mask, b, number_of_point_sources + j]
+                        / (prob[mask] + background_beta)
+                    )
                 )
                 # ps
                 fisher_information[mask, b, 2 * number_of_point_sources + i, j] = (
-                    derivatives_probability[mask, b, 2 * number_of_point_sources + i]
-                    * derivatives_probability[mask, b, j]
-                    / prob[mask]
+                    poisson_rate_tau
+                    * (
+                        derivatives_probability[
+                            mask, b, 2 * number_of_point_sources + i
+                        ]
+                        * derivatives_probability[mask, b, j]
+                        / (prob[mask] + background_beta)
+                    )
                 )
                 # sp
                 fisher_information[mask, b, i, j + 2 * number_of_point_sources] = (
-                    derivatives_probability[mask, b, i]
-                    * derivatives_probability[mask, b, 2 * number_of_point_sources + j]
-                    / prob[mask]
+                    poisson_rate_tau
+                    * (
+                        derivatives_probability[mask, b, i]
+                        * derivatives_probability[
+                            mask, b, 2 * number_of_point_sources + j
+                        ]
+                        / (prob[mask] + background_beta)
+                    )
                 )
                 # tp
                 fisher_information[
@@ -293,10 +335,10 @@ def fisher_information_matrix_for_entire_distribution(
                     b,
                     number_of_point_sources + i,
                     j + 2 * number_of_point_sources,
-                ] = (
+                ] = poisson_rate_tau * (
                     derivatives_probability[mask, b, number_of_point_sources + i]
                     * derivatives_probability[mask, b, 2 * number_of_point_sources + j]
-                    / prob[mask]
+                    / (prob[mask] + background_beta)
                 )
                 # pt
                 fisher_information[
@@ -304,12 +346,15 @@ def fisher_information_matrix_for_entire_distribution(
                     b,
                     2 * number_of_point_sources + i,
                     j + number_of_point_sources,
-                ] = (
+                ] = poisson_rate_tau * (
                     derivatives_probability[mask, b, 2 * number_of_point_sources + i]
                     * derivatives_probability[mask, b, number_of_point_sources + j]
-                    / prob[mask]
+                    / (prob[mask] + background_beta)
                 )
 
+            remainder_background_beta = (
+                background_noise[len(measurement_basis)] / poisson_rate_tau
+            )
             remainder_prob = 1 - prob_sum
             remainder_mask = remainder_prob > 1e-16
             if not np.any(remainder_mask):
@@ -317,9 +362,12 @@ def fisher_information_matrix_for_entire_distribution(
 
             # ss
             fisher_information[remainder_mask, n_measurement_basis, i, j] = (
-                der_s1[remainder_mask]
-                * der_s2[remainder_mask]
-                / remainder_prob[remainder_mask]
+                poisson_rate_tau
+                * (
+                    der_s1[remainder_mask]
+                    * der_s2[remainder_mask]
+                    / (remainder_prob[remainder_mask] + remainder_background_beta)
+                )
             )
 
             # tt
@@ -328,10 +376,10 @@ def fisher_information_matrix_for_entire_distribution(
                 n_measurement_basis,
                 number_of_point_sources + i,
                 number_of_point_sources + j,
-            ] = (
+            ] = poisson_rate_tau * (
                 der_t1[remainder_mask]
                 * der_t2[remainder_mask]
-                / remainder_prob[remainder_mask]
+                / (remainder_prob[remainder_mask] + remainder_background_beta)
             )
 
             # pp
@@ -340,43 +388,43 @@ def fisher_information_matrix_for_entire_distribution(
                 n_measurement_basis,
                 2 * number_of_point_sources + i,
                 2 * number_of_point_sources + j,
-            ] = (
+            ] = poisson_rate_tau * (
                 der_p1[remainder_mask]
                 * der_p2[remainder_mask]
-                / remainder_prob[remainder_mask]
+                / (remainder_prob[remainder_mask] + remainder_background_beta)
             )
 
             # ts
             fisher_information[
                 remainder_mask, n_measurement_basis, number_of_point_sources + i, j
-            ] = (
+            ] = poisson_rate_tau * (
                 der_t1[remainder_mask]
                 * der_s2[remainder_mask]
-                / remainder_prob[remainder_mask]
+                / (remainder_prob[remainder_mask] + remainder_background_beta)
             )
             # st
             fisher_information[
                 remainder_mask, n_measurement_basis, i, j + number_of_point_sources
-            ] = (
+            ] = poisson_rate_tau * (
                 der_s1[remainder_mask]
                 * der_t2[remainder_mask]
-                / remainder_prob[remainder_mask]
+                / (remainder_prob[remainder_mask] + remainder_background_beta)
             )
             # ps
             fisher_information[
                 remainder_mask, n_measurement_basis, 2 * number_of_point_sources + i, j
-            ] = (
+            ] = poisson_rate_tau * (
                 der_p1[remainder_mask]
                 * der_s2[remainder_mask]
-                / remainder_prob[remainder_mask]
+                / (remainder_prob[remainder_mask] + remainder_background_beta)
             )
             # sp
             fisher_information[
                 remainder_mask, n_measurement_basis, i, j + 2 * number_of_point_sources
-            ] = (
+            ] = poisson_rate_tau * (
                 der_s1[remainder_mask]
                 * der_p2[remainder_mask]
-                / remainder_prob[remainder_mask]
+                / (remainder_prob[remainder_mask] + remainder_background_beta)
             )
             # tp
             fisher_information[
@@ -384,10 +432,10 @@ def fisher_information_matrix_for_entire_distribution(
                 n_measurement_basis,
                 number_of_point_sources + i,
                 j + 2 * number_of_point_sources,
-            ] = (
+            ] = poisson_rate_tau * (
                 der_t1[remainder_mask]
                 * der_p2[remainder_mask]
-                / remainder_prob[remainder_mask]
+                / (remainder_prob[remainder_mask] + remainder_background_beta)
             )
             # pt
             fisher_information[
@@ -395,10 +443,10 @@ def fisher_information_matrix_for_entire_distribution(
                 n_measurement_basis,
                 2 * number_of_point_sources + i,
                 j + number_of_point_sources,
-            ] = (
+            ] = poisson_rate_tau * (
                 der_p1[remainder_mask]
                 * der_t2[remainder_mask]
-                / remainder_prob[remainder_mask]
+                / (remainder_prob[remainder_mask] + remainder_background_beta)
             )
 
     fi_matrices = []
