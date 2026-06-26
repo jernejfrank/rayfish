@@ -71,6 +71,7 @@ def simulate_bounds() -> None:
             final_vars=[
                 "fisher_information_matrix_for_entire_distribution",
                 "covariance_matrix_for_entire_distribution",
+                "probability",
             ],
         )
         fi_ms_ = classical_result[
@@ -87,6 +88,13 @@ def simulate_bounds() -> None:
         np.save(
             ROOT_DIR / f"fi_ms_inv_{i}_with_remainder.npy",
             fi_ms_inv_,
+        )
+
+        prob = classical_result["probability"].reshape(
+            N_GRIDS, N_GRIDS, len(individual_modes)
+        )
+        np.save(
+            ROOT_DIR / f"leaked_fraction_{i}.npy", np.clip(1 - prob.sum(axis=-1), 0, 1)
         )
 
 
