@@ -238,11 +238,15 @@ We now compare two measurement strategies against the quantum precision bound, n
 \begin{align}
     P_{j,l}(\theta) &= \frac{1}{V} \sum_v^V  \abs{ \braket{\phi_{j,l}}{\psi_v(x + \delta x_v, y + \delta y_v, + \delta z_v)} }^2 \label{eq:prob_ms_general}
 \end{align}
-with closed-form expressions provided in Appendix~\ref{app:ms_incoherent} \cite{supposta}. For DI, the measurement distribution in the image plane is a sum of the individual intensities $P(x,y|\delta x,\delta z)=\frac13\left[{|{\psi_1(x\!-\!\frac{\delta x}{2},y,0)}|^2\!\! + \!|{\psi_2(x\!+\!\frac{\delta x}{2},y,0)}|^2\!\! + \!|{\psi_3(x,y,-\delta z)}|^2}\right]$, which we integrate numerically to obtain the classical FIM.
+with closed-form expressions provided in Appendix~\ref{app:ms_incoherent} \cite{supposta}.
 
-We find (see Fig.~\ref{fig:supp4figs} in \cite{supposta}) that the Fisher information confirms the geometric intuition from the QFIM. For estimating the crack width in the sub-Rayleigh regime ($\delta x \rightarrow 0$), the information concentrates  in the $(1,0)$ Hermite-Gaussian mode, corresponding to the first-order transverse PSF derivative. At larger separations, the information spreads across higher-order modes limiting the achievable precision, while  DI approaches the quantum limit instead. Similarly, for depth estimation  ($\delta z\rightarrow0$), MS approaches the quantum limit with equal dominant contributions from the $(2,0)$ and $(0,2)$ modes, which are proportional to second-order transverse PSF derivatives  and span the tangent directions associated with axial defocus{\color{red}, i.e.\ the quadratic wavefront curvature produced by an axial displacement of the point source}. In contrast, the DI Fisher information peaks at the Rayleigh length, consistent with classical beam propagation.
+{\color{red}A physical sorter resolves only a finite set of modes $\mathcal{M}$; the light that is not routed into one of these modes is not discarded but registered together in the unused output port of the device. We model this by completing the resolved modes with a single {\em remainder channel} that collects all unresolved light. Since the Hermite-Gaussian modes form a complete orthonormal basis of the transverse plane, the unresolved part is itself a valid projector $\Pi_{\rm rem}=\openone-\sum_{(j,l)\in\mathcal{M}}\Pi_{j,l}$, so that $\{\Pi_{j,l}\}_{\mathcal{M}}\cup\{\Pi_{\rm rem}\}$ is a complete POVM and the measurement accounts for {\em every} photon arriving in the image plane: the outcome probabilities $\{P_{j,l}\}_{\mathcal{M}}$ and $P_{\rm rem}=1-\sum_{(j,l)\in\mathcal{M}}P_{j,l}$ sum to unity for each source. Guided by the QFIM, whose information is carried by the low-order transverse PSF derivatives, we adopt a deliberately minimal strategy that resolves only the four information-bearing channels $(0,0)$, $(1,0)$, $(2,0)$ and $(0,2)$ and buckets the rest into the remainder channel. Because the classical Fisher information is additive over the outcomes of a complete measurement, the remainder contributes one additional term to the FIM; its construction and closed form are given in Appendix~\ref{app:remainder}.}
 
-To obtain the Cram\'er-Rao bounds we need to invert the multiparameter FIM. For finite $\delta x$ and $\delta z$, the off-diagonal elements of the FIM are non-zero, showing that width and depth are statistically correlated under generic measurements \cite{ragy2016compatibility}. Nevertheless, measuring in the Hermite-Gaussian mode basis shows the Cram\'er-Rao bound approaching the quantum limit for both $\delta x$ [Fig.~\ref{figshers}(a)] and $\delta z$ [Fig.~\ref{figshers}(b)]. This shows that simultaneous sub-Rayleigh estimation of the crack width and depth is possible using appropriate quantum-inspired measurements.
+For DI, the measurement distribution in the image plane is a sum of the individual intensities $P(x,y|\delta x,\delta z)=\frac13\left[{|{\psi_1(x\!-\!\frac{\delta x}{2},y,0)}|^2\!\! + \!|{\psi_2(x\!+\!\frac{\delta x}{2},y,0)}|^2\!\! + \!|{\psi_3(x,y,-\delta z)}|^2}\right]$, which we integrate numerically to obtain the classical FIM.
+
+We find (see Fig.~\ref{fig:supp4figs} in \cite{supposta}) that the Fisher information confirms the geometric intuition from the QFIM. For estimating the crack width in the sub-Rayleigh regime ($\delta x \rightarrow 0$), the information concentrates  in the $(1,0)$ Hermite-Gaussian mode, corresponding to the first-order transverse PSF derivative. At larger separations, the information spreads across higher-order modes limiting the achievable precision, while  DI approaches the quantum limit instead. Similarly, for depth estimation  ($\delta z\rightarrow0$), MS approaches the quantum limit with equal dominant contributions from the $(2,0)$ and $(0,2)$ modes, which are proportional to second-order transverse PSF derivatives  and span the tangent directions associated with axial defocus{\color{red}, i.e.\ the quadratic wavefront curvature produced by an axial displacement of the point source}. In contrast, the DI Fisher information peaks at the Rayleigh length, consistent with classical beam propagation. {\color{red}The remainder channel does not resolve these higher-order modes individually but still registers their aggregate power, recovering part of the leaked information and extending the range over which mode sorting remains informative (Appendix~\ref{app:remainder}).}
+
+To obtain the Cram\'er-Rao bounds we need to invert the multiparameter FIM. For finite $\delta x$ and $\delta z$, the off-diagonal elements of the FIM are non-zero, showing that width and depth are statistically correlated under generic measurements \cite{ragy2016compatibility}. Nevertheless, measuring in the Hermite-Gaussian mode basis shows the Cram\'er-Rao bound approaching the quantum limit for both $\delta x$ [Fig.~\ref{figshers}(a)] and $\delta z$ [Fig.~\ref{figshers}(b)]. This shows that simultaneous sub-Rayleigh estimation of the crack width and depth is possible using appropriate quantum-inspired measurements. {\color{red}Notably, this near-quantum-limited performance is obtained with only four resolved modes plus the remainder channel: in the sub-Rayleigh regime the four dominant channels already capture the collected light up to fourth order in the separations, so the remainder holds a vanishing fraction $1-\sum_{(j,l)}P_{j,l}=O(\delta^4)$ of both the photons and the information [Appendix~\ref{app:remainder}]. Resolving additional modes therefore yields no significant gain until the separation approaches the Rayleigh length, beyond which direct imaging becomes preferable [Fig.~\ref{figshers}].}
 
 
 % We find (see End Matter, Fig.~\ref{fig:supp4figs}) that the Fisher information for estimating the width $\delta x$ using Hermite MS approaches the quantum limit for small $\delta x$ (with the $(1,0)$ Hermite-Gaussian mode providing the dominant contribution), while it decreases at larger separations due to the finite number of measured modes. In this regime, DI approaches the quantum limit instead. Similarly, for estimating the depth $\delta z$, the Hermite MS Fisher information approaches the quantum limit for small $\delta z$ (with equal dominant contributions from the $(2,0)$ and $(0,2)$ modes due to transverse symmetry). In contrast, the Fisher information for DI is maximised at the Rayleigh length, consistent with classical beam propagation.
@@ -254,17 +258,17 @@ To obtain the Cram\'er-Rao bounds we need to invert the multiparameter FIM. For 
 
 \begin{figure}
 \centering
-\begin{overpic}[height=4cm]{s_param_covariance_xy.pdf}
+\begin{overpic}[height=4cm]{s_param_covariance_optimal_remainder.pdf}
     % \put(x, y) uses percentages of the image dimensions by default (0-100)
     \put(1, 2){{(a)}}
 \end{overpic} \\
 \vspace{0.2cm} % Optional: tweak this if you want a tiny gap between top and bottom images
-\begin{overpic}[height=4cm]{p_param_covariance_xy.pdf}
+\begin{overpic}[height=4cm]{p_param_covariance_optimal_remainder.pdf}
     \put(1, 2){{(b)}}
 \end{overpic}
 %\subfloat[]{\label{fig:incoh_COV_s}\includegraphics[height=4cm]{s_param_covariance_xy.pdf}}\\
 %\subfloat[]{\label{fig:incoh_COV_p}\includegraphics[height=4cm]{p_param_covariance_xy.pdf}}%
-\caption{Cram\'er-Rao bounds for estimating surface crack parameters (a) $\delta x$ and (b) $\delta z$ as modelled in Fig.~\ref{fig:3source_layout}. Red curves correspond to the ultimate quantum limit (QFI), blue curves to Hermite-Gaussian mode sorting (MS), and green curves to classical direct imaging (DI).}
+\caption{Cram\'er-Rao bounds for estimating surface crack parameters (a) $\delta x$ and (b) $\delta z$ as modelled in Fig.~\ref{fig:3source_layout}. {\color{red}The mode-sorting strategy resolves only the four information-bearing modes $(0,0)$, $(1,0)$, $(2,0)$ and $(0,2)$ together with a remainder channel collecting all unresolved light (Appendix~\ref{app:remainder}).} Red curves correspond to the ultimate quantum limit (QFI), blue curves to Hermite-Gaussian mode sorting (MS), and green curves to classical direct imaging (DI).}
 \label{figshers}
 \end{figure}
 
@@ -586,13 +590,85 @@ As an example, the Fisher information matrix elements for the estimation of the 
 
 \begin{figure*}[h]
 \centering
-\subfloat[Fisher information for the estimation of the width parameter $\delta x$.]{\label{fig:incoh_FI_s}\includegraphics[width=0.45\columnwidth]{s_param_fi_comparison_xy.pdf}}\qquad
-\subfloat[Individual mode contributions to the Fisher information for the estimation of the width parameter $\delta x$.]{\label{fig:incoh_MS_s}\includegraphics[width=0.45\columnwidth]{s_param_individual_mode_contributions_xy.pdf}}\\
-\subfloat[Fisher information for the estimation of the depth parameter $\delta z$.]{\label{fig:incoh_FI_p}\includegraphics[width=0.45\columnwidth]{p_param_fi_comparison_xy.pdf}}\qquad
-\subfloat[Individual mode contributions to the Fisher information for the estimation of the depth parameter $\delta z$.]{\label{fig:incoh_MS_p}\includegraphics[width=0.45\columnwidth]{p_param_individual_mode_contributions_xy.pdf}}%
-\caption{Estimation of the parameters $\delta x$ [(a),(b)] and $\delta z$ [(c),(d)], for the incoherent three-source crack model depicted in Fig.~1 of the main text. Contributions of Hermite-Gaussian modes to the Fisher Information (Blue - MS), compared to the Quantum Fisher Information (Red - QFI) and the classical intensity measurement (Green - DI) [(a),(c)]. Individual Hermite-Gaussian modes with $(i,j)$ the 2D Hermite polynomial order, where for brevity we combine all the modes where the FIM matrix element is 0 (Brown - ij) and the last column is the sum of all the modes (Blue - $\sum$) [(b),(d)].}
+\subfloat[Fisher information for the estimation of the width parameter $\delta x$.]{\label{fig:incoh_FI_s}\includegraphics[width=0.45\columnwidth]{s_param_fi_comparison_optimal_remainder.pdf}}\qquad
+\subfloat[Individual mode contributions to the Fisher information for the estimation of the width parameter $\delta x$.]{\label{fig:incoh_MS_s}\includegraphics[width=0.45\columnwidth]{s_param_individual_mode_contributions_optimal_remainder.pdf}}\\
+\subfloat[Fisher information for the estimation of the depth parameter $\delta z$.]{\label{fig:incoh_FI_p}\includegraphics[width=0.45\columnwidth]{p_param_fi_comparison_optimal_remainder.pdf}}\qquad
+\subfloat[Individual mode contributions to the Fisher information for the estimation of the depth parameter $\delta z$.]{\label{fig:incoh_MS_p}\includegraphics[width=0.45\columnwidth]{p_param_individual_mode_contributions_optimal_remainder.pdf}}%
+\caption{Estimation of the parameters $\delta x$ [(a),(b)] and $\delta z$ [(c),(d)], for the incoherent three-source crack model depicted in Fig.~1 of the main text. Contributions of Hermite-Gaussian modes to the Fisher Information (Blue - MS), compared to the Quantum Fisher Information (Red - QFI) and the classical intensity measurement (Green - DI) [(a),(c)]. Individual Hermite-Gaussian modes with $(i,j)$ the 2D Hermite polynomial order,
+% where for brevity we combine all the modes where the FIM matrix element is 0 (Brown - ij) and the last column is the sum of all the modes (Blue - $\sum$) [(b),(d)].
+{\color{red}where the remainder channel ((Pink-Yellow - $R$)) collecting all unresolved light is shown explicitly (Appendix~\ref{app:remainder}) and the last column is the sum of all channels (Blue - $\sum$) [(b),(d)].}
+}
 \label{fig:supp4figs}
 \end{figure*}
+
+
+\section{The remainder channel: completeness, photon budget, and information\label{app:remainder}}
+{\color{red}
+\paragraph{Construction.}
+A physical mode sorter resolves only a finite set $\mathcal{M}$ of Hermite-Gaussian modes, projecting onto $\Pi_{j,l}=\ketbra{\phi_{j,l}}{\phi_{j,l}}$ for $(j,l)\in\mathcal{M}$. Being finite, these projectors do not resolve the identity. However, the Hermite-Gaussian modes form a complete orthonormal basis of the transverse plane, $\sum_{\text{all }(j,l)}\Pi_{j,l}=\openone$, so the unresolved part is itself a positive projector,
+\begin{equation}
+\Pi_{\rm rem}=\openone-\sum_{(j,l)\in\mathcal{M}}\Pi_{j,l}=\sum_{(j,l)\notin\mathcal{M}}\Pi_{j,l}\;\succeq\;0 .
+\label{eq:rem_projector}
+\end{equation}
+The set $\{\Pi_{j,l}\}_{(j,l)\in\mathcal{M}}\cup\{\Pi_{\rm rem}\}$ is therefore a complete POVM. Physically, $\Pi_{\rm rem}$ is the unused output (dump) port of the device: a real sorter routes each photon either into one of the resolved modes or into this single extra outcome, so the measurement accounts for {\em every} photon arriving in the image plane. Because the in-focus Hermite-Gaussian modes span the full transverse space and a defocused source still lives in that space, completeness---and hence the remainder probability below---is well defined even for an axially displaced source.
+
+For the incoherent three-source object the outcome probabilities are $P_{j,l}(\theta)$, Eq.~\eqref{eq:prob_ms_general}, together with the remainder probability
+\begin{equation}
+P_{\rm rem}(\theta)=1-\sum_{(j,l)\in\mathcal{M}}P_{j,l}(\theta),
+\label{eq:rem_prob}
+\end{equation}
+which satisfy $\sum_{(j,l)\in\mathcal{M}}P_{j,l}+P_{\rm rem}=1$ for every source and every $\theta$. This is the same remainder channel used for the detection problem in the main text [cf.\ the discussion preceding Eq.~\eqref{eq:CI_MS}]; here we port it into the estimation Fisher information.
+
+\paragraph{Fisher information of the remainder channel.}
+The classical Fisher information of a complete measurement is additive over its outcomes. Splitting the outcomes into the resolved modes and the remainder gives
+\begin{equation}
+J_{ab}
+=\underbrace{\sum_{(j,l)\in\mathcal{M}}\frac{\partial_a P_{j,l}\,\partial_b P_{j,l}}{P_{j,l}}}_{J^{\rm res}_{ab}}
++\underbrace{\frac{\partial_a P_{\rm rem}\,\partial_b P_{\rm rem}}{P_{\rm rem}}}_{\Delta J^{\rm rem}_{ab}},
+\qquad
+\partial_a P_{\rm rem}=-\sum_{(j,l)\in\mathcal{M}}\partial_a P_{j,l},
+\label{eq:rem_fi}
+\end{equation}
+followed by the Jacobian reduction Eq.~\eqref{def:jacobian} to the parameters $(\delta x,\delta z)$. Two consequences follow. First, adding an outcome cannot decrease information, so
+\begin{equation}
+J^{\rm res}\;\preceq\;J^{\rm res}+\Delta J^{\rm rem}\;\preceq\;J^{\rm full}\;\preceq\;H,
+\label{eq:rem_ordering}
+\end{equation}
+where $J^{\rm full}$ is the Fisher information of the fully resolved (infinite) mode bank and $H$ the QFIM: the resolved-only measurement is a lower bound and the quantum limit an upper bound. Second, the remainder channel reports only the {\em aggregate} (zeroth-moment) statistic of the unresolved tail---the total leaked power and its parameter sensitivity---and not how that power is distributed across the individual higher modes. Hence
+\begin{equation}
+\Delta J^{\rm rem}\;\preceq\;J^{\rm full}-J^{\rm res}:
+\label{eq:rem_lowerbound}
+\end{equation}
+the remainder term is a {\em lower bound} on the information carried by all higher modes, namely the part recoverable by simply counting the dump port without resolving high-order modes. We stress that the photon-fraction leak $P_{\rm rem}$ and the information leak $J^{\rm full}-J^{\rm res}$ are distinct quantities: one may leak many photons that carry little information, and vice versa. Note finally that $\Delta J^{\rm rem}\sim(\partial P_{\rm rem})^2/P_{\rm rem}$ is of the form $0/0$ as the separations vanish (numerator and denominator both vanish, the ratio remaining finite); this limit is guarded in the numerical implementation.
+
+\paragraph{Photon budget (leaked fraction).}
+The remainder probability Eq.~\eqref{eq:rem_prob} is precisely the {\em leaked fraction}
+\begin{equation}
+L(\theta)\equiv P_{\rm rem}(\theta)=1-\sum_{(j,l)\in\mathcal{M}}P_{j,l}(\theta),
+\end{equation}
+i.e.\ the fraction of the collected signal that the finite bank does not resolve, corresponding to a lost rate $\tau L$. This is a measurement-design completeness, distinct from optical or detector inefficiency $\eta$: a uniform inefficiency rescales all $P_{j,l}$ equally, is absorbed into the Poissonian rate $\tau$, and does not affect the comparison between mode sorting and direct imaging, whereas $L$ quantifies how much of the collected light the finite bank fails to use. Using the leading-order expansions of the channel probabilities [Eqs.~\eqref{eq:CI_MS}\,ff., $P_{0,0}\approx1-\tfrac{\delta x^2}{12}-\tfrac{\delta z^2}{12}$, $P_{1,0}\approx\tfrac{\delta x^2}{12}$, $P_{2,0}\approx P_{0,2}\approx\tfrac{\delta z^2}{24}$], the four dominant channels satisfy $\sum_{\mathcal{M}}P_{j,l}=1+O(\delta^4)$, so the minimal bank leaks only
+\begin{equation}
+L(\theta)=O(\delta^4)
+\end{equation}
+in the sub-Rayleigh regime: it captures essentially all photons {\em and} all information near the origin. As the separations grow, power migrates into unresolved higher modes---a Poisson-like tail in Hermite order for lateral displacement (mean $\propto\delta x^2$) and an even-mode tail for defocus---so $L$ rises [Fig.~\ref{fig:leaked_fraction}]. Resolving a larger bank lowers $L$ at fixed separation, but the corresponding information gain is confined to the supra-Rayleigh regime where direct imaging already approaches the quantum limit [Fig.~\ref{fig:crb_convergence}]. The minimal four-mode bank with a remainder channel is therefore sufficient throughout the range in which mode sorting is advantageous.
+
+\begin{figure*}[h]
+\centering
+\includegraphics[width=0.45\columnwidth]{leaked_fraction_width.pdf}\qquad
+\includegraphics[width=0.45\columnwidth]{leaked_fraction_depth.pdf}
+\caption{Leaked fraction $L=1-\sum_{(j,l)\in\mathcal{M}}P_{j,l}$ (fraction of collected light not routed into a resolved mode) for the incoherent three-source crack model, as a function of the width $\delta x$ (left) and depth $\delta z$ (right). Curves are shown for the minimal four-mode bank (``Dominant'') and for box cutoffs of increasing order; the gradient encodes the value of the complementary parameter. The leaked fraction is fourth-order small in the sub-Rayleigh regime and is reduced further by resolving more modes.}
+\label{fig:leaked_fraction}
+\end{figure*}
+
+\begin{figure*}[h]
+\centering
+\includegraphics[width=0.45\columnwidth]{crb_convergence_width.pdf}\qquad
+\includegraphics[width=0.45\columnwidth]{crb_convergence_depth.pdf}
+\caption{Convergence of the mode-sorting Cram\'er-Rao bound to the quantum limit as the resolved bank is enlarged, for the width $\delta x$ (left) and depth $\delta z$ (right), each including the remainder channel. The minimal four-mode bank (``Dominant'') already saturates the quantum limit in the sub-Rayleigh regime; resolving additional modes only extends the useful range to larger separations, where direct imaging already approaches the quantum limit, confirming the sufficiency of the minimal bank.}
+\label{fig:crb_convergence}
+\end{figure*}
+}
+
 
 \section{Impact of Mode-Sorting Imperfections on the Classical Fisher Information\label{app:ms_errors}}
 {\color{red}
