@@ -236,7 +236,7 @@ The ultimate precision bound on estimating individual source displacements (${\d
 
 We now compare two measurement strategies against the quantum precision bound, namely quantum-inspired mode sorting (MS) in the Hermite polynomial basis and the classical direct imaging (DI) approach most commonly utilised. For the MS basis we match the Hermite-Gaussian modes to the PSF, $\phi_{j,l}(x,y) = \frac{H_j(x)}{\sqrt{2^j j!}} \frac{H_l(y)}{\sqrt{2^l l!}} \sqrt{\frac{1}{\pi}} \exp{-\frac{(x^2 + y^2)}{2}}$ and compute the FIM via Eq.~\eqref{eq:FI_MS} using measurement channel probabilities
 \begin{align}
-    P_{j,l}(\theta) &= \frac{1}{V} \sum_v^V  \abs{ \braket{\phi_{j,l}}{\psi_v(x + \delta x_v, y + \delta y_v, + \delta z_v)} }^2 \label{eq:prob_ms_general}
+    P_{j,l}(\theta) &= \frac{1}{V} \sum_v^V  \abs{ \braket{\phi_{j,l}}{\psi_v(x + \delta x_v, y + \delta y_v, \delta z_v)} }^2 \label{eq:prob_ms_general}
 \end{align}
 with closed-form expressions provided in Appendix~\ref{app:ms_incoherent} \cite{supposta}.
 
@@ -513,9 +513,9 @@ To calculate the FIM for a mode measurement Eq.~\eqref{eq:FI_MS}, we first repre
 \end{align}
 with $\delta[x]$ the Dirac delta. Defining the object distribution via a sum of Dirac delta functions simplifies calculating the measurement channel probabilities to Eq.~\eqref{eq:prob_ms_general}.
 
-For each measurement channel contribution $\frac{1}{P_j(\theta)} \pdv{P_j(\theta)}{\theta_a}  \pdv{P_j(\theta)}$ to the FIM Eq.~\eqref{eq:FI_MS} we need to compute and sum the individual measurement mode probabilities for a single source $\abs{ \braket{\phi_{j,l}}{\psi_v(x + \delta x_v, y + \delta y_v, + \delta z_v)} }^2$. However, due to construction, calculating the measurement mode sensitivity for a specific point source displacement only involves computing the single source measurement probability derivative
+For each measurement channel contribution $\frac{1}{P_j(\theta)} \pdv{P_j(\theta)}{\theta_a}  \pdv{P_j(\theta)}$ to the FIM Eq.~\eqref{eq:FI_MS} we need to compute and sum the individual measurement mode probabilities for a single source $\abs{ \braket{\phi_{j,l}}{\psi_v(x + \delta x_v, y + \delta y_v, \delta z_v)} }^2$. However, due to construction, calculating the measurement mode sensitivity for a specific point source displacement only involves computing the single source measurement probability derivative
 \begin{align}
- \!\!   \pdv{P_{j,l}(\theta)}{\theta_v^a} &= \frac{1}{V} \pdv{}{\theta_v^a} \abs{\braket{\phi_{j,l}}{\psi(x + \delta x_v, y + \delta y_v, + \delta z_v)}}^2.
+ \!\!   \pdv{P_{j,l}(\theta)}{\theta_v^a} &= \frac{1}{V} \pdv{}{\theta_v^a} \abs{\braket{\phi_{j,l}}{\psi(x + \delta x_v, y + \delta y_v, \delta z_v)}}^2.
  \label{eq:pdv_mode_dot_product}
 \end{align}
 We assume the modes to be a point-spread function adapted basis \cite{rehacek2017optimal} expressed as \begin{align}
@@ -545,7 +545,7 @@ with $\mathbb{E}[x_v^\zeta]$ (resp. $\mathbb{E}[y_v^\xi]$) the moments of the Ga
 Taking the absolute square of the inner product leads to the single source measurement probability
 \begin{align}
 \label{eq:three_sources_incoherent_ms_prob}
-    \abs{\braket{\phi_{j,l}}{\psi(x + \delta x_v, y + \delta y_v, + \delta z_v)}}^2 = \frac{4}{4 + \delta z_v^2} \exp{-2 \frac{\delta x_v^2 + \delta y_v^2}{4+\delta z_v^2}} \mbox{$\abs{\sum_\zeta^j c^*_\zeta \mathbb{E}[x_v^\zeta]}^2$} \mbox{$\abs{\sum_\xi^l d^*_\xi \mathbb{E}[y_v^\xi]}^2$}.
+    \abs{\braket{\phi_{j,l}}{\psi(x + \delta x_v, y + \delta y_v, \delta z_v)}}^2 = \frac{4}{4 + \delta z_v^2} \exp{-2 \frac{\delta x_v^2 + \delta y_v^2}{4+\delta z_v^2}} \mbox{$\abs{\sum_\zeta^j c^*_\zeta \mathbb{E}[x_v^\zeta]}^2$} \mbox{$\abs{\sum_\xi^l d^*_\xi \mathbb{E}[y_v^\xi]}^2$}.
 \end{align}
 We can further reduce deriving the derivatives w.r.t. the point source displacements $(\delta_x,\delta_y,\delta_z)$ Eq.~\eqref{eq:pdv_mode_dot_product}
 \begin{align}
@@ -613,11 +613,11 @@ Physically $\Pi_{\rm rem}$ is the dump port of a realistic mode sorter, so the m
 
 As the classical Fisher information is additive over outcomes, the remainder adds a single term to Eq.~\eqref{eq:FI_MS},
 \begin{equation}
-J_{ab}=\sum_{(j,l)\in\mathcal{M}}\frac{\partial_a P_{j,l}\,\partial_b P_{j,l}}{P_{j,l}}+\frac{\partial_a P_{\rm rem}\,\partial_b P_{\rm rem}}{P_{\rm rem}},\qquad \partial_a P_{\rm rem}=-\sum_{(j,l)\in\mathcal{M}}\partial_a P_{j,l}.
+J_{ab}=\tau\left[\sum_{(j,l)\in\mathcal{M}}\frac{\partial_a P_{j,l}\,\partial_b P_{j,l}}{P_{j,l}}+\frac{\partial_a P_{\rm rem}\,\partial_b P_{\rm rem}}{P_{\rm rem}}\right],\qquad \partial_a P_{\rm rem}=-\sum_{(j,l)\in\mathcal{M}}\partial_a P_{j,l}.
 \label{eq:rem_fi}
 \end{equation}
 
-The leaked fraction $P_{\rm rem}$ measures the collected light that is not resolved; this is measurement-design completeness and should not be conflated with optical loss. In the sub-Rayleigh regime, essentially all photons and information are captured in the dominant four mode [Fig.~\ref{fig:crb_convergence}] --- sorting leads to probabilities summing to unity up to second order ($P_{0,0}\approx1-\tfrac{\delta x^2}{12}-\tfrac{\delta z^2}{12}$, $P_{1,0}\approx\tfrac{\delta x^2}{12}$, $P_{2,0}\approx P_{0,2}\approx\tfrac{\delta z^2}{24}$) [Fig.~\ref{fig:leaked_fraction}]. Hence, the remainder channel $P_{\rm rem}=O(\delta^4)$ is negligible and improves the bound only beyond the Rayleigh length, where direct imaging already attains the quantum limit.
+The leaked fraction $P_{\rm rem}$ measures the collected light that is not resolved; this is measurement-design completeness and should not be conflated with optical loss. In the sub-Rayleigh regime, essentially all photons and information are captured in the dominant four modes [Fig.~\ref{fig:crb_convergence}] --- sorting leads to probabilities summing to unity up to second order ($P_{0,0}\approx1-\tfrac{\delta x^2}{12}-\tfrac{\delta z^2}{12}$, $P_{1,0}\approx\tfrac{\delta x^2}{12}$, $P_{2,0}\approx P_{0,2}\approx\tfrac{\delta z^2}{24}$) [Fig.~\ref{fig:leaked_fraction}]. Hence, the remainder channel $P_{\rm rem}=O(\delta^4)$ is negligible and improves the bound only beyond the Rayleigh length, where direct imaging already attains the quantum limit.
 
 \begin{figure*}[h]
 \centering
