@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from math import factorial
+from pathlib import Path
 
 import numpy as np
 import numpy.typing as npt
@@ -15,13 +16,15 @@ import rayfish
 from rayfish.classical_fisher_information import fisher_information_remainder_channel
 from rayfish.parameter_catalogue import distance_3_sources_xz
 
+ROOT_DIR = Path(__file__).parent
+
 N_PT_SRC = 3
 CONF: dict[str, Any] = {"simulation_dimension": 1}
 # inputs
 N_GRIDS = 50
 IMPORTANT_MODES = ((0, 0), (1, 0), (2, 0), (0, 2))
 MODE_DEGREE = 4
-INPUT_ = {
+INPUT_: dict[str, object] = {
     "wave_vector": 2.0,
     "rayleigh_length": 1.0,
     "number_of_grids": N_GRIDS,  # 50,
@@ -75,7 +78,7 @@ def simulate_bounds() -> None:
             "fisher_information_matrix_for_entire_distribution"
         ].reshape(N_GRIDS, N_GRIDS, len(individual_modes) + 1, 2, 2)
         np.save(
-            f"fi_ms_{i}.npy",
+            ROOT_DIR / f"fi_ms_{i}.npy",
             fi_ms_,
         )
 
@@ -83,7 +86,7 @@ def simulate_bounds() -> None:
             "covariance_matrix_for_entire_distribution"
         ].reshape(N_GRIDS, N_GRIDS, 2, 2)
         np.save(
-            f"fi_ms_inv_{i}_with_remainder.npy",
+            ROOT_DIR / f"fi_ms_inv_{i}_with_remainder.npy",
             fi_ms_inv_,
         )
 
@@ -111,7 +114,7 @@ if __name__ == "__main__":
     )
     coords = coords_result["coordinates"].reshape(N_GRIDS, N_GRIDS, 9)
     np.save(
-        "coordinates.npy",
+        ROOT_DIR / "coordinates.npy",
         coords,
     )
     logger.info("Coords saved.")
