@@ -41,6 +41,7 @@ def probability__1D(
     number_of_point_sources: int,
     number_of_point_source_distributions: int,
     measurement_basis: List[Dict[str, npt.NDArray[np.float64]]],
+    point_source_intensities: list[float],
 ) -> npt.NDArray[np.float64]:
     """Mode probabilities for an incoherent point-source distribution.
 
@@ -61,6 +62,7 @@ def probability__1D(
             distributions we are computing for
         measurement_basis: the resolved measurement modes encoded as polynomial
             coefficients.
+        point_source_intensities: intensity distribution for point sources.
 
     Returns:
         A ``(M, B)`` array of mode probabilities, where ``B`` is the number of resolved
@@ -80,9 +82,9 @@ def probability__1D(
                 )
             )
 
-            prob[:, i] += p_
+            prob[:, i] += point_source_intensities[point_source] * p_
 
-    return prob / number_of_point_sources
+    return prob
 
 
 @config.when_not(dimension=2)
@@ -91,6 +93,7 @@ def derivatives_probability__1D(
     number_of_point_sources: int,
     number_of_point_source_distributions: int,
     measurement_basis: List[Dict[str, npt.NDArray[np.float64]]],
+    point_source_intensities: list[float],
     wave_vector: float,
     rayleigh_length: float,
 ) -> npt.NDArray[np.float64]:
@@ -113,6 +116,7 @@ def derivatives_probability__1D(
             distributions we are computing for
         measurement_basis: the resolved measurement modes encoded as polynomial
             coefficients.
+        point_source_intensities: intensity distribution for point sources.
         wave_vector: wave vector = 2 pi / wavelength the point source emits in
         rayleigh_length: distance along the propagation direction of a beam from the
             waist to the place where the area of the cross section is doubled
@@ -131,7 +135,9 @@ def derivatives_probability__1D(
 
     for i, mode in enumerate(measurement_basis):
         for point_source in range(number_of_point_sources):
-            dprob[:, i, point_source] = np.real(
+            dprob[:, i, point_source] = point_source_intensities[
+                point_source
+            ] * np.real(
                 gaussian_overlaps.derivate_s_probability_measurement_mode_point_source_overlap(
                     s=coordinates[:, point_source],
                     t=coordinates[:, number_of_point_sources + point_source],
@@ -141,28 +147,34 @@ def derivatives_probability__1D(
                     mode_polynomial_coefficients=mode,
                 )
             )
-            dprob[:, i, number_of_point_sources + point_source] = np.real(
-                gaussian_overlaps.derivate_t_probability_measurement_mode_point_source_overlap(
-                    s=coordinates[:, point_source],
-                    t=coordinates[:, number_of_point_sources + point_source],
-                    p=coordinates[:, 2 * number_of_point_sources + point_source],
-                    k=wave_vector,
-                    zr=rayleigh_length,
-                    mode_polynomial_coefficients=mode,
+            dprob[:, i, number_of_point_sources + point_source] = (
+                point_source_intensities[point_source]
+                * np.real(
+                    gaussian_overlaps.derivate_t_probability_measurement_mode_point_source_overlap(
+                        s=coordinates[:, point_source],
+                        t=coordinates[:, number_of_point_sources + point_source],
+                        p=coordinates[:, 2 * number_of_point_sources + point_source],
+                        k=wave_vector,
+                        zr=rayleigh_length,
+                        mode_polynomial_coefficients=mode,
+                    )
                 )
             )
-            dprob[:, i, 2 * number_of_point_sources + point_source] = np.real(
-                gaussian_overlaps.derivate_p_probability_measurement_mode_point_source_overlap(
-                    s=coordinates[:, point_source],
-                    t=coordinates[:, number_of_point_sources + point_source],
-                    p=coordinates[:, 2 * number_of_point_sources + point_source],
-                    k=wave_vector,
-                    zr=rayleigh_length,
-                    mode_polynomial_coefficients=mode,
+            dprob[:, i, 2 * number_of_point_sources + point_source] = (
+                point_source_intensities[point_source]
+                * np.real(
+                    gaussian_overlaps.derivate_p_probability_measurement_mode_point_source_overlap(
+                        s=coordinates[:, point_source],
+                        t=coordinates[:, number_of_point_sources + point_source],
+                        p=coordinates[:, 2 * number_of_point_sources + point_source],
+                        k=wave_vector,
+                        zr=rayleigh_length,
+                        mode_polynomial_coefficients=mode,
+                    )
                 )
             )
 
-    return dprob / number_of_point_sources
+    return dprob
 
 
 def fisher_information_matrix_for_entire_distribution(

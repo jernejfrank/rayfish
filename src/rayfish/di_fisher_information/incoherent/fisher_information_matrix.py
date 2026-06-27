@@ -68,11 +68,12 @@ def _total_probability(
     y_: npt.NDArray[np.float64],
     coordinates: npt.NDArray[np.float64],
     number_of_point_sources: int,
+    point_source_intensities: list[float],
 ) -> npt.NDArray[np.float64]:
     ny, nx = x_.shape
     prob = np.zeros((coordinates.shape[0], ny, nx))
     for point_source in range(number_of_point_sources):
-        p_ = np.real(
+        p_ = point_source_intensities[point_source] * np.real(
             gaussian_overlaps.probability_measurement_di_point_source_overlap(
                 x_,
                 y_,
@@ -82,7 +83,6 @@ def _total_probability(
             )
         )
 
-        # Unnormalized probability
         prob += p_
     return prob
 
@@ -92,6 +92,7 @@ def _probability_derivatives(
     y_: npt.NDArray[np.float64],
     coordinates: npt.NDArray[np.float64],
     number_of_point_sources: int,
+    point_source_intensities: list[float],
 ) -> npt.NDArray[np.float64]:
     ny, nx = x_.shape
     dprob = np.zeros((
@@ -110,7 +111,7 @@ def _probability_derivatives(
                 coordinates[:, 2 * number_of_point_sources + i],
             )
         )
-        ds = np.real(
+        ds = point_source_intensities[i] * np.real(
             gaussian_overlaps.derivative_s_probability_measurement_di_point_source_overlap(
                 x_,
                 y_,
@@ -120,7 +121,7 @@ def _probability_derivatives(
                 probability=prob,
             )
         )
-        dt = np.real(
+        dt = point_source_intensities[i] * np.real(
             gaussian_overlaps.derivative_t_probability_measurement_di_point_source_overlap(
                 x_,
                 y_,
@@ -130,7 +131,7 @@ def _probability_derivatives(
                 probability=prob,
             )
         )
-        dp = np.real(
+        dp = point_source_intensities[i] * np.real(
             gaussian_overlaps.derivative_p_probability_measurement_di_point_source_overlap(
                 x_,
                 y_,
@@ -141,7 +142,6 @@ def _probability_derivatives(
             )
         )
 
-        # Unnormalized probability derivatives
         dprob[:, i] = ds
         dprob[:, number_of_point_sources + i] = dt
         dprob[:, 2 * number_of_point_sources + i] = dp
@@ -155,6 +155,7 @@ def fisher_information_matrix_for_entire_distribution(
     number_of_point_source_distributions: int,
     coordinate_jacobian: npt.NDArray[np.float64],
     numerical_grid: tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]],
+    point_source_intensities: list[float],
     batch_size: int,
 ) -> npt.NDArray[np.float64]:
     """Probability of detecting a photon via direct imaging.
@@ -176,6 +177,7 @@ def fisher_information_matrix_for_entire_distribution(
         coordinate_jacobian: transformation from 3N parameters to the parameters of
             interest.
         numerical_grid: the underliying x-y discretized plane for numerical integration.
+        point_source_intensities: intensity distribution for point sources.
         batch_size: size of a single batch to avoid memory issues during computation.
 
 
@@ -200,12 +202,20 @@ def fisher_information_matrix_for_entire_distribution(
         actual_batch_size = stop - start
         # Compute probability
         prob = _total_probability(
-            x_, y_, coordinates[start:stop], number_of_point_sources
+            x_,
+            y_,
+            coordinates[start:stop],
+            number_of_point_sources,
+            point_source_intensities,
         )
 
         # Compute derivatives
         dprob = _probability_derivatives(
-            x_, y_, coordinates[start:stop], number_of_point_sources
+            x_,
+            y_,
+            coordinates[start:stop],
+            number_of_point_sources,
+            point_source_intensities,
         )
 
         fi = np.zeros((actual_batch_size, n_params_interests, n_params_interests))
@@ -222,7 +232,7 @@ def fisher_information_matrix_for_entire_distribution(
 
             # The actual integral
             wrong_fi = np.matmul(np.transpose(w), w)
-            wrong_fi *= pixel_area / number_of_point_sources
+            wrong_fi *= pixel_area
 
             # Symmetrize for numerical accuracy
             wrong_fi = 0.5 * (wrong_fi + wrong_fi.T)
