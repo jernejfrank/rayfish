@@ -8,7 +8,7 @@ __all__ = (
 )
 
 
-@config.when(intensity="equal")
+@config.when_not(intensity="contrast")
 def point_source_intensities__equal(number_of_point_sources: int) -> list[float]:
     """Set intensities to equal for all sources."""
     return [1 / number_of_point_sources for _ in range(number_of_point_sources)]

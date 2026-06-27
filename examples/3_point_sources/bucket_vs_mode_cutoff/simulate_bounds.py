@@ -14,7 +14,7 @@ from scipy.special import hermite
 
 import rayfish
 from rayfish.classical_fisher_information import fisher_information_remainder_channel
-from rayfish.parameter_catalogue import distance_3_sources_xz
+from rayfish.parameter_catalogue import distance_3_sources_xz, intensity_distribution
 
 ROOT_DIR = Path(__file__).parent
 
@@ -105,6 +105,7 @@ if __name__ == "__main__":
             rayfish,
             fisher_information_remainder_channel,
             distance_3_sources_xz,
+            intensity_distribution,
         )
         .with_config(config=CONF)
     ).build()

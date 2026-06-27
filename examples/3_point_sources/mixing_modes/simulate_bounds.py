@@ -11,7 +11,7 @@ from rayfish.classical_fisher_information import fisher_information_remainder_ch
 from rayfish.classical_fisher_information.measurement_basis import (
     hermite_gaussian_basis,
 )
-from rayfish.parameter_catalogue import distance_3_sources_xz
+from rayfish.parameter_catalogue import distance_3_sources_xz, intensity_distribution
 
 ROOT_DIR = Path(__file__).parent
 
@@ -79,6 +79,7 @@ if __name__ == "__main__":
             rayfish,
             fisher_information_remainder_channel,
             distance_3_sources_xz,
+            intensity_distribution,
             hermite_gaussian_basis,
         )
         .with_config(config=CONF)
