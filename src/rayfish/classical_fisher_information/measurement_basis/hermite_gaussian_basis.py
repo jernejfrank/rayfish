@@ -66,8 +66,24 @@ def mode_mixing_strength(mode_mixing_eps: float = 0.0) -> float:
     return mode_mixing_eps
 
 
+def _select_mode_set(
+    modes: List[Dict[str, npt.NDArray[np.float64]]], mode_set: tuple
+) -> List[Dict[str, npt.NDArray[np.float64]]]:
+    basis = []
+    mode_order = round(len(modes) ** 0.5)
+    for i in range(mode_order):
+        for j in range(mode_order):
+            if (i, j) in mode_set:
+                mode_x = modes[i * mode_order + j]["x"]
+                mode_y = modes[i * mode_order + j]["y"]
+                basis.append({"x": mode_x, "y": mode_y})
+
+    return basis
+
+
 @pipe_output(
-    step(_mix_modes_via_unitary, mode_mixing_strength=source("mode_mixing_strength"))
+    step(_mix_modes_via_unitary, mode_mixing_strength=source("mode_mixing_strength")),
+    step(_select_mode_set, mode_set=source("filter_mode_set")).when(filter_modes=True),
 )
 def measurement_basis(
     mode_degree: int,

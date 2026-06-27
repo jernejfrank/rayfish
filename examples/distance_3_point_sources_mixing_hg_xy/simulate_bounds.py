@@ -5,22 +5,19 @@ from hamilton import driver
 from loguru import logger
 
 import rayfish
-from rayfish.classical_fisher_information import (
-    incoherent as classical_incoherent_sources,
-)
+from rayfish.classical_fisher_information import fisher_information_remainder_channel
 from rayfish.classical_fisher_information.measurement_basis import (
     hermite_gaussian_basis,
 )
 from rayfish.parameter_catalogue import distance_3_sources_xz
 
 N_PT_SRC = 3
-EPS_INTERVAL = [0.04, 0.07]
-CONF = {
-    "simulation_dimension": 1,
-}
+EPS_INTERVAL = [0.0, 0.04, 0.07, 0.1, 0.3, 0.6, 1.0]
+CONF = {"simulation_dimension": 1, "filter_modes": True}
 # inputs
 N_GRIDS = 50
 MODE_DEGREE = 4
+IMPORTANT_MODES = ((0, 0), (1, 0), (2, 0), (0, 2))
 INPUT_ = {
     "wave_vector": 2.0,
     "rayleigh_length": 1.0,
@@ -30,6 +27,7 @@ INPUT_ = {
     "min_z_displacement": 0.1,
     "max_z_displacement": 2.0,
     "mode_degree": MODE_DEGREE,
+    "filter_mode_set": IMPORTANT_MODES,
     "numerical_integration_resolution": 12,
     "numerical_integration_support": 5.0,
     "batch_size": 250,
@@ -55,7 +53,7 @@ def simulate_bounds() -> None:
         )
         fi_ms_ = classical_result[
             "fisher_information_matrix_for_entire_distribution"
-        ].reshape(N_GRIDS, N_GRIDS, MODE_DEGREE * MODE_DEGREE, 2, 2)
+        ].reshape(N_GRIDS, N_GRIDS, len(IMPORTANT_MODES) + 1, 2, 2)
         np.save(
             f"fi_ms_eps_{mixing_eps:.2f}.npy",
             fi_ms_,
@@ -75,7 +73,7 @@ if __name__ == "__main__":
         driver.Builder()
         .with_modules(
             rayfish,
-            classical_incoherent_sources,
+            fisher_information_remainder_channel,
             distance_3_sources_xz,
             hermite_gaussian_basis,
         )
