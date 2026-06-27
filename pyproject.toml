@@ -123,6 +123,8 @@ ignore = [
     "N802",
     "PGH003",
     "PGH004",
+    "RUF002",  # Greek letters in docstrings are intentional (physics formulas)
+    "RUF003",  # Greek letters in comments are intentional (physics formulas)
     "TRY003",
 ]
 

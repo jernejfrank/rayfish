@@ -63,14 +63,15 @@ def coordinates(
     ),
 )
 def coordinate_jacobian() -> npt.NDArray[np.float64]:
-    """Specifiying parameters of interest.
+    """Jacobian B of the re-parametrization to the parameters of interest.
 
-    This can be any reparametrization from 3N -> parameter number of interest. We have
-    some standard transformations that can be applied through the above `pipe_output`
-    scheme, that chains reparametrizations together.
+    Encodes the change of basis B_{α,b} = ∂θ_b/∂θ̃_α applied as
+    H̃ = B H B^T (resp. J̃ = B J B^T). It can be any reparametrization from the 3N source
+    coordinates to the parameters of interest; standard transforms are chained via the
+    above `pipe_output` scheme.
 
-    In this case we just specify that we are interested in the distance between two
-    point sources along the z-axis, and the above `pipe` collapses the covariance matrix
-    to another distance parameter along the x-axis.
+    In this case we specify the distance between two point sources along the z-axis, and
+    the above `pipe` collapses the covariance matrix to another distance parameter along
+    the x-axis.
     """
     return np.array([[1 / 2, 1 / 2]])

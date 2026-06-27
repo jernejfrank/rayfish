@@ -1,4 +1,4 @@
-"""Solving for Lyapunov operators via pinv on a vectorized Sylvester equation."""
+"""Solving for Lyapunov (SLD) operators via a vectorized, batched Sylvester solve."""
 
 import numpy as np
 import numpy.typing as npt
@@ -11,43 +11,46 @@ def lyapunov_operators(
     number_of_point_sources: int,
     number_of_point_source_distributions: int,
 ) -> npt.NDArray[np.complex128]:
-    """Calculates Lyapunov operators using Sylvester's equation.
+    """Calculates the Lyapunov (SLD) operators from the reduced Sylvester equation.
 
-    A Lyapunov operator associated to a particular derivative of the density matrix is
-    the solution to the equation
+    The symmetric logarithmic derivative L_a for parameter θ_a satisfies the SLD
+    relation in the non-orthogonal basis,
 
-    2 * Density Derivative =
-    Lyapunov * Gramian * Density + Density * Gramian *  Lyapunov
+        2 D_a = L_a G R + R G L_a,
 
-    We use the package scipy.linalg.solve_silvester(...)
-    https://docs.scipy.org/doc/scipy/reference/generated/scipy.linalg.solve_sylvester.html
-    that solves matrix equations of the form
+    which is a Sylvester equation A X + X B = Q with A = R G, B = G R and
+    Q = 2 D_a. Because each derivative matrix D_a is sparse, the equation reduces to
+    the (N+1)-dimensional subsystem spanned by the N source populations and the single
+    tangent index N+a; the solution is padded with zero rows
+    and columns back to the full (4N,4N) shape.
 
-    AX + XB = Q
+    The reduced density block diag(I_1, ..., I_V, 0) carries a zero eigenvalue, so A and
+    -B share the eigenvalue 0 and the Sylvester equation is singular (non-unique X).
+    Rather than scipy's Bartels-Stewart (which is also strictly 2-D), we vectorize the
+    equation with the Kronecker identity
 
-    for unknown X using the Bartels- Stewart algorithm. In our case we have:
-    - A = Density * Gramian
-    - B = Gramian * Density
-    - Q = 2 * Density Derivative
+        (I ⊗ A + B^T ⊗ I) vec(X) = vec(Q),
 
-    Since the density derivatives are sparse we can reduce the dimensionality
-    of each Sylvester equation to N+1 and pad with 0 rows and columns back to
-    the original (4N,4N) shape.
+    and take the minimum-norm solution via a batched ``np.linalg.pinv`` over all M
+    distributions at once. The QFIM is invariant to the kernel ambiguity in X, so the
+    minimum-norm choice is immaterial to the final result.
 
     Args:
-        density: (4N,4N) array encoding intensities of the point source distribution
+        density: (4N,4N) array encoding the intensities of the point source
+            distribution; constant across distributions.
         density_derivatives: (3N,4N,4N) array encoding the derivative of the
-            density matrix for each point source coordinate
-        gramian: (4N,4N) array used for linear algebra
-            in a vector space spanned by a non-orthogonal basis
+            density matrix for each point source coordinate; constant across
+            distributions.
+        gramian: (M,4N,4N) array used for linear algebra in the non-orthogonal basis,
+            one Gramian per point source distribution.
         number_of_point_sources: how many point sources we
             have to model the object
-        number_of_point_source_distributions: number of different distributions.
+        number_of_point_source_distributions: number M of different distributions.
 
     Returns:
-        A (3N,4N,4N) array where the (4N,4N) are the Lyapunov operators for each of the
-        3N coordinates. The sequence matches the coordinates sequence
-        (s1,s2,...,t1,t2,...,p1,p2,...).
+        A (M,3N,4N,4N) array where the (4N,4N) blocks are the Lyapunov operators for
+        each of the 3N coordinates and each of the M distributions. The coordinate
+        sequence matches (s1,s2,...,t1,t2,...,p1,p2,...).
     """
     lyapunov = (
         np.zeros((

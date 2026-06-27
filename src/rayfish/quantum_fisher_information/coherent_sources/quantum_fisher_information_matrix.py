@@ -33,11 +33,20 @@ def covariance_matrix_for_entire_distribution(
     tau_submat: npt.NDArray[np.complex128],
     coordinate_jacobian: npt.NDArray[np.float64],
 ) -> npt.NDArray[np.complex128]:
-    """Creates covariance matrix by calculating tau-submatrix.
+    """Quantum Fisher information matrix for coherent point sources.
+
+    For coherent sources the QFIM reduces to a scaled τ block of the Gram matrix
+    (overlaps between PSF tangent vectors),
+
+        H = (4 / V^2) G_τ,
+
+    which is then transformed to the parameters of interest via the Jacobian,
+    H̃ = B H B^T.
 
     Args:
         number_of_point_sources: how many point sources we use to model the object
-        tau_submat: (M,3N,3N) array of overlaps between Gaussian derivatives
+        tau_submat: (M,3N,3N) array of overlaps between Gaussian derivatives, i.e. the
+            G_τ block of the Gram matrix
         coordinate_jacobian: (*,3N) array correcting the re-parametrization
             of point source coordinates and collapsing the matrix for the parameters
             of interest. The first dimension is dependent on the user input.

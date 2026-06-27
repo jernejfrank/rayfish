@@ -70,6 +70,7 @@ def _total_probability(
     number_of_point_sources: int,
     point_source_intensities: list[float],
 ) -> npt.NDArray[np.float64]:
+    """Image-plane intensity P(x,y|θ) = Σ_v I_v |<x,y|ψ_v>|^2 over all sources."""
     ny, nx = x_.shape
     prob = np.zeros((coordinates.shape[0], ny, nx))
     for point_source in range(number_of_point_sources):
@@ -94,6 +95,7 @@ def _probability_derivatives(
     number_of_point_sources: int,
     point_source_intensities: list[float],
 ) -> npt.NDArray[np.float64]:
+    """Derivatives ∂_a P of the image-plane intensity w.r.t. the 3N coordinates."""
     ny, nx = x_.shape
     dprob = np.zeros((
         coordinates.shape[0],
@@ -158,12 +160,19 @@ def fisher_information_matrix_for_entire_distribution(
     point_source_intensities: list[float],
     batch_size: int,
 ) -> npt.NDArray[np.float64]:
-    """Probability of detecting a photon via direct imaging.
+    """Direct-imaging classical Fisher information matrix.
 
-    We assume measurement is 1D and w.l.o.g. in x-dimension. We calculate the
-    probability according to
+    For direct imaging the image-plane distribution is the intensity sum over sources,
 
-    prob_i = 1/N ∑_j^N |<psi(x, y, 0)|psi(x+s_j, y+t_j, p_j)>|^2
+        P(x,y|θ) = Σ_v I_v |<x,y|ψ_v(x+δx_v, y+δy_v, δz_v)>|^2,
+
+    and the classical Fisher information follows the Poissonian form,
+
+        J_{a,b} = ∫ dx dy (1/P) (∂_a P)(∂_b P),
+
+    here evaluated by numerical quadrature over the image plane and then transformed to
+    the parameters of interest via the Jacobian, J̃ = B J B^T. Equal intensities
+    I_v = 1/V recover the uniform 1/V weighting.
 
 
     Args:

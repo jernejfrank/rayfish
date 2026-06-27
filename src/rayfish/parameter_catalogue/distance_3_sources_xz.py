@@ -68,15 +68,16 @@ def coordinates(
 
 
 def coordinate_jacobian() -> npt.NDArray[np.float64]:
-    """Specifiying parameters of interest.
+    """Jacobian B of the re-parametrization to the crack width and depth.
 
-    This can be any reparametrization from 3N -> parameter number of interest. We have
-    some standard transformations that can be applied through the above `pipe_output`
-    scheme, that chains reparametrizations together.
+    Encodes the change of basis B_{α,b} = ∂θ_b/∂θ̃_α that collapses the 3N
+    source-coordinate (Q)FIM to the two parameters of interest, the crack width δx and
+    depth δz,
 
-    In this case we just specify that we are interested in the distance between two
-    point sources along the z-axis, and the above `pipe` collapses the covariance matrix
-    to another distance parameter along the x-axis.
+        δx := δx_2 - δx_1,   δz := -δz_3,
+
+    via H̃ = B H B^T. Rows correspond to (δx, δz) and the columns to the ordered source
+    coordinates (s1,s2,s3, t1,t2,t3, p1,p2,p3).
     """
     return np.array([
         [0, -1 / 2, 1 / 2, 0, 0, 0, 0, 0, 0],

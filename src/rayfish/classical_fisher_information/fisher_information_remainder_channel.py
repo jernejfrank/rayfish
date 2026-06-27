@@ -3,7 +3,15 @@
 This module calculates per-channel classical Fisher information where parameters
 correspond to the 3D coordinates of the point sources. In addition to the explicitly
 resolved measurement modes, it includes one extra channel that buckets the unresolved
-probability mass, i.e. ``1 - sum_b P_b`` over the supplied mode bank.
+probability mass, the remainder channel P_rem(θ) = 1 - Σ_{(j,l)} P_{j,l}(θ), completing
+the resolved modes to a valid POVM. The Fisher information is additive over outcomes, so
+the remainder adds a single term to the mode-sorting FIM,
+
+    J_{a,b} = τ [ Σ_{(j,l)} (∂_a P_{j,l} ∂_b P_{j,l}) / P_{j,l}
+                  + (∂_a P_rem ∂_b P_rem) / P_rem ],
+
+with ∂_a P_rem = -Σ_{(j,l)} ∂_a P_{j,l}. A detector noise floor b_j (dark counts,
+background light) generalizes this to J_{a,b} = τ^2 Σ_j ∂_a P_j ∂_b P_j / (τ P_j + b_j).
 
 The length scale for the position of the particles is normalized w.r.t. the Rayleigh
 length [zr] and wavevector [k] as follows:
@@ -45,12 +53,13 @@ def probability__1D(
 ) -> npt.NDArray[np.float64]:
     """Mode probabilities for an incoherent point-source distribution.
 
-    We assume measurement is 1D and w.l.o.g. in x-dimension. We calculate the
-    probability according to
+    We assume measurement is 1D and w.l.o.g. in x-dimension. Implements the
+    measurement-channel probability
 
-    prob_i = 1/N ∑_j^N |<phi_i|psi(x+s_j, y+t_j,p_j)>|^2
+        P_i(θ) = Σ_v I_v |<φ_i|ψ_v(x+s_v, y+t_v, p_v)>|^2,
 
-    for each measurement mode <psi_i|.
+    the intensity-weighted incoherent sum of single-source mode overlaps for each
+    measurement mode <φ_i| (equal sources I_v = 1/V recover the 1/V weighting).
 
     Args:
         coordinates: (M, 3N) array. The position of individual Gaussians. N is the
@@ -99,12 +108,13 @@ def derivatives_probability__1D(
 ) -> npt.NDArray[np.float64]:
     """Mode-probability derivatives for an incoherent point-source distribution.
 
-    We assume measurement is 1D and w.l.o.g. in x-dimension. We calculate the
-    probability according to
+    We assume measurement is 1D and w.l.o.g. in x-dimension. Returns the derivatives
+    ∂_a P_i of the measurement-channel probability
 
-    prob_i = 1/N ∑_j^N |<phi_i|psi(x+s_j, y+t_j,p_j)>|^2
+        P_i(θ) = Σ_v I_v |<φ_i|ψ_v(x+s_v, y+t_v, p_v)>|^2,
 
-    for each measurement mode <psi_i|.
+    w.r.t. the 3N source coordinates, used to assemble the per-channel Fisher
+    information.
 
     Args:
         coordinates: (M, 3N) array. The position of individual Gaussians. N is the
@@ -189,9 +199,14 @@ def fisher_information_matrix_for_entire_distribution(
 ) -> npt.NDArray[np.float64]:
     """Per-channel Fisher information including an unresolved remainder channel.
 
-    prob_i = 1/N ∑_j^N |<phi_i|psi(x+s_j, y+t_j,p_j)>|^2
+    Implements the noise-floor generalization of the mode-sorting FIM with the additive
+    remainder term,
 
-    for each measurement mode <psi_i|.
+        J_{a,b} = τ^2 Σ_j (1/(τ P_j + b_j)) ∂_a P_j ∂_b P_j,
+
+    where the channel index j runs over the resolved modes plus the remainder bucket
+    P_rem = 1 - Σ_b P_b (with ∂_a P_rem = -Σ_b ∂_a P_b). Mode probabilities are the
+    incoherent single-source sums P_b = (1/V) Σ_v |<φ_b|ψ_v>|^2.
 
     Args:
         number_of_point_sources: how many point sources are used to model the object.

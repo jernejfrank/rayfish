@@ -1,4 +1,9 @@
-"""Different parametrizations for intensities."""
+"""Parametrizations of the relative point-source intensities I_v.
+
+These define the weights I_v entering the incoherent mixed state R = Σ_v I_v |ψ_v><ψ_v|,
+normalized so that Σ_v I_v = 1. The ``equal`` parametrization recovers the uniform
+I_v = 1/V; ``contrast`` tunes a single source relative to the others.
+"""
 
 from hamilton.function_modifiers import config
 

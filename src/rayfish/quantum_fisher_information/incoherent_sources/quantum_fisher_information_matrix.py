@@ -42,12 +42,18 @@ def fisher_information_matrix_for_entire_distribution(
     number_of_point_sources: int,
     number_of_point_source_distributions: int,
 ) -> npt.NDArray[np.complex128]:
-    """Calculates covariance matrix between Lyapunov operators.
+    """Calculates the quantum Fisher information matrix from the Lyapunov operators.
 
-    The covariance matrix is the general entity encoding parameter estimation
-    boundaries. The real part corresponds to the quantum Fisher information
-    matrix and the imaginary part to the compatibility matrix for simultaneously
-    estimating parameters.
+    Implements the non-orthogonal-basis QFIM,
+
+        H_{a,b} = Re Tr(L_a G D_b G),
+
+    evaluated for every parameter pair and every point source distribution. The full
+    complex covariance between Lyapunov operators is the general entity encoding the
+    parameter estimation boundaries: its real part is the quantum Fisher information
+    matrix and its imaginary part the compatibility matrix for simultaneously estimating
+    parameters. The trace is evaluated as batched matrix products, sandwiching the
+    precomputed G D_b G with L_a over the whole distribution at once.
 
     Are Gaussian overlaps are calculated for displacements ψ(x+dx, y+dy, z+dz),
     but the actual distributions might depend a on different parametrization,
@@ -67,19 +73,19 @@ def fisher_information_matrix_for_entire_distribution(
     Args:
         density_derivatives: (3N,4N,4N) array encoding the derivative of the
             density matrix for each point source coordinate
-        gramian: (4N,4N) array used for linear algebra
-            in a vector space spanned by a non-orthogonal basis
-        lyapunov_operators: (3N,4N,4N) array encoding the stability of each
-            parameter.
+        gramian: (M,4N,4N) array used for linear algebra
+            in a vector space spanned by a non-orthogonal basis, one per distribution.
+        lyapunov_operators: (M,3N,4N,4N) array encoding the SLD operator of each
+            parameter for each distribution.
         coordinate_jacobian: (*,3N) array correcting the re-parametrization
             of point source coordinates and collapsing the matrix for the parameters
             of interest. The first dimension is dependent on the user input.
         number_of_point_sources: how many point sources we
             have to model the object.
-        number_of_point_source_distributions: number of different distributions.
+        number_of_point_source_distributions: number M of different distributions.
 
     Returns:
-        A (*,*) array of complex floats encoding precision boundaries for
+        A (M,*,*) array of complex floats encoding precision boundaries for
         parameters of interest that have been encoded into the `coordinate_jacobian`.
     """
     gd = gramian[:, None] @ density_derivatives[None]

@@ -16,8 +16,10 @@ this looks like:
 sqrt[1/pi] (i / (z-dz+i))
 exp[-i ((x-dx)^2 + (y-dy)^2) / (2 (z-dz+i))] exp[-i k zr (z-dz)]
 
-The calculates are for arbitrary measurement basis in x,y, and z dimensions with the
-assumption that
+The calculations are for an arbitrary polynomial (mode-sorting) measurement basis in the
+transverse dimensions. The per-channel probabilities follow the incoherent single-source
+sum P_{j,l} = (1/V) Σ_v |<φ_{j,l}|ψ_v>|^2 and the classical Fisher information the
+Poissonian form J_{a,b} = τ Σ_j (1/P_j) ∂_a P_j ∂_b P_j.
 """
 
 import numpy as np
@@ -44,12 +46,13 @@ def probability__1D(
 ) -> npt.NDArray[np.float64]:
     """Probability of detecting a photon in a particular measurement mode.
 
-    We assume measurement is 1D and w.l.o.g. in x-dimension. We calculate the
-    probability according to
+    We assume measurement is 1D and w.l.o.g. in x-dimension. Implements the
+    measurement-channel probability,
 
-    prob_i = 1/N ∑_j^N |<phi_i|psi(x+s_j, y+t_j,p_j)>|^2
+        P_{j,l}(θ) = (1/V) Σ_v |<φ_{j,l}|ψ_v(x+δx_v, y+δy_v, δz_v)>|^2,
 
-    for each measurement mode <psi_i|.
+    i.e. the incoherent sum of single-source mode overlaps for each measurement mode
+    <φ_{j,l}|.
 
     Args:
         coordinates: (M, 3N) array. The position of individual Gaussians. N is the
@@ -94,11 +97,15 @@ def fisher_information_matrix_for_entire_distribution(
     rayleigh_length: float,
     coordinate_jacobian: npt.NDArray[np.float64],
 ) -> npt.NDArray[np.float64]:
-    """Calculates covariance matrix for a measurement basis.
+    """Classical Fisher information matrix for a mode-sorting measurement basis.
 
-    prob_i = 1/N ∑_j^N |<phi_i|psi(x+s_j, y+t_j,p_j)>|^2
+    Implements the Poissonian per-channel Fisher information,
 
-    for each measurement mode <psi_i|.
+        J_{a,b} = τ Σ_j (1/P_j(θ)) ∂_a P_j(θ) ∂_b P_j(θ),
+
+    summed over the measurement modes <φ_j| with probabilities
+    P_j = (1/V) Σ_v |<φ_j|ψ_v>|^2, and then transformed to the parameters of interest
+    via the Jacobian, J̃ = B J B^T.
 
     Args:
         coordinates: (M, 3N) array. The position of individual Gaussians. N is the

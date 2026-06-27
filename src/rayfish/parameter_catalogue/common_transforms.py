@@ -1,7 +1,9 @@
 """Common re-parametrization transformations.
 
-This module provides common transformations and the associated Jacobians for
-reparametrization that will be used in every parameter estimation problem.
+This module provides common transformations and the associated Jacobians B for
+reparametrization that will be used in every parameter estimation problem. Each Jacobian
+is the change of basis B_{α,b} = ∂θ_b/∂θ̃_α, applied to the (Q)FIM as H̃ = B H B^T
+(resp. J̃ = B J B^T).
 
 We model the underlying problem by a discrete distribution of point sources that are
 displaced in the positive x-, y-, and z-directions. The Jacobians in this module correct

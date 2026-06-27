@@ -1,4 +1,10 @@
-"""Shared functions necessary to calculate quantum fisher information."""
+"""Gram sub-block builders for the non-orthogonal basis.
+
+Each function fills one block of the Gram matrix G in its block form: ``delta_submat``
+the PSF block G_{Δ,v,u} = <ψ_v|ψ_u>, ``gamma_submat`` the PSF-derivative blocks
+G_{γ,v,u} = <ψ_v|∂_{θ_u}ψ_u>, and ``tau_submat`` the derivative-derivative block
+G_{τ,v,u} = <∂_{θ_v}ψ_v|∂_{θ_u}ψ_u>. All blocks are vectorized over the M distributions.
+"""
 
 import numpy as np
 import numpy.typing as npt
@@ -20,10 +26,10 @@ def delta_submat(
     wave_vector: float,
     rayleigh_length: float,
 ) -> npt.NDArray[np.complex128]:
-    """Upper left submatrix for non-orthogonal coordinate transformations.
+    """PSF-overlap block G_Δ of the Gram matrix.
 
-    Creates the submatrix consisting of overlaps between Gaussians based on the function
-    gaussian_overlaps.delta(...).
+    Builds G_{Δ,v,u} = <ψ_v|ψ_u>, the overlaps between displaced
+    Gaussians, from gaussian_overlaps.delta(...).
 
     Args:
         coordinates: (M, 3N) array. The position of individual Gaussians. N is the
@@ -73,7 +79,10 @@ def gamma_submat(
     wave_vector: float,
     rayleigh_length: float,
 ) -> npt.NDArray[np.complex128]:
-    """Matrix of Gaussians and derivatives for non-orthogonal coordinate transformation.
+    """PSF-derivative blocks G_γ, G_γ† of the Gram matrix.
+
+    Builds G_{γ,v,u} = <ψ_v|∂_{θ_u}ψ_u> for the x/y/z derivatives.
+
 
     Creates the two submatrices consisting of overlaps between Gaussians and
     derivatives of Gaussian based on the functions:
@@ -159,10 +168,10 @@ def tau_submat(
     wave_vector: float,
     rayleigh_length: float,
 ) -> npt.NDArray[np.complex128]:
-    """Lower right submatrix for non-orthogonal coordinate transformations.
+    """Derivative-derivative block G_τ of the Gram matrix.
 
-    Creates the submatrix consisting of overlaps between Gaussians derivatives based
-    on the functions:
+    Builds G_{τ,v,u} = <∂_{θ_v}ψ_v|∂_{θ_u}ψ_u>, the overlaps between
+    Gaussian derivatives, based on the functions:
     - gaussian_overlaps.tau_ss(...) for x-dimension,
     - gaussian_overlaps.tau_st(...) for x- and y-dimension,
     - gaussian_overlaps.tau_sp(...) for x- and z-dimension,

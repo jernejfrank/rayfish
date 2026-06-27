@@ -1,4 +1,18 @@
-"""Module to collect Grammian , Density and Derivative matrices."""
+"""Construct the Gramian, density and derivative matrices in the non-orthogonal basis.
+
+Following the non-orthogonal basis approach (Genoni-Tufarelli / Fiderer et al.), every
+operator is expanded in the basis {|ψ_v>, |∂_{δx_v}ψ_v>, |∂_{δy_v}ψ_v>, |∂_{δz_v}ψ_v>}
+and written in the block form
+
+    X = [[X_Δ,   X_γ ],
+         [X_γ†,  X_τ ]],
+
+where the Δ block (V×V) is the PSF-manifold geometry, the τ block (3V×3V) the overlaps
+between tangent vectors, and the γ / γ† blocks (V×3V, 3V×V) the PSF-tangent couplings.
+This module assembles the Gramian G_{u,v} = <ψ_u|ψ_v>, the density matrix
+R = Σ_v I_v |ψ_v><ψ_v| and its parameter derivatives D_a from the precomputed overlap
+submatrices.
+"""
 
 import numpy as np
 import numpy.typing as npt
@@ -15,15 +29,16 @@ def gramian(
     gamma_submat: npt.NDArray[np.complex128],
     tau_submat: npt.NDArray[np.complex128],
 ) -> npt.NDArray[np.complex128]:
-    """Gramian matrix for non-orthogonal basis.
+    """Gramian matrix for the non-orthogonal basis.
 
-    Creates the Gramian matrix that is necessary for linear algebra in vector spaces
-    spanned by non-orthogonal basis.
+    Assembles the Gram matrix G_{u,v} = <ψ_u|ψ_v> used for linear algebra in the vector
+    space spanned by the non-orthogonal basis. In block form it reads
 
-    The matrix takes the form:
+        G = |  G_Δ   G_γ  |   =   |  delta_submat   gamma_submat |
+            |  G_γ†  G_τ  |       |  gamma_submat    tau_submat  |,
 
-    |  delta_submat  |  gamma_submat |
-    |  gamma_submat  |   tau_submat  |
+    with G_Δ the PSF overlaps, G_γ / G_γ† the PSF-derivative overlaps and G_τ the
+    derivative-derivative overlaps.
 
     Args:
         delta_submat: (M,N,N) array of overlaps between Gaussians
@@ -46,15 +61,21 @@ def gramian(
 def density(
     number_of_point_sources: int, point_source_intensities: list[float]
 ) -> npt.NDArray[np.float64]:
-    """Density matrix.
+    """Density matrix of the incoherent point-source ensemble.
 
-    For now we assume all sources have equal probability of emitting
-    a photon (they are equally bright). The trace sums to 1.
+    Implements R = Σ_v I_v |ψ_v><ψ_v|, which in the
+    non-orthogonal basis has support only on the Δ block,
+
+        R_Δ = diag(I_1, ..., I_V),
+
+    with the relative intensities normalized so that Σ_v I_v = Tr R = 1. Equal sources
+    I_v = 1/V recover the uniform density R_Δ = (1/V) 1_V used in the main text.
 
     Args:
         number_of_point_sources: how many point sources we
             have to model the object
-        point_source_intensities: intensity distribution for point sources.
+        point_source_intensities: relative intensities I_v of the point sources,
+            summing to 1.
 
     Returns:
         A (4N,4N) array where the upper left (N,N) submatrix corresponds to the
@@ -74,13 +95,19 @@ def density_derivatives(
 ) -> npt.NDArray[np.complex128]:
     """Derivatives of the density matrix w.r.t. all parameters.
 
-    For now we assume all sources have equal probability of emitting a photon (they are
-    equally bright) so we can directly populate the individual derivative matrices.
+    Each derivative matrix D_a is sparse with only two non-zero entries that couple a
+    source to its tangent vector,
+
+        D_a^{∂u,u} = D_a^{u,∂u} = I_u,
+
+    where ∂u indexes the basis vector |∂_{θ_u^a}ψ_u>. Equal sources I_u = 1/V recover
+    the uniform-intensity expression of the main text.
 
     Args:
         number_of_point_sources: how many point sources we
             have to model the object
-        point_source_intensities: intensity distribution for point sources.
+        point_source_intensities: relative intensities I_v of the point sources,
+            summing to 1.
 
     Returns:
         A (3N,4N,4N) array where the (4N,4N) is sparse to encode the 3N parameter

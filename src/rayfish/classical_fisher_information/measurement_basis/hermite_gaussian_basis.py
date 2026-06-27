@@ -1,7 +1,13 @@
 """Hermite Gaussian measurement basis.
 
 The basis phi(x,y)_{j,l} = H_j(x) H_l(y) exp{-(x^2 + y^2)/2} / sqrt{pi 2^j j! 2^l l!},
-is normalized to match the point spread function of the imaging system.
+is normalized to match the point spread function of the imaging system. This is the
+PSF-adapted mode basis used for the mode-sorting Fisher information.
+
+Imperfect sorting (mode cross-talk) is modelled by coupling adjacent orders with a
+chain of lossless beam-splitter (Givens) rotations U(ε) = R_{N-2,N-1}(ε)...R_{0,1}(ε)
+applied independently to the x- and y-mode indices, U(ε) ⊗ U(ε). U(ε) is orthogonal,
+so the mixed modes stay orthonormal.
 """
 
 from __future__ import annotations
@@ -24,10 +30,12 @@ __all__ = (
 def _mix_modes_via_unitary(
     modes: List[Dict[str, npt.NDArray[np.float64]]], mode_mixing_strength: float
 ) -> List[Dict[str, npt.NDArray[np.float64]]]:
-    """Applies a Givens rotations that mixes nearest neighbor modes.
+    """Applies the cross-talk unitary U(ε) that mixes nearest-neighbour modes.
 
-    For now only nearest neighbor modes are mixed since this is the most strong case in
-    SPADE like device imperfections.
+    Implements the nearest-neighbour mode cross-talk of a realistic mode sorter: a chain
+    of adjacent-order beam-splitter rotations R_{n,n+1}(ε), applied to the x- and y-mode
+    indices independently. Only nearest neighbours are coupled, the dominant effect in
+    SPADE/MPLC-like device imperfections.
     """
     mode_order = len(modes[0]["x"])
     old_modes_x = np.stack([modes[i]["x"] for i in range(0, len(modes), mode_order)])
@@ -49,6 +57,11 @@ def _mix_modes_via_unitary(
 
 
 def _mixing_unitary(mode_degree: int, epsilon: float) -> npt.NDArray[np.float64]:
+    """Orthogonal cross-talk chain U(ε) = R_{N-2,N-1}(ε)...R_{0,1}(ε).
+
+    Each R_{n,n+1}(ε) is a 2x2 rotation by ε coupling adjacent Hermite-Gaussian orders
+    n and n+1; sin^2(ε) is the power leaked per coupling.
+    """
     unitary = np.eye(mode_degree)
     cos, sin = np.cos(epsilon), np.sin(epsilon)
     for n in range(mode_degree - 1):  # couple order n <-> n+1
