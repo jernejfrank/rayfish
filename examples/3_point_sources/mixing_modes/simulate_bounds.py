@@ -1,5 +1,7 @@
 """Keeping simulation concise."""
 
+from pathlib import Path
+
 import numpy as np
 from hamilton import driver
 from loguru import logger
@@ -10,6 +12,8 @@ from rayfish.classical_fisher_information.measurement_basis import (
     hermite_gaussian_basis,
 )
 from rayfish.parameter_catalogue import distance_3_sources_xz
+
+ROOT_DIR = Path(__file__).parent
 
 N_PT_SRC = 3
 EPS_INTERVAL = [0.0, 0.04, 0.07, 0.1, 0.3, 0.6, 1.0]
@@ -55,7 +59,7 @@ def simulate_bounds() -> None:
             "fisher_information_matrix_for_entire_distribution"
         ].reshape(N_GRIDS, N_GRIDS, len(IMPORTANT_MODES) + 1, 2, 2)
         np.save(
-            f"fi_ms_eps_{mixing_eps:.2f}.npy",
+            ROOT_DIR / f"fi_ms_eps_{mixing_eps:.2f}.npy",
             fi_ms_,
         )
 
@@ -63,7 +67,7 @@ def simulate_bounds() -> None:
             "covariance_matrix_for_entire_distribution"
         ].reshape(N_GRIDS, N_GRIDS, 2, 2)
         np.save(
-            f"fi_ms_inv_eps_{mixing_eps:.2f}.npy",
+            ROOT_DIR / f"fi_ms_inv_eps_{mixing_eps:.2f}.npy",
             fi_ms_inv_,
         )
 
