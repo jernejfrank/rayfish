@@ -53,8 +53,11 @@ def test_total_propability(
     single_x = np.array([-1.1])
     single_y = np.array([0.7])
     x_, y_ = np.meshgrid(single_x, single_y, indexing="xy")
-    expected = 0.166664
-    actual = _total_probability(x_, y_, coords, n_sources)
+    # Unweighted sum Σ_v |<psi|psi_v>|^2; equal intensities apply the 1/V = 1/3 weight.
+    expected = 0.166664 / 3
+    actual = _total_probability(
+        x_, y_, coords, n_sources, point_source_intensities=[1 / 3, 1 / 3, 1 / 3]
+    )
     assert abs(actual - expected) < tolerance
 
 
@@ -65,21 +68,27 @@ def test_propability_derivatives(
     single_x = np.array([-1.1])
     single_y = np.array([0.7])
     x_, y_ = np.meshgrid(single_x, single_y, indexing="xy")
-    expected = np.array([
-        [
-            0.127351,
-            0.113562,
-            0.113512,
-            -0.0810413,
-            -0.0418387,
-            -0.118731,
-            -0.00946236,
-            0.0,
-            0.0,
-        ]
-    ])
+    # Unweighted single-source derivatives; equal intensities give the 1/V = 1/3 weight.
+    expected = (
+        np.array([
+            [
+                0.127351,
+                0.113562,
+                0.113512,
+                -0.0810413,
+                -0.0418387,
+                -0.118731,
+                -0.00946236,
+                0.0,
+                0.0,
+            ]
+        ])
+        / 3
+    )
 
-    actual = _probability_derivatives(x_, y_, coords, n_sources)
+    actual = _probability_derivatives(
+        x_, y_, coords, n_sources, point_source_intensities=[1 / 3, 1 / 3, 1 / 3]
+    )
     np.testing.assert_allclose(
         actual=np.squeeze(actual), desired=np.squeeze(expected), atol=tolerance
     )
@@ -113,6 +122,7 @@ def test_di_fi_e2e(
         number_of_point_source_distributions=n_dist,
         coordinate_jacobian=jacobian,
         numerical_grid=(x_, y_),
+        point_source_intensities=[1 / 3, 1 / 3, 1 / 3],
         batch_size=1,
     )
     assert len(actual) == 1

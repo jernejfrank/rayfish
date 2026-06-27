@@ -39,7 +39,7 @@ class TestGramian:
         done for a scalar input for point source positions.
         """
         expected = mock_gramian_scalar[:2, :2]
-        actual = incoherent_sources.delta_submat(
+        actual = qfi.delta_submat(
             coordinates=mock_coordinates_scalar,
             number_of_point_sources=mock_number_of_point_sources,
             number_of_point_source_distributions=mock_number_of_point_source_distributions_scalar,
@@ -66,7 +66,7 @@ class TestGramian:
         done for a vector input for point source positions.
         """
         expected = mock_gramian_vector[:, :2, :2]
-        actual = incoherent_sources.delta_submat(
+        actual = qfi.delta_submat(
             coordinates=mock_coordinates_vector,
             number_of_point_sources=mock_number_of_point_sources,
             number_of_point_source_distributions=mock_number_of_point_source_distributions_vector,
@@ -99,7 +99,7 @@ class TestGramian:
         expected = mock_gramian_scalar
         expected[:2, :2] = 0.0
         expected[2:8, 2:8] = 0.0
-        actual = incoherent_sources.gamma_submat(
+        actual = qfi.gamma_submat(
             coordinates=mock_coordinates_scalar,
             number_of_point_sources=mock_number_of_point_sources,
             number_of_point_source_distributions=mock_number_of_point_source_distributions_scalar,
@@ -133,7 +133,7 @@ class TestGramian:
         expected = mock_gramian_vector
         expected[:, :2, :2] = 0.0
         expected[:, 2:8, 2:8] = 0.0
-        actual = incoherent_sources.gamma_submat(
+        actual = qfi.gamma_submat(
             coordinates=mock_coordinates_vector,
             number_of_point_sources=mock_number_of_point_sources,
             number_of_point_source_distributions=mock_number_of_point_source_distributions_vector,
@@ -233,7 +233,7 @@ class TestGramian:
         """
         expected = mock_gramian_scalar
 
-        delta_submat = incoherent_sources.delta_submat(
+        delta_submat = qfi.delta_submat(
             coordinates=mock_coordinates_scalar,
             number_of_point_sources=mock_number_of_point_sources,
             number_of_point_source_distributions=mock_number_of_point_source_distributions_scalar,
@@ -241,7 +241,7 @@ class TestGramian:
             rayleigh_length=mock_rayleigh_length,
         )
 
-        gamma_submat = incoherent_sources.gamma_submat(
+        gamma_submat = qfi.gamma_submat(
             coordinates=mock_coordinates_scalar,
             number_of_point_sources=mock_number_of_point_sources,
             number_of_point_source_distributions=mock_number_of_point_source_distributions_scalar,
@@ -285,7 +285,7 @@ class TestGramian:
         """
         expected = mock_gramian_vector
 
-        delta_submat = incoherent_sources.delta_submat(
+        delta_submat = qfi.delta_submat(
             coordinates=mock_coordinates_vector,
             number_of_point_sources=mock_number_of_point_sources,
             number_of_point_source_distributions=mock_number_of_point_source_distributions_vector,
@@ -293,7 +293,7 @@ class TestGramian:
             rayleigh_length=mock_rayleigh_length,
         )
 
-        gamma_submat = incoherent_sources.gamma_submat(
+        gamma_submat = qfi.gamma_submat(
             coordinates=mock_coordinates_vector,
             number_of_point_sources=mock_number_of_point_sources,
             number_of_point_source_distributions=mock_number_of_point_source_distributions_vector,
@@ -318,10 +318,16 @@ class TestGramian:
 
 
 def test_density(mock_density: npt.NDArray[np.float64]) -> None:
-    """Test density matrix has correct shape and content."""
+    """Test density matrix has correct shape and content.
+
+    Implements R_Δ = diag(I_1, ..., I_V) embedded in the (4N,4N) block matrix,
+    i.e. the density matrix R = Σ_v I_v |ψ_v><ψ_v| of Eq. (eq:incoherent_ensemble)
+    in the non-orthogonal basis. Equal intensities I_v = 1/V recover Tr R = 1.
+    """
     expected = mock_density
     actual = incoherent_sources.density(
         number_of_point_sources=2,
+        point_source_intensities=[0.5, 0.5],
     )
 
     assert actual.shape == (8, 8)
@@ -330,13 +336,19 @@ def test_density(mock_density: npt.NDArray[np.float64]) -> None:
     assert np.array_equal(expected, actual)
 
 
-def test_all_density_derivatives(
+def test_density_derivatives(
     mock_density_derivative: npt.NDArray[np.float64],
 ) -> None:
-    """Test density derivatives matrices have correct shape and content."""
+    """Test density derivatives matrices have correct shape and content.
+
+    Implements the sparse derivative matrices D_a with the two non-zero entries
+    D_a^{∂u,u} = D_a^{u,∂u} = I_u (Eq. between eatlean and eq:qfim_final). Each
+    derivative is traceless and has exactly two non-zero entries.
+    """
     expected = mock_density_derivative
-    actual = incoherent_sources.all_density_derivatives(
+    actual = incoherent_sources.density_derivatives(
         number_of_point_sources=2,
+        point_source_intensities=[0.5, 0.5],
     )
 
     assert actual.shape == (6, 8, 8)
@@ -346,50 +358,58 @@ def test_all_density_derivatives(
     assert np.array_equal(expected, actual)
 
 
-def test_pad_operators() -> None:
-    """Test correct padding of rows and columns."""
-    expected = np.array([
-        [1, 1, 0, 0, 1, 0, 0, 0],
-        [1, 1, 0, 0, 1, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0],
-        [1, 1, 0, 0, 1, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0],
-    ])
-    mock_input = np.array([[1, 1, 1], [1, 1, 1], [1, 1, 1]])
-    actual = incoherent_sources.quantum_fisher_information_matrix._pad_operator(
-        matrix=mock_input, n=2, ind=2
-    )
-    assert np.array_equal(expected, actual)
-
-
 def test_lyapunov_operators(
     mock_density: npt.NDArray[np.float64],
     mock_density_derivative: npt.NDArray[np.complex128],
     mock_gramian_scalar: npt.NDArray[np.complex128],
     mock_number_of_point_sources: int,
-    mock_lyapunov_operators: npt.NDArray[np.complex128],
     tolerance: float,
 ) -> None:
-    """Test Lyapunov operators.
+    """Test Lyapunov operators solve the reduced Sylvester equation.
 
-    Testing the scipy.linalg.solve_silvester(...) yields accurate
-    enough results and that the operators are padded correctly.
+    The reduced density block diag(I_1, ..., I_V, 0) is singular, so the SLD
+    Eq. (eq:sld_nonorthogonal) 2 D_a = R G L_a + L_a G R has a non-unique
+    solution; the implementation returns the minimum-norm one via a pinv on the
+    Kronecker-vectorized system. We therefore test the *defining property* on
+    each (N+1)-dimensional subsystem,
+
+        (R G) X + X (G R) = 2 D_a,
+
+    rather than exact operator values, plus the correct sparse padding back to
+    the full (4N,4N) shape.
     """
-    expected = mock_lyapunov_operators
+    n_sources = mock_number_of_point_sources
+    n_dist = 1
+    gramian = mock_gramian_scalar[None]
 
     actual = incoherent_sources.lyapunov_operators(
         density=mock_density,
-        all_density_derivatives=mock_density_derivative,
-        gramian_of_single_distribution=mock_gramian_scalar,
-        number_of_point_sources=mock_number_of_point_sources,
+        density_derivatives=mock_density_derivative,
+        gramian=gramian,
+        number_of_point_sources=n_sources,
+        number_of_point_source_distributions=n_dist,
     )
 
-    assert actual.shape == (6, 8, 8)
-    # Adjusting tolerance due to numerics
-    assert np.allclose(actual, expected, atol=10 * tolerance)
+    assert actual.shape == (n_dist, 3 * n_sources, 8, 8)
+
+    # Each operator must satisfy the reduced Sylvester equation on its subsystem.
+    for i in range(3 * n_sources):
+        _slice = np.arange(0, n_sources + 1)
+        _slice[-1] = n_sources + i
+        sub = actual[0, i][np.ix_(_slice, _slice)]
+        density_sub = mock_density[np.ix_(_slice, _slice)]
+        gramian_sub = mock_gramian_scalar[np.ix_(_slice, _slice)]
+        a = density_sub @ gramian_sub
+        b = gramian_sub @ density_sub
+        rhs = (2 * mock_density_derivative[i])[np.ix_(_slice, _slice)]
+        residual = a @ sub + sub @ b - rhs
+        assert np.allclose(residual, 0.0, atol=10 * tolerance)
+
+        # Rows/columns outside the subsystem must remain zero (sparse padding).
+        mask = np.ones(8, dtype=bool)
+        mask[_slice] = False
+        assert np.allclose(actual[0, i][mask, :], 0.0)
+        assert np.allclose(actual[0, i][:, mask], 0.0)
 
 
 def test_fisher_information_matrix(
@@ -401,22 +421,26 @@ def test_fisher_information_matrix(
     mock_number_of_point_sources: int,
     tolerance: float,
 ) -> None:
-    """Test covariance matrix for Lyapunov operators.
+    """Test the quantum Fisher information matrix construction.
 
-    We test the correct construction of the matrix elements
-    and re-parametrisation from absolute point source coordinates
-    to relative coordinates change of basis.
+    Implements H_{a,b} = Re Tr(L_a G D_b G) (Eq. eq:qfi_nonorthogonal) followed
+    by the Jacobian change of basis H̃ = B H B^T (Eq. def:jacobian). The QFIM is
+    invariant to the non-uniqueness of the SLD, so we feed the reference Lyapunov
+    operators and check the matrix elements and the re-parametrisation from
+    absolute point source coordinates to the parameters of interest.
     """
     expected = mock_covariance_matrix
+    n_dist = 1
 
-    actual = incoherent_sources.fisher_information_matrix(
-        all_density_derivatives=mock_density_derivative,
-        gramian_of_single_distribution=mock_gramian_scalar,
-        lyapunov_operators=mock_lyapunov_operators,
+    actual = incoherent_sources.fisher_information_matrix_for_entire_distribution(
+        density_derivatives=mock_density_derivative,
+        gramian=mock_gramian_scalar[None],
+        lyapunov_operators=mock_lyapunov_operators[None],
         coordinate_jacobian=mock_jacobian_two_sources,
         number_of_point_sources=mock_number_of_point_sources,
+        number_of_point_source_distributions=n_dist,
     )
 
-    assert actual.shape == (3, 3)
+    assert actual.shape == (n_dist, 3, 3)
     # Adjusting tolerance due to numerics
-    assert np.allclose(actual, expected, atol=tolerance)
+    assert np.allclose(actual[0], expected, atol=tolerance)
