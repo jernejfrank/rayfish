@@ -1,23 +1,20 @@
----------------------- Response to Referees -------------------------------------------
+--------------------------------------------------------------------------------
+PART 1 - RESPONSE TO THE EDITOR
+--------------------------------------------------------------------------------
 
 Dear Editor,
 
-Thank you for considering our work for publication in PRL. Based on the reports, we
-perceive that both referees clearly find the paper of interest and have asked for
-reasonable additional material that further strengthens the manuscript.
+Thank you for considering our work for publication in PRL. Both referees find the
+paper of interest and have asked for reasonable additional material, which has
+strengthened the manuscript. We have addressed every point in the self-contained
+responses below and in the resubmitted manuscript and Supplemental Material (SM).
 
-We have addressed their concerns in the responses below and in the resubmitted
-manuscript. Most notably, we have added new Supplemental Material that (i) models a
-realistic finite mode sorter through a remainder ("dump-port") channel and demonstrates
-that resolving only a handful of information-bearing modes already reaches the quantum
-limit in the sub-Rayleigh regime, (ii) quantifies the impact of nearest-neighbour
-mode cross-talk and shows that the mode-sorting advantage survives realistic sorter
-imperfections, (iii) quantifies a detector noise floor (dark counts and background
-light) and shows that, although it preferentially degrades depth estimation, mode
-sorting degrades gracefully up to percent-level background, and (iv) relaxes the
-equal-intensity assumption by assigning independent and possibly unknown relative
-weights to the three sources. We have also sharpened the statement of novelty relative to previous work and
-clarified the geometric intuition behind the optimality of Hermite-Gaussian modes.
+The principal additions are four new SM studies: (i) a finite, realistic mode sorter
+modelled through a remainder ("dump-port") channel; (ii) nearest-neighbour mode
+cross-talk; (iii) a detector noise floor (dark counts and background light); and
+(iv) unequal source brightness. In every case the mode-sorting advantage and the
+favourable sub-Rayleigh scaling persist. We have also sharpened the statement of
+novelty and made the geometric intuition behind the Hermite-Gaussian modes explicit.
 
 We hope you will find the revised manuscript suitable for publication in PRL.
 
@@ -29,249 +26,118 @@ Gerardo Adesso,
 Samanta Piano
 
 
-================================================================================
-RESPONSE TO REFEREE A
-================================================================================
+--------------------------------------------------------------------------------
+PART 2 - RESPONSE TO REFEREE 1
+--------------------------------------------------------------------------------
 
-We thank the referee for the positive assessment of our manuscript and for the
-constructive suggestions on novelty, robustness, and experimental realism. We have
-revised the manuscript accordingly and respond to each point below.
-
-
-1. Robustness to more realistic cracks (unequal intensities, background light, surface
-   roughness, aberrations, imperfect mode sorting), and whether the favourable delta z^2
-   scaling survives beyond the toy model.
-
-1a. Imperfect mode sorting. We have added a new Supplemental Material section, "Mode-Sorting
-Bounds under Experimental Imperfections." There we model the dominant imperfection of a
-multi-plane light-converter sorter, namely nearest-neighbour cross-talk between adjacent
-Hermite-Gaussian orders, by coupling adjacent modes with a lossless beam-splitter rotation
-U(epsilon) before computing the detection probabilities, their derivatives, and the Fisher
-information. Because U(epsilon) is orthogonal, the mixed modes remain a complete orthonormal
-measurement, and the entire derivation carries over unchanged. We find that cross-talk
-preferentially degrades estimation precisely because the information is concentrated in a
-few modes; nonetheless, for cross-talk up to -20 dB (which is experimentally attainable),
-the Fisher information is reduced but does not collapse and stays above the direct-imaging
-benchmark. Mode sorting therefore retains its advantage over direct imaging across the
-sub-Rayleigh regime (new figure in the Supplemental Material).
-
-1b. Aberrated and non-Gaussian PSFs. Our bounds depend only on the Gram matrix of the
-PSFs and their parameter derivatives (the closed-form quantum Fisher information matrix
-and the reduced Lyapunov equation). The Gaussian assumption enters only through the
-closed-form overlaps and the choice of a matched Hermite-Gaussian basis. For an Airy,
-aberrated, or experimentally measured PSF, the same expressions hold with the overlaps
-evaluated numerically. We now state this explicitly in the Conclusions.
-
-1c. Survival of the delta z^2 scaling. The quadratic Chernoff scaling is structural
-rather than an artefact of the toy model: it originates from the activation of the
-second-order channels (2,0) and (0,2), whose probability vanishes for a flat surface
-(null hypothesis) but grows as delta z^2 for a crack. This mechanism does not rely on the
-equal-intensity assumption, as we confirm quantitatively in point 4a below.
-
-1d. Background light. A detector/background noise floor (dark counts and background
-light) is treated in point 4b below.
-
-1e. Surface roughness. We agree this is a physically important generalisation. It
-corresponds to replacing the discrete point-source model by a continuous (or denser)
-distribution of incoherent emitters, which the present overlap-based framework
-accommodates without modification. A dedicated quantitative treatment of rough-surface
-statistics is, however, a substantial study in its own right, and we regard it as a
-natural direction for future work rather than part of the present Letter.
-
-1f. Uniform optical/detector loss. A uniform optical or detector inefficiency thins the
-Poisson process and rescales every channel mean by the same factor, i.e. it rescales the
-detection rate tau. It scales the Fisher information overall but does not change the
-mode-sorting-versus-direct-imaging comparison, since both schemes are rescaled equally.
-We now state this explicitly in the manuscript. This benign rescaling is distinct from a
-genuine detector noise floor (dark counts/background), treated in point 4b.
+We thank the referee for the positive assessment and for the constructive suggestions
+on robustness, novelty, and experimental realism. We respond to each point below; full
+derivations and figures are in the revised manuscript and Supplemental Material.
 
 
-2. Novelty relative to previous work on quantum superresolution and quantum surface
-   metrology, especially Refs. [11] and [12].
+POINT 1. Robustness to more realistic cracks (unequal intensities, background light,
+surface roughness, aberrations, imperfect mode sorting), and whether the delta z^2
+scaling survives.
 
-We have sharpened the statement of novelty in the Introduction. Relative to Ref. [11],
-which develops general expressions for the quantum Fisher information matrix in discrete
-quantum imaging, and Ref. [12], which treats the quantum estimation of angular and axial
-separations in surface metrology, the present work is new in three respects: (a) it
-formulates passive defect detection as a quantum hypothesis test and derives the
-governing Chernoff-information bounds for the quantum limit, direct imaging, and mode
-sorting, a task not addressed in Refs. [11,12]; (b) it treats the joint estimation of
-crack width and depth from the geometry of the point-spread-function manifold, rather
-than a single separation parameter; and (c) it provides a closed-form quantum Fisher
-information matrix expressed entirely through point-spread-function overlaps and their
-derivative couplings, which directly identifies the optimal measurement modes. The
-Introduction now states points (a)-(c) explicitly.
+Our bounds depend only on the PSF overlaps and their derivatives, so most of these are
+accommodated without changing the framework. Briefly:
 
+(a) Unequal brightness -- new supplemental section "Robustness to unequal
+source brightness." A brightness imbalance only reallocates the fixed photon budget
+between width and depth; the mode-sorting-to-quantum efficiency stays flat and close to
+unity sub-Rayleigh and is essentially independent of the weights, so the result holds
+whether the intensities are known, unknown, or fluctuating.
 
-3. Number of Hermite-Gaussian modes used, and sensitivity to mode truncation, mode
-   mismatch, loss, and detector noise.
+(b) Background light -- new supplemental subsection "Detector noise floor." A noise floor erodes the fainter depth channels before the width channel, so depth degrades first, but the effect stays moderate up to percent-level background.
 
-3a. Number of modes and truncation. The parameter information is concentrated in the
-lowest Hermite-Gaussian orders identified by the QFIM geometry: the (1,0) mode for the
-width and the (2,0) and (0,2) modes for the depth. Our numerical results therefore use a
-deliberately minimal mode-sorting strategy that resolves only these four modes [(0,0),
-(1,0), (2,0), (0,2)] together with a remainder channel collecting all unresolved light
-(point 3d). We verify insensitivity to truncation explicitly by comparing this minimal
-bank against progressively larger banks (box cutoffs of orders <=2 and <=5): the
-Cramer-Rao bounds are indistinguishable in the sub-Rayleigh regime and differ only at
-larger separations, where direct imaging is already preferable (new figure in the
-Supplemental Material).
+(c) Aberrations / non-Gaussian PSFs -- the framework is PSF-agnostic; for an Airy,
+aberrated, or measured PSF the same expressions hold with the overlaps evaluated
+numerically (now stated in the Conclusions).
 
-3b. Mode mismatch. Mode mismatch and imperfect sorting are addressed by the new
-nearest-neighbour cross-talk analysis described in point 1a above.
+(d) Imperfect mode sorting -- survives realistic cross-talk; see Point 3(b).
 
-3c. Loss. A uniform optical/detector inefficiency thins the Poisson process and
-rescales every channel mean by the same factor, i.e. it rescales the detection rate
-tau. It scales the Fisher information overall but does not change the mode-sorting-
-versus-direct-imaging comparison, since both schemes are rescaled equally. We now state
-this explicitly in the manuscript. This benign rescaling is distinct from a genuine
-detector noise floor (dark counts/background), which is treated in point 4b below.
+(e) Surface roughness -- we flag a quantitative treatment as future work.
 
-3d. Remainder channel and higher-order cut-off. We have added a Supplemental Material
-section, "The remainder channel," that treats mode truncation explicitly. A finite
-sorter resolves only a finite set of Hermite-Gaussian modes; the unresolved light is not
-discarded but collected in a single additional output, the dump port of a real device,
-which completes the measurement to a valid POVM that accounts for every photon arriving
-in the image plane. We now include this remainder channel in the estimation Fisher
-information. Because the classical Fisher information is additive over outcomes, and
-because merging the unresolved modes into one outcome is a coarse-graining of the fully
-resolved measurement, the truncated, remainder-completed, fully resolved, and quantum
-bounds obey J_res <= J_res+rem <= J_full <= H. We report two complementary quantities:
-(i) the leaked fraction 1 - sum_{j,l} P_{j,l}, i.e. the fraction of collected light not
-routed into a resolved mode, and (ii) the Fisher information recovered by the remainder
-channel. For the minimal four-mode bank, the resolved probabilities sum to unity through
-second order, so the leaked fraction is O(delta^4) in the sub-Rayleigh regime: the
-minimal bank captures essentially all photons and all parameter information. Enlarging
-the bank reduces the leaked fraction but improves the estimation precision only near and
-beyond the Rayleigh length, where direct imaging already attains the quantum limit.
-Truncation to a handful of modes plus a remainder channel therefore costs negligible
-information throughout the regime where mode sorting is advantageous (new figures in the
-Supplemental Material). We emphasise that this measurement-design leakage is distinct
-from uniform optical/detector loss (point 3c), which rescales all channel probabilities
-equally and does not affect the mode-sorting-versus-direct-imaging comparison.
+(f) delta z^2 scaling -- structural: it comes from the activation of the (2,0)/(0,2)
+channels (occupancy ~ delta z^2), which a per-source weight only multiplies; it
+therefore survives unequal brightness, as confirmed in (a).
 
 
-4. Outstanding robustness studies.
+POINT 2. Novelty relative to previous work, especially Refs. [11] and [12].
 
-4a. Unequal and fluctuating source intensities. TBD
-
-4b. Detector noise floor (dark counts and background light). We have added a Supplemental
-Material subsection, "Detector noise floor," to the section on mode-sorting and detector
-imperfections. The Poissonian model already captures photon shot noise (the 1/P_j
-weighting) and a uniform inefficiency (a rescaling of tau); a genuine noise floor instead
-adds a theta-independent count floor b_j to each channel, so the mean registered power
-becomes tau P_j + b_j. Since b_j is independent of theta, the floor leaves the numerator
-of the Fisher information unchanged but enters its denominator, and therefore
-preferentially suppresses low-occupancy channels. Parametrising the floor by the
-background-to-signal ratio beta = b_j/tau at fixed photon budget, we find that it degrades
-estimation anisotropically: the width is carried by the first-order mode (1,0) while the
-depth is carried by the fainter second-order modes (2,0) and (0,2) associated with axial
-defocus, so the floor erodes the depth channels before the width channel and depth
-precision degrades faster. The degradation nevertheless remains moderate for background-
-to-signal ratios up to the percent level, becoming severe only once the floor is
-comparable to the occupancy of these information-bearing modes (new figure in the
-Supplemental Material).
+The Introduction now states three new contributions relative to Refs. [11,12]: (a) it
+casts passive defect detection as a quantum hypothesis test and derives the governing
+Chernoff bounds; (b) it treats the joint estimation of crack width and depth from the
+PSF-manifold geometry, not a single separation; and (c) it gives a closed-form quantum
+Fisher information matrix in terms of PSF overlaps that directly identifies the optimal
+modes.
 
 
-================================================================================
-RESPONSE TO REFEREE B
-================================================================================
+POINT 3. Number of Hermite-Gaussian modes, and sensitivity to truncation, mode
+mismatch, loss, and detector noise.
 
-We thank the referee for carefully reading our manuscript and providing constructive
-feedback that helped us improve the paper. We have revised the manuscript and added
-explanations to address each question. We hope the referee will recommend the paper for
-publication with these changes.
+(a) Modes and truncation -- new supplemental section "The remainder channel." We resolve only the four information-bearing modes [(0,0),(1,0),(2,0),(0,2)] plus a remainder channel; the leaked fraction is O(delta^4) sub-Rayleigh and larger modes are indistinguishable from this minimal one in that regime.
 
+(b) Mode mismatch / imperfect sorting -- new supplemental section "Mode-Sorting Bounds under Experimental Imperfections." Modelling nearest-neighbour cross-talk, the mode-sorting advantage stays above direct imaging up to -20 dB cross-talk.
 
-1. Can the formalism be extended beyond Gaussian PSFs to other PSFs such as the Airy
-   disk, aberrated, or experimentally measured PSFs?
+(c) Loss -- a uniform inefficiency only rescales the rate tau and cancels in the
+mode-sorting-versus-direct-imaging comparison (now stated in the manuscript).
 
-The framework is PSF-agnostic. The quantum Fisher information matrix and the reduced
-Lyapunov equation depend only on the Gram matrix of the PSFs and their parameter
-derivatives. The Gaussian assumption enters only through the closed-form overlaps given
-in the Supplemental Material and through the choice of a matched Hermite-Gaussian mode
-basis; for an Airy, aberrated, or experimentally measured PSF, the same expressions hold
-with the overlaps evaluated numerically. We have clarified this in the Conclusions of the
-manuscript.
+(d) Detector noise -- treated under Point 1(b).
 
 
-2. Please clarify the meaning of "axial defocus" while depth information is concentrated
-   in second-order modes.
+--------------------------------------------------------------------------------
+PART 3 - RESPONSE TO REFEREE 2
+--------------------------------------------------------------------------------
 
-By "axial defocus" we mean the quadratic wavefront curvature induced by an axial (z)
-displacement of a point source. The leading tangent direction generated by such a
-displacement is proportional to the second-order transverse derivative of the PSF, which
-for a Gaussian PSF is the combination of the (2,0) and (0,2) Hermite-Gaussian modes. This
-is why the depth information concentrates in second-order modes. We have added this
-clarification to the main text.
+We thank the referee for the careful reading and the constructive questions, which have
+improved the paper. We respond to each below; details are in the revised manuscript and
+Supplemental Material.
 
 
-3. Beyond equal-intensity emitters, how robust is the protocol for unknown or fluctuating
-   intensities, and does mode sorting remain optimal in the sub-Rayleigh regime?
+QUESTION 1. Can the formalism be extended beyond Gaussian PSFs (Airy, aberrated, or
+measured)?
 
-TBD.
-
-
-4. What is the intuition behind the optimality of Hermite-Gaussian modes in the
-   sub-Rayleigh regime?
-
-For a Gaussian PSF, the tangent vectors generated by infinitesimal source displacements
-are proportional to Hermite-Gaussian functions of increasing order. A Hermite-Gaussian
-sorter therefore projects directly onto the information-bearing directions of the PSF
-manifold. In the sub-Rayleigh limit a single low order dominates each parameter (first
-order for the width, second order for the depth), so a small number of modes already
-saturates the quantum limit. We have made this geometric intuition explicit in the
-manuscript.
+Yes -- the framework is PSF-agnostic: the bounds depend only on the PSF overlaps and
+their derivatives. The Gaussian assumption enters only through the closed-form overlaps
+and the matched Hermite-Gaussian basis; for any other PSF the same expressions hold with
+the overlaps evaluated numerically (now stated in the Conclusions).
 
 
-5. The possible future explorations are not clearly stated, and the generality and
-   experimental feasibility could be strengthened.
+QUESTION 2. Clarify "axial defocus" given that depth information sits in second-order
+modes.
 
-On generality, the framework is PSF-agnostic (point 1): because the bounds depend only on
-PSF overlaps and their derivatives, they apply unchanged to non-Gaussian, aberrated, or
-experimentally measured PSFs, for which the overlaps are evaluated numerically. We now
-state this explicitly in the Conclusions. The same overlap-based description extends to
-denser or continuous emitter distributions, which is the natural route to modelling
-surface roughness and which we highlight as a direction for future work.
-
-On experimental feasibility, we have added Supplemental Material sections covering the
-dominant practical effects. (i) The section "The remainder channel" models the finite
-mode bank of a realistic sorter together with its dump-port (remainder) channel, and
-shows that resolving only the few information-bearing modes plus this single extra
-outcome -- which together account for every photon in the image plane -- suffices to
-reach the quantum limit in the sub-Rayleigh regime, so the protocol does not require an
-unbounded mode bank. (ii) The section "Mode-Sorting Bounds under Experimental
-Imperfections" models nearest-neighbour cross-talk of a multi-plane light-converter
-sorter and shows that the mode-sorting advantage survives realistic, imperfect sorting
-(it remains above the direct-imaging benchmark for cross-talk up to -20 dB), and further
-treats a detector noise floor (point 5b). Together these motivate a proof-of-principle
-demonstration, which we now highlight in the Conclusions.
-
-We have also added a robustness study of unequal and fluctuating source intensities
-(point 5a; see also our response to Referee A, point 4a):
-
-5a. Unequal and fluctuating source intensities. We assign the three sources independent
-relative weights and treat both known-but-unequal and unknown/fluctuating cases (the
-latter via nuisance parameters). The favourable delta z^2 detection scaling is preserved,
-and the sub-Rayleigh Cramer-Rao bounds for the width and depth are only modestly inflated
-relative to the equal-intensity case, because brightness information is carried by the
-fundamental mode while the geometric information resides in the higher-order modes. Mode
-sorting therefore remains optimal in the sub-Rayleigh regime (new figure in the
-Supplemental Material; full details in our response to Referee A, point 4a).
-
-5b. Detector noise floor (dark counts and background light). We have added a Supplemental
-Material subsection, "Detector noise floor." The Poissonian model captures photon shot
-noise and a uniform inefficiency (a rescaling of tau); a genuine noise floor adds a theta-
-independent count floor b_j to each channel (mean registered power tau P_j + b_j), which
-enters the Fisher-information denominator and preferentially suppresses low-occupancy
-channels. We find the degradation is anisotropic: the depth is carried by the fainter
-second-order modes (2,0) and (0,2) associated with axial defocus while the width is
-carried by the first-order mode (1,0), so the floor erodes the depth channels before the
-width channel and depth precision degrades faster. The degradation nevertheless remains
-moderate up to percent-level background-to-signal ratios, becoming severe only once the
-floor is comparable to the occupancy of these information-bearing modes (new figure in
-the Supplemental Material).
+"Axial defocus" is the quadratic wavefront curvature from an axial (z) displacement. Its
+leading tangent direction is the second-order transverse derivative of the PSF, which
+for a Gaussian PSF is the (2,0)+(0,2) combination -- hence depth information concentrates in second-order modes (now clarified in the main text).
 
 
-We hope these amendments clarify the concerns of the referees and that they will
-recommend our work for publication.
+QUESTION 3. Robustness to unknown or fluctuating intensities; does mode sorting remain
+optimal sub-Rayleigh?
+
+New supplemental section "Robustness to unequal source brightness." A brightness imbalance only reallocates the fixed photon budget between width and depth, and the
+mode-sorting-to-quantum efficiency stays flat and close to unity sub-Rayleigh. Because
+this efficiency is essentially independent of the weights, the conclusion holds whether
+the intensities are fluctuating: mode sorting remains near-optimal in
+the sub-Rayleigh regime.
+
+
+QUESTION 4. Intuition for the optimality of Hermite-Gaussian modes sub-Rayleigh.
+
+The tangent vectors generated by infinitesimal source displacements are proportional to
+Hermite-Gaussian functions of increasing order, so a Hermite-Gaussian sorter projects
+directly onto the information-bearing directions of the PSF manifold. Sub-Rayleigh, one
+low order dominates each parameter (first for width, second for depth), so a few modes
+already saturate the quantum limit (now made explicit in the manuscript).
+
+
+QUESTION 5. Future explorations, generality, and experimental feasibility.
+
+Generality: the PSF-agnostic framework (Question 1) applies to non-Gaussian, aberrated,
+or measured PSFs, and extends to continuous emitter distributions -- the natural route to surface roughness, which we flag as future work in the Conclusions.
+
+Feasibility: new supplemental sections show the scheme works with a finite, realistic sorter (the remainder/dump-port channel reaches the quantum limit with a handful of modes), survives imperfect sorting (cross-talk up to -20 dB), tolerates a percent-level detector noise floor, and is robust to unequal source brightness (Question 3). Together these motivate a proof-of-principle demonstration, now highlighted in the Conclusions.
+
+
+We hope these amendments address both referees' concerns and that they will recommend
+our work for publication.
