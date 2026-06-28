@@ -183,7 +183,7 @@ Since in general $\ket{\partial_{\theta_u^a}\psi_u}$ is linearly independent fro
 %these derivative vectors do not lie within the span of ${\ket{\psi_v}}$ alone. We
 we must  enlarge the support of the Hilbert space to include the tangent subspace spanned by ${\ket{\partial_{\theta_v^a}\psi_v}}$. This extends the representation from dimension $V$ to $V+3V$.
 %, corresponding to the PSF manifold and its associated tangent directions.
-In the following, we will assume all point sources have equal intensity $I_v=1/V$ \cite{noteintensity}, leading to a  $3V \times 3V$ QFIM encoding precision bounds for estimating only the  displacements $\theta_v^a$ for each point source $v=1,\ldots,V$.
+In the following, we will assume all point sources have equal intensity $I_v=1/V$ \cite{noteintensity}, leading to a  $3V \times 3V$ QFIM encoding precision bounds for estimating only the  displacements $\theta_v^a$ for each point source $v=1,\ldots,V$ {\color{red}(unequal intensities only reallocate Fisher information between the crack width and depth under a fixed photon budget; see Appendix~\ref{app:unequal_intensities})}.
 
 Ordering the basis vectors as $\big\{|{\psi}\rangle$, $|{\partial_{\delta x_v} \psi}\rangle$, $|{\partial_{\delta y_v} \psi}\rangle$, $|{\partial_{\delta z_v} \psi}\rangle\big\}$, we write all matrices in block matrix form
 \begin{align}\label{eatlean}
@@ -672,6 +672,13 @@ Figure~\ref{fig:ms_errors} shows the effect of cross-talk on the Fisher informat
 
 However, for cross-talk up to $-20$~dB, which is experimentally attainable~\cite{bearne2026ModeSorting,kupianskyi2023MS,Fontaine2017DesignOH}, the Fisher information is reduced but does not collapse, and throughout the sub-Rayleigh regime it remains above the direct-imaging benchmark established in Fig.~\ref{fig:supp4figs}; direct imaging becomes competitive only as the Rayleigh length is approached, where it is preferable in any case. The loss relative to the ideal sorter is mild over most of this range (of order $15$--$25\%$), becoming pronounced only in the deepest sub-Rayleigh limit of the width estimation, where the nearly empty $(1,0)$ mode is swamped by leakage from the bright fundamental mode $(0,0)$; even there, mode sorting still sits well above direct imaging. Mode sorting therefore retains its advantage over conventional direct imaging under realistic, imperfect sorting; only with larger cross-talk does this advantage erode.}
 
+\begin{figure*}[h]
+\centering
+\includegraphics[width=0.9\columnwidth]{combined_fi_crb_noise.pdf}
+\caption{{\color{red}Effect of an additive detector noise floor (dark counts and background light) on the classical Fisher information of the Hermite-Gaussian mode-sorting measurement: left column, Fisher information; right column, the associated Cram\'er-Rao bound; top row, the width parameter $\delta x$ for various depths $\delta z$; bottom row, the depth parameter $\delta z$ for various widths $\delta x$. For each colour family the gradient encodes the value of the secondary parameter (grayscale colorbar to the right). Curve colour encodes the background-to-signal ratio $\beta=b_j/\tau$ (legend), from the ideal baseline ($\beta=0$) up to $\beta=10^{-1}$. The floor enters the Fisher-information denominator and suppresses low-occupancy channels first, so the depth bound is inflated faster than the width bound.}}
+\label{fig:ms_noise}
+\end{figure*}
+
 \paragraph{{\color{red}(ii) Detector noise floor.}}
 {\color{red}
 The Poissonian model in Eq.~\eqref{eq:FI_MS} already captures photon shot noise. A uniform optical or detector inefficiency $\eta$ simply thins the Poisson process, $\tau\to\eta\tau$, rescaling every channel mean by the same factor; it scales the overall Fisher information but leaves the mode-sorting-versus-direct-imaging comparison unchanged, since both schemes are rescaled equally. A genuine detector noise floor is qualitatively different: dark counts and background light add a $\theta$-independent count floor $b_j$ to each channel, so the mean registered power becomes $\lambda_j=\tau P_j(\theta)+b_j$. Because $b_j$ is independent of $\theta$ we have $\partial_a\lambda_j=\tau\,\partial_a P_j$, and the Fisher information Eq.~\eqref{eq:FI_MS} generalises to
@@ -681,15 +688,65 @@ The Poissonian model in Eq.~\eqref{eq:FI_MS} already captures photon shot noise.
 \end{equation}
 We parametrise the floor by the background-to-signal ratio $\beta_j\equiv b_j/\tau$ and take it uniform across the measurement channels, $\beta_j=\beta$, at fixed photon budget $\tau$.}
 
-\begin{figure*}[h]
-\centering
-\includegraphics[width=0.9\columnwidth]{combined_fi_crb_noise.pdf}
-\caption{{\color{red}Effect of an additive detector noise floor (dark counts and background light) on the classical Fisher information of the Hermite-Gaussian mode-sorting measurement: left column, Fisher information; right column, the associated Cram\'er-Rao bound; top row, the width parameter $\delta x$ for various depths $\delta z$; bottom row, the depth parameter $\delta z$ for various widths $\delta x$. For each colour family the gradient encodes the value of the secondary parameter (grayscale colorbar to the right). Curve colour encodes the background-to-signal ratio $\beta=b_j/\tau$ (legend), from the ideal baseline ($\beta=0$) up to $\beta=10^{-1}$. The floor enters the Fisher-information denominator and suppresses low-occupancy channels first, so the depth bound is inflated faster than the width bound.}}
-\label{fig:ms_noise}
-\end{figure*}
-
 {\color{red}
 Figure~\ref{fig:ms_noise} shows that the background noise lowers the Fisher information, with the depth estimation degrading faster than width. This follows directly from the denominator of Eq.~\eqref{eq:FI_MS_noise}, in which a count floor preferentially suppresses the channels of small occupancy $P_j$ that carry the sub-Rayleigh parameter information. As established above (cf.\ Fig.~\ref{fig:supp4figs}), the width is carried by the first-order mode $(1,0)$ while the depth is carried by the fainter second-order modes $(2,0)$ and $(0,2)$. The degradation nevertheless remains moderate for background-to-signal ratios up to the percent level, becoming severe only once $\beta$ is comparable to the occupancy of these information-bearing modes.}
+
+\section{{\color{red}Robustness to unequal source brightness}\label{app:unequal_intensities}}
+{\color{red}
+Throughout the main text we assumed equal source intensities $I_v=1/V$ [Eq.~\eqref{eq:incoherent_ensemble}]. Here we relax that assumption and assume \emph{known but unequal} brightness. The imbalance does not change \emph{how well} mode sorting attains the quantum limit, it only \emph{reallocates} a fixed photon budget between the crack-width and crack-depth parameters.
+
+Exploiting the left--right symmetry of the three-source model, we parametrise the imbalance by a single \emph{contrast} ratio
+\begin{equation}
+r_c \equiv \frac{I_{\mathrm{mid}}}{I_{\mathrm{out}}},
+\end{equation}
+the brightness of the central (depth, axial) source relative to each of the two transverse (width, planar) sources, at fixed total budget $\sum_v I_v = 1$, so that $I_{\mathrm{mid}}=r_c/(r_c+2)$ and $I_{\mathrm{out}}=1/(r_c+2)$. Here $r_c>1$ brightens the axial source at the expense of the planar pair, $r_c<1$ does the reverse, and $r_c=1$ recovers the equal-brightness model. The closed-form QFIM of Appendix~\ref{app:qfi_derivation} and the mode-sorting Fisher information of Appendix~\ref{app:ms_incoherent} carry over with $1/V\to I_v$ threaded through the density matrix $R_\Delta=\mathrm{diag}(I_1,\dots,I_V)$ and the detection probabilities $P_{j,l}=\sum_v I_v\,\abs{\braket{\phi_{j,l}}{\psi_v}}^2$; both remain in closed form.
+
+\paragraph{{\color{red}(i) Information versus contrast.}}
+Figure~\ref{fig:contrast_fi_crb} shows the quantum and mode-sorting Fisher information, and the associated Cram\'er-Rao bounds, as a function of $r_c$ for three representative $(\delta x,\delta z)$ pairs in the sub-Rayleigh regime. Both estimators vary smoothly with brightness and, crucially, track one another: raising $r_c$ increases the depth information and decreases the width information, and vice versa.
+
+\begin{figure*}[h]
+\centering
+\includegraphics[width=0.85\textwidth]{fi_crb_vs_contrast.pdf}
+\caption{{\color{red}Quantum [Red] and MS [Blue] Fisher information [Left], and the associated Cram\'er-Rao bounds [Right], versus the brightness contrast $r_c=I_{\mathrm{mid}}/I_{\mathrm{out}}$ for three different crack geometries. The dotted vertical line marks equal brightness ($r_c=1$). Both estimators vary smoothly with contrast and track one another; the asymmetry about $r_c=1$ reflects the nonlinear weight map $I(r_c)=r_c/(r_c+2)$.}}
+\label{fig:contrast_fi_crb}
+\end{figure*}
+
+
+\paragraph{{\color{red}(ii) The contrast dependence is (almost) only photon reallocation.}}
+To separate genuine structural effects from the trivial redistribution of photons, Fig.~\ref{fig:contrast_realloc} normalises each bound by its equal-brightness value. Both the quantum and MS curves lie close to the pure photon reallocation (dashed line) across the full range, confirming that the contrast dependence is dominated by the fixed budget moving between sources; the small residual departures are the genuine overlap-induced structural effect and are smallest in the sub-Rayleigh regime.
+
+\begin{figure*}[h]
+\centering
+\includegraphics[width=0.85\textwidth]{contrast_reallocation_collapse.pdf}
+\caption{{\color{red}Normalised collapse onto the pure-reallocation prediction. Each bound is divided by its equal-brightness ($r_c=1$) value and plotted against contrast (log--log). The dashed black line is the estimator-independent pure-reallocation prediction. Within each panel the swept separation is colour coded (dark = QFI, light = MS) and the orthogonal coordinate is pinned sub-Rayleigh. Curves lying on the dashed line are explained entirely by the photon budget; departures are the genuine structural (overlap) effect.}}
+\label{fig:contrast_realloc}
+\end{figure*}
+
+\paragraph{{\color{red}(iii) The mode-sorting efficiency is invariant.}}
+The decisive quantity for our claim is the efficiency with which mode sorting realises the quantum limit. Figure~\ref{fig:contrast_efficiency} plots the quantum Cram\'er-Rao saturation $H^{-1}/J^{-1}$ as the ratio of the mode-sorting and quantum Cram\'er-Rao bounds against contrast. In the sub-Rayleigh regime the efficiency is flat and close to unity over the entire contrast range, for both width and depth. Brightness imbalance therefore moves information between the two parameters without changing how faithfully mode sorting captures it.
+
+
+\begin{figure*}[h]
+\centering
+\includegraphics[width=0.9\textwidth]{ms_efficiency_vs_contrast.pdf}
+\caption{{\color{red}Mode-sorting efficiency $H^{-1}/J^{-1}$ (ratio of the quantum and mode-sorting Cram\'er-Rao bounds) versus contrast, for the width (left) and depth (right) parameters. Each curve is a fixed separation (light to dark; blue for width, red for depth), with the orthogonal coordinate pinned sub-Rayleigh as noted in each panel. The efficiency stays flat and close to the quantum-optimal value (unity, dotted) across the contrast range in the sub-Rayleigh regime.}}
+\label{fig:contrast_efficiency}
+\end{figure*}
+
+\paragraph{{\color{red}(iv) The width--depth information exchange.}}
+Figure~\ref{fig:contrast_transfer} makes the reallocation explicit: each curve traces the width information against the depth information as the contrast is swept, for different crack configurations. As brightness shifts from the planar (width) sources toward the axial (depth) source the curve moves up and to the left. The mode-sorting locus (blue) sits just inside the quantum locus (red); the gap is the mode-sorting shortfall, which is negligible deep sub-Rayleigh and widens only as the separations approach the Rayleigh scale, where direct imaging is preferable in any case.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\columnwidth]{contrast_information_transfer.pdf}
+\caption{{\color{red}Width--depth information exchange. Each curve traces the width information $H_{\delta x\delta x}$ against the depth information $H_{\delta z\delta z}$ as the contrast is swept from $r_c=0.2$ (planar bright, bottom-right) to $r_c=5$ (axial bright, top-left), for three crack geometries (shade light to dark). The quantum loci (red) lie up and to the right of the mode-sorting loci (blue); the black star marks equal brightness ($r_c=1$). As brightness shifts toward the axial source, depth information is gained exactly as width information is lost.}}
+\label{fig:contrast_transfer}
+\end{figure}
+
+\paragraph{{\color{red}Conclusion.}}
+Taken together, these results show that relaxing equal brightness does not substantially change the physics of the comparison in the regime of interest. The contrast only reallocates a fixed photon budget between width and depth [Figs.~\ref{fig:contrast_realloc},~\ref{fig:contrast_transfer}], the apparent asymmetry about $r_c=1$ is the nonlinearity of the weight map rather than a structural effect, and the mode-sorting-to-quantum efficiency is essentially invariant sub-Rayleigh [Fig.~\ref{fig:contrast_efficiency}]. Mode sorting therefore remains near-optimal for the simultaneous estimation of crack width and depth, and retains its detection advantage, under unequal source brightness. We may consequently assume equal intensities in the main text without loss of generality.
+}
+
 
 \section{QCB Calculation} \label{app:QCB_calculation}
 
