@@ -4,7 +4,7 @@ import numpy as np
 import numpy.typing as npt
 import pytest
 
-from rayfish.di_fisher_information.incoherent.fisher_information_matrix import (
+from rayfish.classical_fisher_information.incoherent_di import (
     _probability_derivatives,
     _total_probability,
     fisher_information_matrix_for_entire_distribution,

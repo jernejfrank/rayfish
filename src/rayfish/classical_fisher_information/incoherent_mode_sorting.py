@@ -36,12 +36,12 @@ from rayfish import gaussian_overlaps
 
 # Public API
 __all__ = (
-    "probability",
+    "covariance_matrix_for_entire_distribution",
+    "covariance_matrix_for_entire_distribution_nuisance_intensity",
+    "covariance_matrix_for_entire_distribution_spatial",
     "derivatives_probability",
     "fisher_information_matrix_for_entire_distribution",
-    "covariance_matrix_for_entire_distribution",
-    "covariance_matrix_for_entire_distribution_spatial",
-    "covariance_matrix_for_entire_distribution_nuisance_intensity",
+    "probability",
 )
 
 
@@ -134,10 +134,12 @@ def derivatives_probability(
 
             dprob[:, i, 3 * number_of_point_sources + point_source] = np.real(
                 gaussian_overlaps.probability_measurement_mode_point_source_overlap(
-                    coordinates[:, point_source],
-                    coordinates[:, number_of_point_sources + point_source],
-                    coordinates[:, 2 * number_of_point_sources + point_source],
-                    mode,
+                    s=coordinates[:, point_source],
+                    t=coordinates[:, number_of_point_sources + point_source],
+                    p=coordinates[:, 2 * number_of_point_sources + point_source],
+                    k=wave_vector,
+                    zr=rayleigh_length,
+                    mode_polynomial_coefficients=mode,
                 )
             )
 

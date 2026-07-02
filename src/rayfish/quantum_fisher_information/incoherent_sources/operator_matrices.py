@@ -21,6 +21,7 @@ __all__ = (
     "gramian",
     "density",
     "density_derivatives",
+    "include_intensity_params",
 )
 
 
@@ -90,34 +91,69 @@ def density(
     return r_full
 
 
+def include_intensity_params(
+    coordinate_jacobian: npt.NDArray[np.float64],
+    number_of_point_sources: int,
+) -> bool:
+    """Infer whether intensity is treated as a (nuisance) parameter.
+
+    The coordinate Jacobian maps the raw per-source parameters onto the parameters of
+    interest, so its width equals the number of raw parameters. Position-only estimation
+    uses 3N parameters (s, t, p per source); promoting intensity to a parameter adds one
+    per source, giving 4N. We read this off the Jacobian rather than passing a separate
+    flag so the two can never disagree.
+
+    Args:
+        coordinate_jacobian: (*, 3N) or (*, 4N) array re-parametrizing the raw
+            per-source coordinates onto the parameters of interest.
+        number_of_point_sources: how many point sources model the object.
+
+    Returns:
+        True if the Jacobian carries the N extra intensity parameters (width 4N),
+        False for the position-only case (width 3N).
+    """
+    return coordinate_jacobian.shape[-1] == 4 * number_of_point_sources
+
+
 def density_derivatives(
     number_of_point_sources: int,
     point_source_intensities: list[float],
+    include_intensity_params: bool,
 ) -> npt.NDArray[np.complex128]:
     """Derivatives of the density matrix w.r.t. all parameters.
 
-    Each derivative matrix D_a is sparse with only two non-zero entries that couple a
-    source to its tangent vector,
+    Each spatial derivative matrix D_a is sparse with only two non-zero entries that
+    couple a source to its tangent vector,
 
         D_a^{∂u,u} = D_a^{u,∂u} = I_u,
 
     where ∂u indexes the basis vector |∂_{θ_u^a}ψ_u>. Equal sources I_u = 1/V recover
-    the uniform-intensity expression of the main text.
+    the uniform-intensity expression of the main text. When intensity is treated as a
+    (nuisance) parameter, we additionally emit the N diagonal intensity derivatives
+    D_a^{u,u} = 1, one per source.
 
     Args:
         number_of_point_sources: how many point sources we
             have to model the object
         point_source_intensities: relative intensities I_v of the point sources,
             summing to 1.
+        include_intensity_params: if True, append the N intensity derivatives so the
+            first axis has length 4N; otherwise emit only the 3N spatial derivatives.
+            Use `include_intensity_params()` to infer this from the coordinate Jacobian.
 
     Returns:
-        A (3N,4N,4N) array where the (4N,4N) is sparse to encode the 3N parameter
-        derivatives. The sequence matches the coordinates sequence
-        (s1,s2,...,t1,t2,...,p1,p2,...).
+        A (P,4N,4N) array where the (4N,4N) blocks are sparse and P = 3N (position only)
+        or P = 4N (with intensity). The parameter sequence matches the coordinate
+        sequence (s1,s2,...,t1,t2,...,p1,p2,...) followed by (I1,I2,...) when included.
     """
+    number_of_parameters = (
+        4 * number_of_point_sources
+        if include_intensity_params
+        else 3 * number_of_point_sources
+    )
     d_tensor = np.zeros(
         (
-            4 * number_of_point_sources,
+            number_of_parameters,
             4 * number_of_point_sources,
             4 * number_of_point_sources,
         ),
@@ -137,11 +173,12 @@ def density_derivatives(
         d_p[i, 3 * number_of_point_sources + i] = point_source_intensities[i]
         d_tensor[2 * number_of_point_sources + i] = d_p + np.transpose(d_p)
 
-        d_intensity = np.zeros((
-            4 * number_of_point_sources,
-            4 * number_of_point_sources,
-        ))
-        d_intensity[i, i] = 1
-        d_tensor[3 * number_of_point_sources + i] = d_intensity
+        if include_intensity_params:
+            d_intensity = np.zeros((
+                4 * number_of_point_sources,
+                4 * number_of_point_sources,
+            ))
+            d_intensity[i, i] = 1
+            d_tensor[3 * number_of_point_sources + i] = d_intensity
 
     return d_tensor

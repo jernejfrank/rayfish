@@ -38,9 +38,11 @@ def lyapunov_operators(
     Args:
         density: (4N,4N) array encoding the intensities of the point source
             distribution; constant across distributions.
-        density_derivatives: (3N,4N,4N) array encoding the derivative of the
-            density matrix for each point source coordinate; constant across
-            distributions.
+        density_derivatives: (P,4N,4N) array encoding the derivative of the
+            density matrix for each parameter; constant across distributions. P = 3N
+            for position-only estimation, or P = 4N when intensity is a parameter
+            (the trailing N intensity derivatives). The intensity block is computed
+            only when P > 3N.
         gramian: (M,4N,4N) array used for linear algebra in the non-orthogonal basis,
             one Gramian per point source distribution.
         number_of_point_sources: how many point sources we
@@ -48,9 +50,10 @@ def lyapunov_operators(
         number_of_point_source_distributions: number M of different distributions.
 
     Returns:
-        A (M,3N,4N,4N) array where the (4N,4N) blocks are the Lyapunov operators for
-        each of the 3N coordinates and each of the M distributions. The coordinate
-        sequence matches (s1,s2,...,t1,t2,...,p1,p2,...).
+        A (M,P,4N,4N) array where the (4N,4N) blocks are the Lyapunov operators for
+        each of the P parameters and each of the M distributions. The parameter
+        sequence matches (s1,s2,...,t1,t2,...,p1,p2,...) followed by (I1,I2,...) when
+        intensity is included.
     """
     lyapunov = (
         np.zeros((
@@ -100,6 +103,9 @@ def lyapunov_operators(
         ).transpose(0, 2, 1)
 
         lyapunov[:, i] = z
+
+    if density_derivatives.shape[0] <= 3 * number_of_point_sources:
+        return lyapunov
 
     for i in range(number_of_point_sources):
         gsub = gramian[:, :number_of_point_sources, :number_of_point_sources]

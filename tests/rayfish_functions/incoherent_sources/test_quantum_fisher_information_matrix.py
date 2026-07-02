@@ -349,6 +349,7 @@ def test_density_derivatives(
     actual = incoherent_sources.density_derivatives(
         number_of_point_sources=2,
         point_source_intensities=[0.5, 0.5],
+        include_intensity_params=False,
     )
 
     assert actual.shape == (6, 8, 8)
@@ -356,6 +357,48 @@ def test_density_derivatives(
         assert np.trace(actual[i]) == 0
         assert np.count_nonzero(actual[i]) == 2
     assert np.array_equal(expected, actual)
+
+
+def test_include_intensity_params() -> None:
+    """The intensity flag is inferred from the coordinate Jacobian width.
+
+    A width of 3N re-parametrizes position only; the extra N columns (width 4N)
+    carry the per-source intensity parameters.
+    """
+    number_of_point_sources = 2
+    position_only_jacobian = np.zeros((5, 3 * number_of_point_sources))
+    with_intensity_jacobian = np.zeros((5, 4 * number_of_point_sources))
+
+    assert not incoherent_sources.include_intensity_params(
+        position_only_jacobian, number_of_point_sources
+    )
+    assert incoherent_sources.include_intensity_params(
+        with_intensity_jacobian, number_of_point_sources
+    )
+
+
+def test_density_derivatives_include_intensity(
+    mock_density_derivative: npt.NDArray[np.float64],
+) -> None:
+    """Treating intensity as a parameter appends N diagonal intensity derivatives.
+
+    With ``include_intensity_params`` the first axis grows from 3N to 4N. The 3N
+    spatial derivatives are unchanged, and each extra matrix is the diagonal indicator
+    D_a^{u,u} = 1 (trace 1, a single non-zero entry).
+    """
+    actual = incoherent_sources.density_derivatives(
+        number_of_point_sources=2,
+        point_source_intensities=[0.5, 0.5],
+        include_intensity_params=True,
+    )
+
+    assert actual.shape == (8, 8, 8)
+    assert np.array_equal(actual[:6], mock_density_derivative)
+    for source in range(2):
+        intensity_derivative = actual[6 + source]
+        assert np.trace(intensity_derivative) == 1
+        assert np.count_nonzero(intensity_derivative) == 1
+        assert intensity_derivative[source, source] == 1
 
 
 def test_lyapunov_operators(
@@ -410,6 +453,62 @@ def test_lyapunov_operators(
         mask[_slice] = False
         assert np.allclose(actual[0, i][mask, :], 0.0)
         assert np.allclose(actual[0, i][:, mask], 0.0)
+
+
+def test_lyapunov_operators_include_intensity(
+    mock_density: npt.NDArray[np.float64],
+    mock_density_derivative: npt.NDArray[np.complex128],
+    mock_gramian_scalar: npt.NDArray[np.complex128],
+    mock_number_of_point_sources: int,
+    tolerance: float,
+) -> None:
+    """With intensity parameters, the trailing N operators solve the source block.
+
+    When the derivative tensor carries the intensity block (first axis 4N), each of the
+    N intensity operators solves the reduced Sylvester equation
+
+        (R G) X + X (G R) = 2 D_a,
+
+    restricted to the N-dimensional source populations (no tangent index), and is padded
+    with zeros back to the full (4N,4N) shape.
+    """
+    n_sources = mock_number_of_point_sources
+    n_dist = 1
+    gramian = mock_gramian_scalar[None]
+
+    # Extend the position-only derivatives with the N diagonal intensity derivatives.
+    intensity_blocks = np.zeros((n_sources, 8, 8), dtype=np.complex128)
+    for source in range(n_sources):
+        intensity_blocks[source, source, source] = 1
+    density_derivatives = np.concatenate([mock_density_derivative, intensity_blocks])
+
+    actual = incoherent_sources.lyapunov_operators(
+        density=mock_density,
+        density_derivatives=density_derivatives,
+        gramian=gramian,
+        number_of_point_sources=n_sources,
+        number_of_point_source_distributions=n_dist,
+    )
+
+    assert actual.shape == (n_dist, 4 * n_sources, 8, 8)
+
+    _slice = np.arange(n_sources)
+    density_sub = mock_density[np.ix_(_slice, _slice)]
+    gramian_sub = mock_gramian_scalar[np.ix_(_slice, _slice)]
+    a = density_sub @ gramian_sub
+    b = gramian_sub @ density_sub
+    for i in range(n_sources):
+        operator = actual[0, 3 * n_sources + i]
+        sub = operator[np.ix_(_slice, _slice)]
+        rhs = (2 * density_derivatives[3 * n_sources + i])[np.ix_(_slice, _slice)]
+        residual = a @ sub + sub @ b - rhs
+        assert np.allclose(residual, 0.0, atol=10 * tolerance)
+
+        # Only the source block is populated for intensity operators.
+        mask = np.ones(8, dtype=bool)
+        mask[_slice] = False
+        assert np.allclose(operator[mask, :], 0.0)
+        assert np.allclose(operator[:, mask], 0.0)
 
 
 def test_fisher_information_matrix(

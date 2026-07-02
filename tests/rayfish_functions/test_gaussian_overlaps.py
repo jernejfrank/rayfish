@@ -750,6 +750,8 @@ def test_probability_measurement_mode_point_source_overlap_only_x(
         0.23,
         0,
         0.121,
+        mock_wave_vector,
+        mock_rayleigh_length,
         mode_polynomial_coefficients,
     )
     assert (actual - np.abs(expected) ** 2) < tolerance
@@ -769,6 +771,8 @@ def test_probability_measurement_mode_point_source_overlap_xy(
         0.23,
         -0.21,
         0.121,
+        mock_wave_vector,
+        mock_rayleigh_length,
         mode_polynomial_coefficients,
     )
     assert (actual - np.abs(expected_real) ** 2) < tolerance
