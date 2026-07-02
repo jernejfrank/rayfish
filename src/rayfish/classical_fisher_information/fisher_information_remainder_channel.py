@@ -31,73 +31,21 @@ The calculations are for an arbitrary measurement basis in the transverse dimens
 import numpy as np
 import numpy.typing as npt
 from beartype.typing import Dict, List, Tuple
-from hamilton.function_modifiers import config
 
 from rayfish import gaussian_overlaps
 
 # Public API
 __all__ = (
-    "probability__1D",
+    "probability",
+    "derivatives_probability",
     "fisher_information_matrix_for_entire_distribution",
     "covariance_matrix_for_entire_distribution",
+    "covariance_matrix_for_entire_distribution_spatial",
+    "covariance_matrix_for_entire_distribution_nuisance_intensity",
 )
 
 
-@config.when_not(dimension=2)
-def probability__1D(
-    coordinates: npt.NDArray[np.float64],
-    number_of_point_sources: int,
-    number_of_point_source_distributions: int,
-    measurement_basis: List[Dict[str, npt.NDArray[np.float64]]],
-    point_source_intensities: list[float],
-) -> npt.NDArray[np.float64]:
-    """Mode probabilities for an incoherent point-source distribution.
-
-    We assume measurement is 1D and w.l.o.g. in x-dimension. Implements the
-    measurement-channel probability
-
-        P_i(θ) = Σ_v I_v |<φ_i|ψ_v(x+s_v, y+t_v, p_v)>|^2,
-
-    the intensity-weighted incoherent sum of single-source mode overlaps for each
-    measurement mode <φ_i| (equal sources I_v = 1/V recover the 1/V weighting).
-
-    Args:
-        coordinates: (M, 3N) array. The position of individual Gaussians. N is the
-            number of point sources in the form
-            coordinates = [s1,s2,...,sN,t1,t2,...,tN,,p1,p2,...,pN] for each of the
-            M >= 1 distributions of particles.
-        number_of_point_sources: how many point sources we use to model the object
-        number_of_point_source_distributions: how many different point source
-            distributions we are computing for
-        measurement_basis: the resolved measurement modes encoded as polynomial
-            coefficients.
-        point_source_intensities: intensity distribution for point sources.
-
-    Returns:
-        A ``(M, B)`` array of mode probabilities, where ``B`` is the number of resolved
-        measurement modes and ``M`` is the number of point-source distributions.
-    """
-    n_measurement_basis = len(measurement_basis)
-    prob = np.zeros((number_of_point_source_distributions, n_measurement_basis))
-
-    for i, mode in enumerate(measurement_basis):
-        for point_source in range(number_of_point_sources):
-            p_ = np.real(
-                gaussian_overlaps.probability_measurement_mode_point_source_overlap(
-                    coordinates[:, point_source],
-                    coordinates[:, number_of_point_sources + point_source],
-                    coordinates[:, 2 * number_of_point_sources + point_source],
-                    mode,
-                )
-            )
-
-            prob[:, i] += point_source_intensities[point_source] * p_
-
-    return prob
-
-
-@config.when_not(dimension=2)
-def derivatives_probability__1D(
+def derivatives_probability(
     coordinates: npt.NDArray[np.float64],
     number_of_point_sources: int,
     number_of_point_source_distributions: int,
@@ -140,7 +88,7 @@ def derivatives_probability__1D(
     dprob = np.zeros((
         number_of_point_source_distributions,
         n_measurement_basis,
-        3 * number_of_point_sources,
+        4 * number_of_point_sources,
     ))
 
     for i, mode in enumerate(measurement_basis):
@@ -184,10 +132,60 @@ def derivatives_probability__1D(
                 )
             )
 
+            dprob[:, i, 3 * number_of_point_sources + point_source] = np.real(
+                gaussian_overlaps.probability_measurement_mode_point_source_overlap(
+                    coordinates[:, point_source],
+                    coordinates[:, number_of_point_sources + point_source],
+                    coordinates[:, 2 * number_of_point_sources + point_source],
+                    mode,
+                )
+            )
+
     return dprob
 
 
-def fisher_information_matrix_for_entire_distribution(
+def probability(
+    number_of_point_sources: int,
+    derivatives_probability: npt.NDArray[np.float64],
+    point_source_intensities: list[float],
+) -> npt.NDArray[np.float64]:
+    """Mode probabilities for an incoherent point-source distribution.
+
+    We assume measurement is 1D and w.l.o.g. in x-dimension. Implements the
+    measurement-channel probability
+
+        P_i(θ) = Σ_v I_v |<φ_i|ψ_v(x+s_v, y+t_v, p_v)>|^2,
+
+    the intensity-weighted incoherent sum of single-source mode overlaps for each
+    measurement mode <φ_i| (equal sources I_v = 1/V recover the 1/V weighting).
+
+    Args:
+        number_of_point_sources: how many point sources we use to model the object
+        derivatives_probability: raw probabilities without intensity weights, which
+            double as intensity derivatives.
+        point_source_intensities: intensity distribution for point sources.
+
+    Returns:
+        A ``(M, B)`` array of mode probabilities, where ``B`` is the number of resolved
+        measurement modes and ``M`` is the number of point-source distributions.
+    """
+    probabilities = np.zeros((
+        derivatives_probability.shape[0],
+        derivatives_probability.shape[1],
+    ))
+    intensities = np.array(point_source_intensities)
+    raw_overlap_probs = derivatives_probability[:, :, 3 * number_of_point_sources :]
+
+    measurement_basis = derivatives_probability.shape[1]
+    for i in range(measurement_basis):
+        overlaps = raw_overlap_probs[:, i, :]
+        weighted_prob = intensities * overlaps
+        probabilities[:, i] = np.sum(weighted_prob, axis=-1)
+
+    return probabilities
+
+
+def fisher_information_matrix_for_entire_distribution(  # noqa: C901
     number_of_point_sources: int,
     number_of_point_source_distributions: int,
     measurement_basis: List[Dict[str, npt.NDArray[np.float64]]],
@@ -214,8 +212,8 @@ def fisher_information_matrix_for_entire_distribution(
             distributions are being computed.
         measurement_basis: polynomial coefficients of the measurement basis.
         probability: resolved-mode probabilities with shape ``(M, B)``.
-        derivatives_probability: derivatives of each mode probability with respect to
-            the ``3N`` source coordinates, with shape ``(M, B, 3N)``.
+        derivatives_probability: raw probabilities without intensity weights, which
+            double as intensity derivatives.
         coordinate_jacobian: transformation from 3N parameters to the parameters of
             interest.
         poisson_rate_tau: total photon budget ``tau`` multiplying the channel means
@@ -250,18 +248,15 @@ def fisher_information_matrix_for_entire_distribution(
     fisher_information = np.zeros((
         number_of_point_source_distributions,
         n_measurement_basis + 1,  # Last channel counting as remainder
-        3 * number_of_point_sources,
-        3 * number_of_point_sources,
+        4 * number_of_point_sources,
+        4 * number_of_point_sources,
     ))
 
     for i in range(number_of_point_sources):
         for j in range(number_of_point_sources):
-            der_s1 = np.zeros(number_of_point_source_distributions)
-            der_s2 = np.zeros(number_of_point_source_distributions)
-            der_t1 = np.zeros(number_of_point_source_distributions)
-            der_t2 = np.zeros(number_of_point_source_distributions)
-            der_p1 = np.zeros(number_of_point_source_distributions)
-            der_p2 = np.zeros(number_of_point_source_distributions)
+            der_remainder = [
+                np.zeros(number_of_point_source_distributions) for _ in range(2 * 4)
+            ]
             prob_sum = np.zeros(number_of_point_source_distributions)
             for b in range(len(measurement_basis)):
                 prob = probability[:, b]
@@ -270,114 +265,30 @@ def fisher_information_matrix_for_entire_distribution(
                 if not np.any(mask):
                     continue
 
-                der_s1[mask] += derivatives_probability[mask, b, i]
-                der_s2[mask] += derivatives_probability[mask, b, j]
-                der_t1[mask] += derivatives_probability[
-                    mask, b, number_of_point_sources + i
-                ]
-                der_t2[mask] += derivatives_probability[
-                    mask, b, number_of_point_sources + j
-                ]
-                der_p1[mask] += derivatives_probability[
-                    mask, b, 2 * number_of_point_sources + i
-                ]
-                der_p2[mask] += derivatives_probability[
-                    mask, b, 2 * number_of_point_sources + j
-                ]
+                for param in range(4):
+                    param_offset = param * number_of_point_sources
+                    for second_param in range(2):
+                        _idx = i if second_param == 0 else j
+                        der_remainder[2 * param + second_param][mask] += (
+                            derivatives_probability[mask, b, param_offset + _idx]
+                        )
+
                 prob_sum[mask] += prob[mask]
 
                 background_beta = background_noise[b] / poisson_rate_tau
 
-                # ss
-                fisher_information[mask, b, i, j] = poisson_rate_tau * (
-                    derivatives_probability[mask, b, i]
-                    * derivatives_probability[mask, b, j]
-                    / (prob[mask] + background_beta)
-                )
+                for param1 in range(4):
+                    for param2 in range(4):
+                        param1_offset = param1 * number_of_point_sources
+                        param2_offset = param2 * number_of_point_sources
 
-                # tt
-                fisher_information[
-                    mask, b, number_of_point_sources + i, number_of_point_sources + j
-                ] = poisson_rate_tau * (
-                    derivatives_probability[mask, b, number_of_point_sources + i]
-                    * derivatives_probability[mask, b, number_of_point_sources + j]
-                    / (prob[mask] + background_beta)
-                )
-
-                # pp
-                fisher_information[
-                    mask,
-                    b,
-                    2 * number_of_point_sources + i,
-                    2 * number_of_point_sources + j,
-                ] = poisson_rate_tau * (
-                    derivatives_probability[mask, b, 2 * number_of_point_sources + i]
-                    * derivatives_probability[mask, b, 2 * number_of_point_sources + j]
-                    / (prob[mask] + background_beta)
-                )
-
-                # ts
-                fisher_information[mask, b, number_of_point_sources + i, j] = (
-                    poisson_rate_tau
-                    * (
-                        derivatives_probability[mask, b, number_of_point_sources + i]
-                        * derivatives_probability[mask, b, j]
-                        / (prob[mask] + background_beta)
-                    )
-                )
-                # st
-                fisher_information[mask, b, i, j + number_of_point_sources] = (
-                    poisson_rate_tau
-                    * (
-                        derivatives_probability[mask, b, i]
-                        * derivatives_probability[mask, b, number_of_point_sources + j]
-                        / (prob[mask] + background_beta)
-                    )
-                )
-                # ps
-                fisher_information[mask, b, 2 * number_of_point_sources + i, j] = (
-                    poisson_rate_tau
-                    * (
-                        derivatives_probability[
-                            mask, b, 2 * number_of_point_sources + i
-                        ]
-                        * derivatives_probability[mask, b, j]
-                        / (prob[mask] + background_beta)
-                    )
-                )
-                # sp
-                fisher_information[mask, b, i, j + 2 * number_of_point_sources] = (
-                    poisson_rate_tau
-                    * (
-                        derivatives_probability[mask, b, i]
-                        * derivatives_probability[
-                            mask, b, 2 * number_of_point_sources + j
-                        ]
-                        / (prob[mask] + background_beta)
-                    )
-                )
-                # tp
-                fisher_information[
-                    mask,
-                    b,
-                    number_of_point_sources + i,
-                    j + 2 * number_of_point_sources,
-                ] = poisson_rate_tau * (
-                    derivatives_probability[mask, b, number_of_point_sources + i]
-                    * derivatives_probability[mask, b, 2 * number_of_point_sources + j]
-                    / (prob[mask] + background_beta)
-                )
-                # pt
-                fisher_information[
-                    mask,
-                    b,
-                    2 * number_of_point_sources + i,
-                    j + number_of_point_sources,
-                ] = poisson_rate_tau * (
-                    derivatives_probability[mask, b, 2 * number_of_point_sources + i]
-                    * derivatives_probability[mask, b, number_of_point_sources + j]
-                    / (prob[mask] + background_beta)
-                )
+                        fisher_information[
+                            mask, b, param1_offset + i, param2_offset + j
+                        ] = poisson_rate_tau * (
+                            derivatives_probability[mask, b, param1_offset + i]
+                            * derivatives_probability[mask, b, param2_offset + j]
+                            / (prob[mask] + background_beta)
+                        )
 
             remainder_background_beta = (
                 background_noise[len(measurement_basis)] / poisson_rate_tau
@@ -387,94 +298,24 @@ def fisher_information_matrix_for_entire_distribution(
             if not np.any(remainder_mask):
                 continue
 
-            # ss
-            fisher_information[remainder_mask, n_measurement_basis, i, j] = (
-                poisson_rate_tau
-                * (
-                    der_s1[remainder_mask]
-                    * der_s2[remainder_mask]
-                    / (remainder_prob[remainder_mask] + remainder_background_beta)
-                )
-            )
+            for param1 in range(4):
+                for param2 in range(4):
+                    param1_offset = param1 * number_of_point_sources
+                    param2_offset = param2 * number_of_point_sources
 
-            # tt
-            fisher_information[
-                remainder_mask,
-                n_measurement_basis,
-                number_of_point_sources + i,
-                number_of_point_sources + j,
-            ] = poisson_rate_tau * (
-                der_t1[remainder_mask]
-                * der_t2[remainder_mask]
-                / (remainder_prob[remainder_mask] + remainder_background_beta)
-            )
+                    der1_idx = param1 * 2
+                    der2_idx = param2 * 2 + 1
 
-            # pp
-            fisher_information[
-                remainder_mask,
-                n_measurement_basis,
-                2 * number_of_point_sources + i,
-                2 * number_of_point_sources + j,
-            ] = poisson_rate_tau * (
-                der_p1[remainder_mask]
-                * der_p2[remainder_mask]
-                / (remainder_prob[remainder_mask] + remainder_background_beta)
-            )
-
-            # ts
-            fisher_information[
-                remainder_mask, n_measurement_basis, number_of_point_sources + i, j
-            ] = poisson_rate_tau * (
-                der_t1[remainder_mask]
-                * der_s2[remainder_mask]
-                / (remainder_prob[remainder_mask] + remainder_background_beta)
-            )
-            # st
-            fisher_information[
-                remainder_mask, n_measurement_basis, i, j + number_of_point_sources
-            ] = poisson_rate_tau * (
-                der_s1[remainder_mask]
-                * der_t2[remainder_mask]
-                / (remainder_prob[remainder_mask] + remainder_background_beta)
-            )
-            # ps
-            fisher_information[
-                remainder_mask, n_measurement_basis, 2 * number_of_point_sources + i, j
-            ] = poisson_rate_tau * (
-                der_p1[remainder_mask]
-                * der_s2[remainder_mask]
-                / (remainder_prob[remainder_mask] + remainder_background_beta)
-            )
-            # sp
-            fisher_information[
-                remainder_mask, n_measurement_basis, i, j + 2 * number_of_point_sources
-            ] = poisson_rate_tau * (
-                der_s1[remainder_mask]
-                * der_p2[remainder_mask]
-                / (remainder_prob[remainder_mask] + remainder_background_beta)
-            )
-            # tp
-            fisher_information[
-                remainder_mask,
-                n_measurement_basis,
-                number_of_point_sources + i,
-                j + 2 * number_of_point_sources,
-            ] = poisson_rate_tau * (
-                der_t1[remainder_mask]
-                * der_p2[remainder_mask]
-                / (remainder_prob[remainder_mask] + remainder_background_beta)
-            )
-            # pt
-            fisher_information[
-                remainder_mask,
-                n_measurement_basis,
-                2 * number_of_point_sources + i,
-                j + number_of_point_sources,
-            ] = poisson_rate_tau * (
-                der_p1[remainder_mask]
-                * der_t2[remainder_mask]
-                / (remainder_prob[remainder_mask] + remainder_background_beta)
-            )
+                    fisher_information[
+                        remainder_mask,
+                        n_measurement_basis,
+                        param1_offset + i,
+                        param2_offset + j,
+                    ] = poisson_rate_tau * (
+                        der_remainder[der1_idx][remainder_mask]
+                        * der_remainder[der2_idx][remainder_mask]
+                        / (remainder_prob[remainder_mask] + remainder_background_beta)
+                    )
 
     fi_matrices = []
     for _ in range(number_of_point_source_distributions):
@@ -503,6 +344,74 @@ def covariance_matrix_for_entire_distribution(
     conds = np.linalg.cond(combined_fi)
     mask = conds < 1e16
     inv_subset = np.linalg.inv(combined_fi[mask])
+
+    cov_matrices[mask] = inv_subset
+
+    # set singular matrices to inf
+    cov_matrices[~mask] = np.inf
+
+    return cov_matrices
+
+
+def covariance_matrix_for_entire_distribution_nuisance_intensity(
+    number_of_spatial_params: int,
+    fisher_information_matrix_for_entire_distribution: npt.NDArray[np.float64],
+) -> npt.NDArray[np.float64]:
+    """The covariance matrix calculated as the inverse of the fisher information."""
+    combined_fi = np.sum(fisher_information_matrix_for_entire_distribution, axis=1)
+
+    intensity_fi = combined_fi[:, number_of_spatial_params:, number_of_spatial_params:]
+    # only invert non-singular matrices
+    conds = np.linalg.cond(intensity_fi)
+    mask = conds < 1e16
+    inv_intensity_fi = np.zeros_like(intensity_fi)
+    inv_subset = np.linalg.inv(intensity_fi[mask])
+    inv_intensity_fi[mask] = inv_subset
+
+    old_fi = combined_fi[:, :number_of_spatial_params, :number_of_spatial_params]
+
+    left_complement = combined_fi[
+        :, :number_of_spatial_params, number_of_spatial_params:
+    ]
+
+    right_complement = combined_fi[
+        :, number_of_spatial_params:, :number_of_spatial_params
+    ]
+
+    fi_marginal = old_fi - np.matmul(
+        left_complement, np.matmul(inv_intensity_fi, right_complement)
+    )
+
+    cov_matrices = np.zeros_like(fi_marginal, dtype=np.float64)
+    # only invert non-singular matrices
+    conds = np.linalg.cond(fi_marginal)
+    mask = conds < 1e16
+    inv_subset = np.linalg.inv(fi_marginal[mask])
+
+    cov_matrices[mask] = inv_subset
+
+    # set singular matrices to inf
+    cov_matrices[~mask] = np.inf
+
+    return cov_matrices
+
+
+def covariance_matrix_for_entire_distribution_spatial(
+    fisher_information_matrix_for_entire_distribution: npt.NDArray[np.float64],
+    number_of_spatial_params: int,
+) -> npt.NDArray[np.float64]:
+    """The covariance matrix calculated as the inverse of the fisher information."""
+    combined_fi = np.sum(fisher_information_matrix_for_entire_distribution, axis=1)
+    fi = combined_fi[:, :number_of_spatial_params, :number_of_spatial_params]
+
+    cov_matrices = np.zeros_like(fi, dtype=np.float64)
+
+    fim_real = np.real(fi)
+
+    # only invert non-singular matrices
+    conds = np.linalg.cond(fim_real)
+    mask = conds < 1e16
+    inv_subset = np.linalg.inv(fim_real[mask])
 
     cov_matrices[mask] = inv_subset
 

@@ -19,12 +19,14 @@ where `X`'s are point sources and `o` is the origin of the coordinate system.
 
 import numpy as np
 import numpy.typing as npt
+from hamilton.function_modifiers import config
 
 # Public API
 __all__ = (
     "number_of_point_sources",
     "coordinates",
-    "coordinate_jacobian",
+    "coordinate_jacobian__no_intensity",
+    "coordinate_jacobian__with_intensity",
 )
 
 
@@ -67,7 +69,8 @@ def coordinates(
     return np.stack(points)
 
 
-def coordinate_jacobian() -> npt.NDArray[np.float64]:
+@config.when_not(estimate_intensity=True)
+def coordinate_jacobian__no_intensity() -> npt.NDArray[np.float64]:
     """Jacobian B of the re-parametrization to the crack width and depth.
 
     Encodes the change of basis B_{α,b} = ∂θ_b/∂θ̃_α that collapses the 3N
@@ -80,6 +83,41 @@ def coordinate_jacobian() -> npt.NDArray[np.float64]:
     coordinates (s1,s2,s3, t1,t2,t3, p1,p2,p3).
     """
     return np.array([
-        [0, -1 / 2, 1 / 2, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, -1, 0, 0],
+        [0, -1 / 2, 1 / 2, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0],
+    ])
+
+
+@config.when(estimate_intensity=True)
+def coordinate_jacobian__with_intensity(
+    point_source_intensities: list[float],
+    target_point_source_idx: int,
+) -> npt.NDArray[np.float64]:
+    """Jacobian B of the re-parametrization to the crack width and depth.
+
+    Encodes the change of basis B_{α,b} = ∂θ_b/∂θ̃_α that collapses the 3N
+    source-coordinate (Q)FIM to the two parameters of interest, the crack width δx and
+    depth δz,
+
+        δx := δx_2 - δx_1,   δz := -δz_3,
+
+    via H̃ = B H B^T. Rows correspond to (δx, δz) and the columns to the ordered source
+    coordinates (s1,s2,s3, t1,t2,t3, p1,p2,p3).
+    """
+    intensity_jacobian = []
+    for i, intensity in enumerate(point_source_intensities):
+        if i == target_point_source_idx:
+            other = (
+                point_source_intensities[i + 1]
+                if i < len(point_source_intensities)
+                else point_source_intensities[i - 1]
+            )
+            intensity_jacobian.append((len(point_source_intensities) - 1) * other**2)
+        else:
+            intensity_jacobian.append(-(intensity**2))
+
+    return np.array([
+        [0, -1 / 2, 1 / 2, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0],
+        [*[0 for _ in range(9)], *intensity_jacobian],
     ])

@@ -55,7 +55,7 @@ def lyapunov_operators(
     lyapunov = (
         np.zeros((
             number_of_point_source_distributions,
-            3 * number_of_point_sources,
+            density_derivatives.shape[0],
             4 * number_of_point_sources,
             4 * number_of_point_sources,
         ))
@@ -100,5 +100,48 @@ def lyapunov_operators(
         ).transpose(0, 2, 1)
 
         lyapunov[:, i] = z
+
+    for i in range(number_of_point_sources):
+        gsub = gramian[:, :number_of_point_sources, :number_of_point_sources]
+        dsub = density[:number_of_point_sources, :number_of_point_sources]
+
+        dg = dsub @ gsub
+        gd = gsub @ dsub
+        der = (2 * density_derivatives[3 * number_of_point_sources + i])[
+            :number_of_point_sources, :number_of_point_sources
+        ]
+
+        identity = np.eye(number_of_point_sources)
+
+        k = (
+            identity[None, :, None, :, None] * dg[:, None, :, None, :]
+            + np.transpose(gd, (0, 2, 1))[:, :, None, :, None]
+            * identity[None, None, :, None, :]
+        )
+
+        k = k.reshape(
+            number_of_point_source_distributions,
+            number_of_point_sources * number_of_point_sources,
+            number_of_point_sources * number_of_point_sources,
+        )
+
+        vec_der = np.transpose(der).reshape(-1)
+        lyapunov_vec = np.linalg.pinv(k) @ vec_der
+
+        z = (
+            np.zeros((
+                number_of_point_source_distributions,
+                4 * number_of_point_sources,
+                4 * number_of_point_sources,
+            ))
+            + 0j
+        )
+        z[:, :number_of_point_sources, :number_of_point_sources] = lyapunov_vec.reshape(
+            number_of_point_source_distributions,
+            number_of_point_sources,
+            number_of_point_sources,
+        ).transpose(0, 2, 1)
+
+        lyapunov[:, 3 * number_of_point_sources + i] = z
 
     return lyapunov

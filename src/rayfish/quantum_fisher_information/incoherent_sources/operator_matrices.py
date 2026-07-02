@@ -91,7 +91,8 @@ def density(
 
 
 def density_derivatives(
-    number_of_point_sources: int, point_source_intensities: list[float]
+    number_of_point_sources: int,
+    point_source_intensities: list[float],
 ) -> npt.NDArray[np.complex128]:
     """Derivatives of the density matrix w.r.t. all parameters.
 
@@ -116,7 +117,7 @@ def density_derivatives(
     """
     d_tensor = np.zeros(
         (
-            3 * number_of_point_sources,
+            4 * number_of_point_sources,
             4 * number_of_point_sources,
             4 * number_of_point_sources,
         ),
@@ -135,5 +136,12 @@ def density_derivatives(
         d_p = np.zeros((4 * number_of_point_sources, 4 * number_of_point_sources))
         d_p[i, 3 * number_of_point_sources + i] = point_source_intensities[i]
         d_tensor[2 * number_of_point_sources + i] = d_p + np.transpose(d_p)
+
+        d_intensity = np.zeros((
+            4 * number_of_point_sources,
+            4 * number_of_point_sources,
+        ))
+        d_intensity[i, i] = 1
+        d_tensor[3 * number_of_point_sources + i] = d_intensity
 
     return d_tensor

@@ -25,20 +25,18 @@ Poissonian form J_{a,b} = τ Σ_j (1/P_j) ∂_a P_j ∂_b P_j.
 import numpy as np
 import numpy.typing as npt
 from beartype.typing import Dict, List
-from hamilton.function_modifiers import config
 
 from rayfish import gaussian_overlaps
 
 # Public API
 __all__ = (
-    "probability__1D",
+    "probability",
     "fisher_information_matrix_for_entire_distribution",
     "covariance_matrix_for_entire_distribution",
 )
 
 
-@config.when_not(dimension=2)
-def probability__1D(
+def probability(
     coordinates: npt.NDArray[np.float64],
     number_of_point_sources: int,
     number_of_point_source_distributions: int,

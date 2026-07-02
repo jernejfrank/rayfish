@@ -31,6 +31,8 @@ import numpy.typing as npt
 __all__ = (
     "fisher_information_matrix_for_entire_distribution",
     "covariance_matrix_for_entire_distribution",
+    "covariance_matrix_for_entire_distribution_nuisance_intensity",
+    "covariance_matrix_for_entire_distribution_spatial",
 )
 
 
@@ -93,12 +95,12 @@ def fisher_information_matrix_for_entire_distribution(
 
     l_flat = lyapunov_operators.reshape(
         number_of_point_source_distributions,
-        3 * number_of_point_sources,
+        density_derivatives.shape[0],
         4 * number_of_point_sources * 4 * number_of_point_sources,
     )
     gdg_flat = np.transpose(gdg, (0, 1, 3, 2)).reshape(
         number_of_point_source_distributions,
-        3 * number_of_point_sources,
+        density_derivatives.shape[0],
         4 * number_of_point_sources * 4 * number_of_point_sources,
     )
 
@@ -121,6 +123,78 @@ def covariance_matrix_for_entire_distribution(
     )
 
     fim_real = np.real(fisher_information_matrix_for_entire_distribution)
+
+    # only invert non-singular matrices
+    conds = np.linalg.cond(fim_real)
+    mask = conds < 1e16
+    inv_subset = np.linalg.inv(fim_real[mask])
+
+    cov_matrices[mask] = inv_subset
+
+    # set singular matrices to inf
+    cov_matrices[~mask] = np.inf
+
+    return cov_matrices
+
+
+def covariance_matrix_for_entire_distribution_nuisance_intensity(
+    number_of_spatial_params: int,
+    fisher_information_matrix_for_entire_distribution: npt.NDArray[np.complex128],
+) -> npt.NDArray[np.float64]:
+    """The covariance matrix calculated as the inverse of the fisher information."""
+    intensity_fi = np.real(
+        fisher_information_matrix_for_entire_distribution[
+            :, number_of_spatial_params:, number_of_spatial_params:
+        ]
+    )
+    # only invert non-singular matrices
+    conds = np.linalg.cond(intensity_fi)
+    mask = conds < 1e16
+    inv_intensity_fi = np.zeros_like(intensity_fi)
+    inv_subset = np.linalg.inv(intensity_fi[mask])
+    inv_intensity_fi[mask] = inv_subset
+
+    old_fi = fisher_information_matrix_for_entire_distribution[
+        :, :number_of_spatial_params, :number_of_spatial_params
+    ]
+
+    left_complement = fisher_information_matrix_for_entire_distribution[
+        :, :number_of_spatial_params, number_of_spatial_params:
+    ]
+
+    right_complement = fisher_information_matrix_for_entire_distribution[
+        :, number_of_spatial_params:, :number_of_spatial_params
+    ]
+
+    fi_marginal = old_fi - np.matmul(
+        left_complement, np.matmul(inv_intensity_fi, right_complement)
+    )
+
+    cov_matrices = np.zeros_like(fi_marginal, dtype=np.float64)
+    # only invert non-singular matrices
+    conds = np.linalg.cond(fi_marginal)
+    mask = conds < 1e16
+    inv_subset = np.linalg.inv(fi_marginal[mask])
+
+    cov_matrices[mask] = inv_subset
+
+    # set singular matrices to inf
+    cov_matrices[~mask] = np.inf
+
+    return cov_matrices
+
+
+def covariance_matrix_for_entire_distribution_spatial(
+    fisher_information_matrix_for_entire_distribution: npt.NDArray[np.complex128],
+    number_of_spatial_params: int,
+) -> npt.NDArray[np.float64]:
+    """The covariance matrix calculated as the inverse of the fisher information."""
+    fi = fisher_information_matrix_for_entire_distribution[
+        :, :number_of_spatial_params, :number_of_spatial_params
+    ]
+    cov_matrices = np.zeros_like(fi, dtype=np.float64)
+
+    fim_real = np.real(fi)
 
     # only invert non-singular matrices
     conds = np.linalg.cond(fim_real)
