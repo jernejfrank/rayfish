@@ -11,7 +11,7 @@ for sign changes and provide the option to collapse parameters of individual poi
 sources to common parameters (such as fixed distance between particles in a grid
 ordering).
 
-We assume the parameter order: [x1,x2,...,xN,y1,y2,...,yN,,z1,z2,...,zN].
+We assume the parameter order: [x1,x2,...,xN,y1,y2,...,yN,z1,z2,...,zN].
 """
 
 from enum import Enum
@@ -50,10 +50,10 @@ def jacobian_to_correct_sign(
 ) -> npt.NDArray[np.float64]:
     """Jacobian for the reparametrisation used in constructing the grid.
 
-    We assume the Gaussian beams to be displace by positive (dx,dy,dz)-values in
+    We assume the Gaussian beams to be displaced by positive (dx,dy,dz)-values in
     calculating the closed-form overlaps. The grid is created symmetrically around the
-    origin of the coordinate system, so half the values are negative. We capture
-    this reparametrisation get captured here in the form of the Jacobian which has
+    origin of the coordinate system, so half the values are negative. This
+    reparametrisation is captured here in the form of the Jacobian which has
     +1 or -1 on the diagonal.
 
     Args:

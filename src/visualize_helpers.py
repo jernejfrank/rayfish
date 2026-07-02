@@ -294,15 +294,19 @@ def plot_individual_fi(
     rotation: int = 0,
     offset: float = 0.0,
 ) -> cm.ScalarMappable:
-    """Plots qfi for a specific parameter.
+    """Plots Fisher information for a specific parameter onto the main axis.
 
-    Produces multiple plots depending on the other parameter value as a color gradient.
+    Produces multiple curves, one per value in ``other_param_range``, drawn as a
+    light->dark color gradient, and attaches a colorbar to axis ``ax[cb_ax]``.
+
+    Returns:
+        The ``ScalarMappable`` mapping ``other_param_range`` to the color gradient.
     """
     norm = mcolors.Normalize(
         vmin=np.min(other_param_range), vmax=np.max(other_param_range)
     )
     cmap = cm.get_cmap(color)
-    cmap = cmap(np.linspace(0.3, 1.0, 256))  # clip out the darkest 20%
+    cmap = cmap(np.linspace(0.3, 1.0, 256))  # clip out the darkest 30%
     cmap = mcolors.ListedColormap(cmap)
 
     sm = cm.ScalarMappable(cmap=cmap, norm=norm)
@@ -377,7 +381,7 @@ def draw_fi_curves(
     norm = mcolors.Normalize(
         vmin=float(np.min(gradient_range)), vmax=float(np.max(gradient_range))
     )
-    for field, name in zip(fi_fields, cmaps):
+    for field, name in zip(fi_fields, cmaps, strict=False):
         colors = _clipped_cmap(name)(norm(gradient_range))
         for j in range(len(gradient_range)):
             ax.plot(x_range, field[:, j], "-", color=colors[j])
@@ -428,7 +432,7 @@ def fi_legend_handles(
                 label="baseline" if eps == 0 else f"{eps_to_db(eps):.2f}",
             ),
         )
-        for eps, name in zip(eps_values, cmaps)
+        for eps, name in zip(eps_values, cmaps, strict=False)
     ]
     nonbaseline = sorted((h for h in labelled if h[0] != 0), key=lambda h: h[0])
     baseline = [h for h in labelled if h[0] == 0]
@@ -471,7 +475,7 @@ def fi_legend_handles_labeled(
         )
     handles = [
         Line2D([], [], color=_rep_color(name), lw=6, label=label)
-        for label, name in zip(labels, cmaps)
+        for label, name in zip(labels, cmaps, strict=False)
     ]
     return list(itertools.chain(*[handles[i::legend_ncol] for i in range(legend_ncol)]))
 

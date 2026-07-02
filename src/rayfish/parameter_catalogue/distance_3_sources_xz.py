@@ -44,7 +44,9 @@ def coordinates(
 ) -> npt.NDArray[np.float64]:
     """Position coordinates of point source distributions.
 
-    For now we just use the same distance scale as for x.
+    Sweeps the z-displacement of the middle source (coordinate p1) linearly between
+    ``min_z_displacement`` and ``max_z_displacement``, producing one distribution per
+    combination of input grid row and z-displacement value.
 
     Args:
         grid: (M,3N) array, where by default the grid[M,:2N] are populated with
@@ -53,7 +55,8 @@ def coordinates(
         max_z_displacement: maximum displacement along the z-axis.
 
     Returns:
-        A (M,3N) array with in-place populated z-coordinates.
+        A (M*M,3N) array (M input rows times M z-displacement samples) with the middle
+        source's z-coordinate populated.
     """
     points = []
     z_displacement_range = np.linspace(
@@ -73,14 +76,14 @@ def coordinates(
 def coordinate_jacobian__no_intensity() -> npt.NDArray[np.float64]:
     """Jacobian B of the re-parametrization to the crack width and depth.
 
-    Encodes the change of basis B_{α,b} = ∂θ_b/∂θ̃_α that collapses the 3N
-    source-coordinate (Q)FIM to the two parameters of interest, the crack width δx and
-    depth δz,
+    Encodes the change of basis B_{α,b} = ∂θ_b/∂θ̃_α that collapses the source-coordinate
+    (Q)FIM to the two parameters of interest, the crack width δx and depth δz,
 
-        δx := δx_2 - δx_1,   δz := -δz_3,
+        δx := (δx_3 - δx_2) / 2,   δz := -δz_1,
 
-    via H̃ = B H B^T. Rows correspond to (δx, δz) and the columns to the ordered source
-    coordinates (s1,s2,s3, t1,t2,t3, p1,p2,p3).
+    via H̃ = B H B^T. Rows correspond to (δx, δz) and the 12 columns to the ordered
+    source coordinates (s1,s2,s3, t1,t2,t3, p1,p2,p3) followed by the three intensity
+    parameters (zeroed here since intensity is not estimated).
     """
     return np.array([
         [0, -1 / 2, 1 / 2, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -93,16 +96,22 @@ def coordinate_jacobian__with_intensity(
     point_source_intensities: list[float],
     target_point_source_idx: int,
 ) -> npt.NDArray[np.float64]:
-    """Jacobian B of the re-parametrization to the crack width and depth.
+    """Jacobian B of the re-parametrization to the crack width, depth and intensity.
 
-    Encodes the change of basis B_{α,b} = ∂θ_b/∂θ̃_α that collapses the 3N
-    source-coordinate (Q)FIM to the two parameters of interest, the crack width δx and
-    depth δz,
+    Encodes the change of basis B_{α,b} = ∂θ_b/∂θ̃_α that collapses the source-coordinate
+    (Q)FIM to the three parameters of interest, the crack width δx, depth δz and an
+    intensity parameter,
 
-        δx := δx_2 - δx_1,   δz := -δz_3,
+        δx := (δx_3 - δx_2) / 2,   δz := -δz_1,
 
-    via H̃ = B H B^T. Rows correspond to (δx, δz) and the columns to the ordered source
-    coordinates (s1,s2,s3, t1,t2,t3, p1,p2,p3).
+    via H̃ = B H B^T. Rows correspond to (δx, δz, intensity) and the 12 columns to the
+    ordered source coordinates (s1,s2,s3, t1,t2,t3, p1,p2,p3) followed by the three
+    intensity parameters, into which the intensity row maps.
+
+    Args:
+        point_source_intensities: relative intensities I_v of the sources.
+        target_point_source_idx: index of the source whose intensity is treated as the
+            parameter of interest.
     """
     intensity_jacobian = []
     for i, intensity in enumerate(point_source_intensities):

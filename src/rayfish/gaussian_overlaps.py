@@ -92,7 +92,7 @@ def delta(
         k: wave vector = 2 pi / wavelength the point source emits in
         zr: Rayleigh length. It is the distance along the propagation
             direction of a beam from the waist to the place where the area of
-            1the cross section is doubled.
+            the cross section is doubled.
 
     Returns:
        In general a complex number. The integral has a closed form expression
@@ -117,19 +117,20 @@ def gamma_s(
     """Overlap of a Gaussian and derivative of another Gaussian in the x-dimension.
 
     Calculating the overlap of a Gaussian beam and derivative of the displacement
-    of the Gaussian beam in the x-dimension.
+    of the Gaussian beam in the x-dimension. The derivative acts on the first
+    Gaussian.
 
     Args:
-       s1: displacing first Gaussian on x-axis by x+s1
-       s2: displacing derivative of the Gaussian on x-axis by x+s2
-       t1: displacing first Gaussian on y-axis by y+t1
-       t2: displacing derivative of the Gaussian on y-axis by y+t2
-       p1: displacing first Gaussian on z-axis by z+p1
-       p2: displacing derivative of the Gaussian on z-axis by z+p2
+       s1: displacing derivative of the first Gaussian on x-axis by x+s1
+       s2: displacing second Gaussian on x-axis by x+s2
+       t1: displacing derivative of the first Gaussian on y-axis by y+t1
+       t2: displacing second Gaussian on y-axis by y+t2
+       p1: displacing derivative of the first Gaussian on z-axis by z+p1
+       p2: displacing second Gaussian on z-axis by z+p2
        k: wave vector = 2 pi / wavelength the point source emits in
        zr: Rayleigh length. It is the distance along the propagation
            direction of a beam from the waist to the place where the area of
-           1the cross section is doubled.
+           the cross section is doubled.
 
     Returns:
       In general a complex number. The integral has a closed form expression
@@ -154,19 +155,20 @@ def gamma_t(
     """Overlap of a Gaussian and derivative of another Gaussian in the y-dimension.
 
     Calculating the overlap of a Gaussian beam and derivative of the displacement
-    of the Gaussian beam in the y-dimension.
+    of the Gaussian beam in the y-dimension. The derivative acts on the first
+    Gaussian.
 
     Args:
-       s1: displacing first Gaussian on x-axis by x+s1
-       s2: displacing derivative of the Gaussian on x-axis by x+s2
-       t1: displacing first Gaussian on y-axis by y+t1
-       t2: displacing derivative of the Gaussian on y-axis by y+t2
-       p1: displacing first Gaussian on z-axis by z+p1
-       p2: displacing derivative of the Gaussian on z-axis by z+p2
+       s1: displacing derivative of the first Gaussian on x-axis by x+s1
+       s2: displacing second Gaussian on x-axis by x+s2
+       t1: displacing derivative of the first Gaussian on y-axis by y+t1
+       t2: displacing second Gaussian on y-axis by y+t2
+       p1: displacing derivative of the first Gaussian on z-axis by z+p1
+       p2: displacing second Gaussian on z-axis by z+p2
        k: wave vector = 2 pi / wavelength the point source emits in
        zr: Rayleigh length. It is the distance along the propagation
            direction of a beam from the waist to the place where the area of
-           1the cross section is doubled.
+           the cross section is doubled.
 
     Returns:
       In general a complex number. The integral has a closed form expression
@@ -191,19 +193,20 @@ def gamma_p(
     """Overlap of a Gaussian and derivative of another Gaussian in the z-dimension.
 
     Calculating the overlap of a Gaussian beam and derivative of the displacement
-    of the Gaussian beam in the z-dimension.
+    of the Gaussian beam in the z-dimension. The derivative acts on the first
+    Gaussian.
 
     Args:
-       s1: displacing first Gaussian on x-axis by x+s1
-       s2: displacing derivative of the Gaussian on x-axis by x+s2
-       t1: displacing first Gaussian on y-axis by y+t1
-       t2: displacing derivative of the Gaussian on y-axis by y+t2
-       p1: displacing first Gaussian on z-axis by z+p1
-       p2: displacing derivative of the Gaussian on z-axis by z+p2
+       s1: displacing derivative of the first Gaussian on x-axis by x+s1
+       s2: displacing second Gaussian on x-axis by x+s2
+       t1: displacing derivative of the first Gaussian on y-axis by y+t1
+       t2: displacing second Gaussian on y-axis by y+t2
+       p1: displacing derivative of the first Gaussian on z-axis by z+p1
+       p2: displacing second Gaussian on z-axis by z+p2
        k: wave vector = 2 pi / wavelength the point source emits in
        zr: Rayleigh length. It is the distance along the propagation
            direction of a beam from the waist to the place where the area of
-           1the cross section is doubled.
+           the cross section is doubled.
 
     Returns:
       In general a complex number. The integral has a closed form expression
@@ -246,7 +249,7 @@ def tau_ss(
        k: wave vector = 2 pi / wavelength the point source emits in
        zr: Rayleigh length. It is the distance along the propagation
            direction of a beam from the waist to the place where the area of
-           1the cross section is doubled.
+           the cross section is doubled.
 
     Returns:
       In general a complex number. The integral has a closed form expression
@@ -284,7 +287,7 @@ def tau_st(
        k: wave vector = 2 pi / wavelength the point source emits in
        zr: Rayleigh length. It is the distance along the propagation
            direction of a beam from the waist to the place where the area of
-           1the cross section is doubled.
+           the cross section is doubled.
 
     Returns:
       In general a complex number. The integral has a closed form expression
@@ -322,7 +325,7 @@ def tau_sp(
        k: wave vector = 2 pi / wavelength the point source emits in
        zr: Rayleigh length. It is the distance along the propagation
            direction of a beam from the waist to the place where the area of
-           1the cross section is doubled.
+           the cross section is doubled.
 
     Returns:
       In general a complex number. The integral has a closed form expression
@@ -370,7 +373,7 @@ def tau_tt(
        k: wave vector = 2 pi / wavelength the point source emits in
        zr: Rayleigh length. It is the distance along the propagation
            direction of a beam from the waist to the place where the area of
-           1the cross section is doubled.
+           the cross section is doubled.
 
     Returns:
       In general a complex number. The integral has a closed form expression
@@ -408,7 +411,7 @@ def tau_tp(
        k: wave vector = 2 pi / wavelength the point source emits in
        zr: Rayleigh length. It is the distance along the propagation
            direction of a beam from the waist to the place where the area of
-           1the cross section is doubled.
+           the cross section is doubled.
 
     Returns:
       In general a complex number. The integral has a closed form expression
@@ -456,7 +459,7 @@ def tau_pp(
        k: wave vector = 2 pi / wavelength the point source emits in
        zr: Rayleigh length. It is the distance along the propagation
            direction of a beam from the waist to the place where the area of
-           1the cross section is doubled.
+           the cross section is doubled.
 
     Returns:
       In general a complex number. The integral has a closed form expression
@@ -595,13 +598,13 @@ def inner_product_measurement_mode_point_source_overlap(
     is the Gaussian distribution matching the point-spread function of the system.
 
     Args:
-       s: displacing derivative of the first Gaussian on x-axis by x+s1
-       t: displacing derivative of the first Gaussian on y-axis by y+t1
-       p: displacing derivative of the first Gaussian on z-axis by z+p1
+       s: displacing the point source on the x-axis by x+s
+       t: displacing the point source on the y-axis by y+t
+       p: displacing the point source on the z-axis by z+p
        k: wave vector = 2 pi / wavelength the point source emits in
        zr: Rayleigh length. It is the distance along the propagation
            direction of a beam from the waist to the place where the area of
-           1the cross section is doubled.
+           the cross section is doubled.
        mode_polynomial_coefficients: Array of coefficients that defines the modes
             in the x-dim and y-dim such dim1 equals g_m(x) and dim2 equals f_n(y)
             coefficients.
@@ -644,13 +647,13 @@ def probability_measurement_mode_point_source_overlap(
     is the Gaussian distribution matching the point-spread function of the system.
 
     Args:
-       s: displacing derivative of the first Gaussian on x-axis by x+s1
-       t: displacing derivative of the first Gaussian on y-axis by y+t1
-       p: displacing derivative of the first Gaussian on z-axis by z+p1
+       s: displacing the point source on the x-axis by x+s
+       t: displacing the point source on the y-axis by y+t
+       p: displacing the point source on the z-axis by z+p
        k: wave vector = 2 pi / wavelength the point source emits in
        zr: Rayleigh length. It is the distance along the propagation
            direction of a beam from the waist to the place where the area of
-           1the cross section is doubled.
+           the cross section is doubled.
        mode_polynomial_coefficients: Array of coefficients that defines the modes
             in the x-dim and y-dim such dim1 equals g_m(x) and dim2 equals f_n(y)
             coefficients.
@@ -688,13 +691,13 @@ def derivate_s_inner_product_measurement_mode_point_source_overlap(
     is the Gaussian distribution matching the point-spread function of the system.
 
     Args:
-       s: displacing derivative of the first Gaussian on x-axis by x+s1
-       t: displacing derivative of the first Gaussian on y-axis by y+t1
-       p: displacing derivative of the first Gaussian on z-axis by z+p1
+       s: displacing the point source on the x-axis by x+s
+       t: displacing the point source on the y-axis by y+t
+       p: displacing the point source on the z-axis by z+p
        k: wave vector = 2 pi / wavelength the point source emits in
        zr: Rayleigh length. It is the distance along the propagation
            direction of a beam from the waist to the place where the area of
-           1the cross section is doubled.
+           the cross section is doubled.
        mode_polynomial_coefficients: Array of coefficients that defines the modes
             in the x-dim and y-dim such dim1 equals g_m(x) and dim2 equals f_n(y)
             coefficients.
@@ -744,13 +747,13 @@ def derivate_t_inner_product_measurement_mode_point_source_overlap(
     is the Gaussian distribution matching the point-spread function of the system.
 
     Args:
-       s: displacing derivative of the first Gaussian on x-axis by x+s1
-       t: displacing derivative of the first Gaussian on y-axis by y+t1
-       p: displacing derivative of the first Gaussian on z-axis by z+p1
+       s: displacing the point source on the x-axis by x+s
+       t: displacing the point source on the y-axis by y+t
+       p: displacing the point source on the z-axis by z+p
        k: wave vector = 2 pi / wavelength the point source emits in
        zr: Rayleigh length. It is the distance along the propagation
            direction of a beam from the waist to the place where the area of
-           1the cross section is doubled.
+           the cross section is doubled.
        mode_polynomial_coefficients: Array of coefficients that defines the modes
             in the x-dim and y-dim such dim1 equals g_m(x) and dim2 equals f_n(y)
             coefficients.
@@ -800,13 +803,13 @@ def derivate_p_inner_product_measurement_mode_point_source_overlap(
     is the Gaussian distribution matching the point-spread function of the system.
 
     Args:
-       s: displacing derivative of the first Gaussian on x-axis by x+s1
-       t: displacing derivative of the first Gaussian on y-axis by y+t1
-       p: displacing derivative of the first Gaussian on z-axis by z+p1
+       s: displacing the point source on the x-axis by x+s
+       t: displacing the point source on the y-axis by y+t
+       p: displacing the point source on the z-axis by z+p
        k: wave vector = 2 pi / wavelength the point source emits in
        zr: Rayleigh length. It is the distance along the propagation
            direction of a beam from the waist to the place where the area of
-           1the cross section is doubled.
+           the cross section is doubled.
        mode_polynomial_coefficients: Array of coefficients that defines the modes
             in the x-dim and y-dim such dim1 equals g_m(x) and dim2 equals f_n(y)
             coefficients.
@@ -869,13 +872,13 @@ def derivate_s_probability_measurement_mode_point_source_overlap(
     and complex conjugation can be interchanged.
 
     Args:
-       s: displacing derivative of the first Gaussian on x-axis by x+s1
-       t: displacing derivative of the first Gaussian on y-axis by y+t1
-       p: displacing derivative of the first Gaussian on z-axis by z+p1
+       s: displacing the point source on the x-axis by x+s
+       t: displacing the point source on the y-axis by y+t
+       p: displacing the point source on the z-axis by z+p
        k: wave vector = 2 pi / wavelength the point source emits in
        zr: Rayleigh length. It is the distance along the propagation
            direction of a beam from the waist to the place where the area of
-           1the cross section is doubled.
+           the cross section is doubled.
        mode_polynomial_coefficients: Array of coefficients that defines the modes
             in the x-dim and y-dim such dim1 equals g_m(x) and dim2 equals f_n(y)
             coefficients.
@@ -924,13 +927,13 @@ def derivate_t_probability_measurement_mode_point_source_overlap(
     and complex conjugation can be interchanged.
 
     Args:
-       s: displacing derivative of the first Gaussian on x-axis by x+s1
-       t: displacing derivative of the first Gaussian on y-axis by y+t1
-       p: displacing derivative of the first Gaussian on z-axis by z+p1
+       s: displacing the point source on the x-axis by x+s
+       t: displacing the point source on the y-axis by y+t
+       p: displacing the point source on the z-axis by z+p
        k: wave vector = 2 pi / wavelength the point source emits in
        zr: Rayleigh length. It is the distance along the propagation
            direction of a beam from the waist to the place where the area of
-           1the cross section is doubled.
+           the cross section is doubled.
        mode_polynomial_coefficients: Array of coefficients that defines the modes
             in the x-dim and y-dim such dim1 equals g_m(x) and dim2 equals f_n(y)
             coefficients.
@@ -979,13 +982,13 @@ def derivate_p_probability_measurement_mode_point_source_overlap(
     and complex conjugation can be interchanged.
 
     Args:
-       s: displacing derivative of the first Gaussian on x-axis by x+s1
-       t: displacing derivative of the first Gaussian on y-axis by y+t1
-       p: displacing derivative of the first Gaussian on z-axis by z+p1
+       s: displacing the point source on the x-axis by x+s
+       t: displacing the point source on the y-axis by y+t
+       p: displacing the point source on the z-axis by z+p
        k: wave vector = 2 pi / wavelength the point source emits in
        zr: Rayleigh length. It is the distance along the propagation
            direction of a beam from the waist to the place where the area of
-           1the cross section is doubled.
+           the cross section is doubled.
        mode_polynomial_coefficients: Array of coefficients that defines the modes
             in the x-dim and y-dim such dim1 equals g_m(x) and dim2 equals f_n(y)
             coefficients.

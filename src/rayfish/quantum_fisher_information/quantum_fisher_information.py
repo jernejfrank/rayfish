@@ -57,7 +57,7 @@ def fisher_information_matrix_for_entire_distribution(
     parameters. The trace is evaluated as batched matrix products, sandwiching the
     precomputed G D_b G with L_a over the whole distribution at once.
 
-    Are Gaussian overlaps are calculated for displacements ψ(x+dx, y+dy, z+dz),
+    The Gaussian overlaps are calculated for displacements ψ(x+dx, y+dy, z+dz),
     but the actual distributions might depend a on different parametrization,
     i.e. ψ(x+s/2, y+t/2, z+p/2) + ψ(x-s/2, y-t/2, z-p/2), which we can use to
     express our covariance matrix in the coordinate system (s,t,p). For that
@@ -69,17 +69,19 @@ def fisher_information_matrix_for_entire_distribution(
 
     Cov(s,t,p) = B(s,t,p) Cov(dx[s,t,p],dy[s,t,p],dz[s,t,p]) T^B(s,t,p),
 
-    with T^B being the transpose. This would transform the (3N,3N) covariance
-    matrix to a (N,N) matrix.
+    with T^B being the transpose. This transforms the (P,P) covariance matrix (P = 3N
+    for position only, or P = 4N with intensity) into the space of the parameters of
+    interest whose dimension is set by the leading dimension of `coordinate_jacobian`.
 
     Args:
-        density_derivatives: (3N,4N,4N) array encoding the derivative of the
-            density matrix for each point source coordinate
+        density_derivatives: (P,4N,4N) array encoding the derivative of the
+            density matrix for each parameter, with P = 3N (position only) or P = 4N
+            (intensity included).
         gramian: (M,4N,4N) array used for linear algebra
             in a vector space spanned by a non-orthogonal basis, one per distribution.
-        lyapunov_operators: (M,3N,4N,4N) array encoding the SLD operator of each
+        lyapunov_operators: (M,P,4N,4N) array encoding the SLD operator of each
             parameter for each distribution.
-        coordinate_jacobian: (*,3N) array correcting the re-parametrization
+        coordinate_jacobian: (*,P) array correcting the re-parametrization
             of point source coordinates and collapsing the matrix for the parameters
             of interest. The first dimension is dependent on the user input.
         number_of_point_sources: how many point sources we
@@ -141,7 +143,35 @@ def covariance_matrix_for_entire_distribution_nuisance_intensity(
     number_of_spatial_params: int,
     fisher_information_matrix_for_entire_distribution: npt.NDArray[np.complex128],
 ) -> npt.NDArray[np.float64]:
-    """The covariance matrix calculated as the inverse of the fisher information."""
+    """Spatial covariance with the intensity parameters marginalized out.
+
+    Treats the intensity parameters as nuisance parameters and removes them via the
+    Schur complement of the intensity block. Writing the (real part of the) Fisher
+    information matrix in block form over spatial (S) and intensity (I) parameters,
+
+        H = | H_SS   H_SI |,
+            | H_IS   H_II |
+
+    the marginal Fisher information for the spatial parameters is the Schur complement
+
+        H_S = H_SS - H_SI H_II^{-1} H_IS,
+
+    and the returned covariance is its inverse. Singular blocks are handled by masking
+    on the condition number; distributions whose marginal Fisher information is singular
+    get an infinite covariance.
+
+    Args:
+        number_of_spatial_params: number of leading (spatial) parameters; the remaining
+            trailing parameters are the intensity nuisance parameters that get
+            marginalized out.
+        fisher_information_matrix_for_entire_distribution: (M,P,P) array, the full
+            Fisher information matrix per distribution including both spatial and
+            intensity parameters.
+
+    Returns:
+        A (M, number_of_spatial_params, number_of_spatial_params) real array of spatial
+        covariance matrices, one per distribution, with singular cases set to inf.
+    """
     intensity_fi = np.real(
         fisher_information_matrix_for_entire_distribution[
             :, number_of_spatial_params:, number_of_spatial_params:
@@ -188,7 +218,24 @@ def covariance_matrix_for_entire_distribution_spatial(
     fisher_information_matrix_for_entire_distribution: npt.NDArray[np.complex128],
     number_of_spatial_params: int,
 ) -> npt.NDArray[np.float64]:
-    """The covariance matrix calculated as the inverse of the fisher information."""
+    """Spatial covariance restricted to the spatial Fisher information block.
+
+    Restricts the (real part of the) Fisher information matrix to its leading spatial
+    block H_SS and inverts it, ignoring any intensity parameters entirely (as opposed to
+    the nuisance-intensity variant, which marginalizes them out via a Schur complement).
+    Singular blocks are handled by masking on the condition number; distributions whose
+    spatial block is singular get an infinite covariance.
+
+    Args:
+        fisher_information_matrix_for_entire_distribution: (M,P,P) array, the full
+            Fisher information matrix per distribution.
+        number_of_spatial_params: number of leading (spatial) parameters to keep; the
+            (M, number_of_spatial_params, number_of_spatial_params) block is inverted.
+
+    Returns:
+        A (M, number_of_spatial_params, number_of_spatial_params) real array of spatial
+        covariance matrices, one per distribution, with singular cases set to inf.
+    """
     fi = fisher_information_matrix_for_entire_distribution[
         :, :number_of_spatial_params, :number_of_spatial_params
     ]

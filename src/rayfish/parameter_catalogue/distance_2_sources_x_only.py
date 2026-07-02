@@ -38,15 +38,15 @@ def coordinates(
     """Position coordinates of point source distributions.
 
     Two point sources displaced along the x-axis only to replicate the results of Tsang,
-    et. al., https://arxiv.org/abs/1511.00552.
-
+    et. al., https://arxiv.org/abs/1511.00552. The sources lie in the x-y plane only, so
+    the grid is returned unchanged (no z-displacement is added).
 
     Args:
         grid: (M,3N) array, where by default the grid[M,:2N] are populated with
             equidistant spacing in the x-y plane.
 
     Returns:
-        A (M,3N) array with in-place populated z-coordinates.
+        A (M,3N) array, identical to the input grid.
     """
     return grid
 

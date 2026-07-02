@@ -191,8 +191,9 @@ def fisher_information_matrix_for_entire_distribution(
 
 
     Returns:
-        A (M,) array of complex floats, where B is the number of measurement modes and
-        M is the number of different distributions of the N point sources.
+        A (M, K, K) array of real floats, where K is the number of parameters of
+        interest (the dimension of the Jacobian output) and M is the number of
+        different distributions of the N point sources.
     """
     x_, y_ = numerical_grid
     dx = float(x_[0, 1] - x_[0, 0])

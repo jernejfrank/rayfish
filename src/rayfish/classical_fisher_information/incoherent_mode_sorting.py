@@ -80,9 +80,11 @@ def derivatives_probability(
             waist to the place where the area of the cross section is doubled
 
     Returns:
-        A ``(M, B, 3N)`` array, where entry ``[:, b, a]`` is the derivative of the
-        probability of resolved mode ``b`` with respect to source-coordinate parameter
-        ``a``.
+        A ``(M, B, 4N)`` array, where entry ``[:, b, a]`` is the derivative of the
+        probability of resolved mode ``b`` with respect to parameter ``a``. The 4N
+        parameters are ordered as the 3N source coordinates [s, t, p] followed by the
+        N intensity derivatives; the intensity block equals the raw single-source
+        overlap probabilities (unweighted by intensity).
     """
     n_measurement_basis = len(measurement_basis)
     dprob = np.zeros((

@@ -15,7 +15,7 @@ a separate mathematica notebook ./non_orthogonal_transformation_matrix.nb.
 import numpy as np
 import numpy.typing as npt
 
-import rayfish.quantum_fisher_information.incoherent_sources as incoherent_sources
+import rayfish.quantum_fisher_information as incoherent_sources
 from rayfish import quantum_fisher_information as qfi
 
 
