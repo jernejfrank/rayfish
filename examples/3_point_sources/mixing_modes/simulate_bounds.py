@@ -7,7 +7,9 @@ from hamilton import driver
 from loguru import logger
 
 import rayfish
-from rayfish.classical_fisher_information import fisher_information_remainder_channel
+from rayfish.classical_fisher_information import (
+    incoherent_mode_sorting as fisher_information_remainder_channel,
+)
 from rayfish.classical_fisher_information.measurement_basis import (
     hermite_gaussian_basis,
 )

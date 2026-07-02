@@ -13,7 +13,9 @@ from loguru import logger
 from scipy.special import hermite
 
 import rayfish
-from rayfish.classical_fisher_information import fisher_information_remainder_channel
+from rayfish.classical_fisher_information import (
+    incoherent_mode_sorting as fisher_information_remainder_channel,
+)
 from rayfish.parameter_catalogue import distance_3_sources_xz, intensity_distribution
 
 ROOT_DIR = Path(__file__).parent
