@@ -1,8 +1,9 @@
-from pathlib import Path
+from importlib.metadata import PackageNotFoundError, version
 
 from .grid import *
 from .parameter_catalogue import *
 
-ROOT_DIRECTORY = Path(__file__).parent
-with open(ROOT_DIRECTORY / "VERSION") as f:
-    __version__ = f.read()
+try:
+    __version__ = version("rayfish")
+except PackageNotFoundError:  # running from a source checkout without installation
+    __version__ = "0.0.0"

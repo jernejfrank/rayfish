@@ -95,11 +95,16 @@ def _probability_derivatives(
     number_of_point_sources: int,
     point_source_intensities: list[float],
 ) -> npt.NDArray[np.float64]:
-    """Derivatives ∂_a P of the image-plane intensity w.r.t. the 3N coordinates."""
+    """Derivatives ∂_a P of the image-plane intensity w.r.t. the 4N parameters.
+
+    The 4N parameters are ordered as the 3N source coordinates [s, t, p] followed by
+    the N intensity derivatives; the intensity block equals the raw single-source
+    probabilities (unweighted by intensity), since P = Σ_v I_v |<x,y|ψ_v>|^2.
+    """
     ny, nx = x_.shape
     dprob = np.zeros((
         coordinates.shape[0],
-        3 * number_of_point_sources,
+        4 * number_of_point_sources,
         ny,
         nx,
     ))
@@ -147,6 +152,7 @@ def _probability_derivatives(
         dprob[:, i] = ds
         dprob[:, number_of_point_sources + i] = dt
         dprob[:, 2 * number_of_point_sources + i] = dp
+        dprob[:, 3 * number_of_point_sources + i] = prob
 
     return dprob
 
@@ -230,7 +236,7 @@ def fisher_information_matrix_for_entire_distribution(
 
         fi = np.zeros((actual_batch_size, n_params_interests, n_params_interests))
         p_flat = prob.reshape(actual_batch_size, ny * nx)
-        dp_flat = dprob.reshape(actual_batch_size, 3 * number_of_point_sources, ny * nx)
+        dp_flat = dprob.reshape(actual_batch_size, 4 * number_of_point_sources, ny * nx)
         for bi in range(actual_batch_size):
             mask = p_flat[bi] > 1e-16
             if not np.any(mask):

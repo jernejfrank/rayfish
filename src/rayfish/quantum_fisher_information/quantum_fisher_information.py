@@ -12,9 +12,9 @@ z <-> z / zr
 The model assumes incoherent point sources distributed in 3D space and a Gaussian beam
 in the image plane as the point spread function. With the above relative length scale
 this looks like:
-ψ(x-dx, y-dy, z-dz) =
-sqrt[1/pi] (i / (z-dz+i))
-exp[-i ((x-dx)^2 + (y-dy)^2) / (2 (z-dz+i))] exp[-i k zr (z-dz)]
+ψ(x+dx, y+dy, z+dz) =
+sqrt[1/pi] (i / (z+dz+i))
+exp[-i ((x+dx)^2 + (y+dy)^2) / (2 (z+dz+i))] exp[-i k zr (z+dz)]
 
 The module implements the method proposed by Tufarelli, et.al.:
 [1] Marco G Genoni and Tommaso Tufarelli, “Non-orthogonal bases for quantum metrology,”
@@ -172,11 +172,11 @@ def covariance_matrix_for_entire_distribution_nuisance_intensity(
         A (M, number_of_spatial_params, number_of_spatial_params) real array of spatial
         covariance matrices, one per distribution, with singular cases set to inf.
     """
-    intensity_fi = np.real(
-        fisher_information_matrix_for_entire_distribution[
-            :, number_of_spatial_params:, number_of_spatial_params:
-        ]
-    )
+    # The QFIM is the real part of the complex covariance; take it before the Schur
+    # complement so the marginal stays real instead of being silently cast later.
+    fim_real = np.real(fisher_information_matrix_for_entire_distribution)
+
+    intensity_fi = fim_real[:, number_of_spatial_params:, number_of_spatial_params:]
     # only invert non-singular matrices
     conds = np.linalg.cond(intensity_fi)
     mask = conds < 1e16
@@ -184,17 +184,11 @@ def covariance_matrix_for_entire_distribution_nuisance_intensity(
     inv_subset = np.linalg.inv(intensity_fi[mask])
     inv_intensity_fi[mask] = inv_subset
 
-    old_fi = fisher_information_matrix_for_entire_distribution[
-        :, :number_of_spatial_params, :number_of_spatial_params
-    ]
+    old_fi = fim_real[:, :number_of_spatial_params, :number_of_spatial_params]
 
-    left_complement = fisher_information_matrix_for_entire_distribution[
-        :, :number_of_spatial_params, number_of_spatial_params:
-    ]
+    left_complement = fim_real[:, :number_of_spatial_params, number_of_spatial_params:]
 
-    right_complement = fisher_information_matrix_for_entire_distribution[
-        :, number_of_spatial_params:, :number_of_spatial_params
-    ]
+    right_complement = fim_real[:, number_of_spatial_params:, :number_of_spatial_params]
 
     fi_marginal = old_fi - np.matmul(
         left_complement, np.matmul(inv_intensity_fi, right_complement)

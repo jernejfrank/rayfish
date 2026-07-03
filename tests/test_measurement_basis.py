@@ -114,7 +114,7 @@ def test_mix_modes_zero_strength_reproduces_basis(dim: int) -> None:
     base = measurement_basis(dim)
     mixed = _mix_modes_via_unitary(base, 0.0)
     assert len(mixed) == len(base)
-    for original, new in zip(base, mixed):
+    for original, new in zip(base, mixed, strict=True):
         assert np.array_equal(original["x"], new["x"])
         assert np.array_equal(original["y"], new["y"])
 

@@ -56,8 +56,7 @@ def derivatives_probability(
 ) -> npt.NDArray[np.float64]:
     """Mode-probability derivatives for an incoherent point-source distribution.
 
-    We assume measurement is 1D and w.l.o.g. in x-dimension. Returns the derivatives
-    ∂_a P_i of the measurement-channel probability
+    Returns the derivatives ∂_a P_i of the measurement-channel probability
 
         P_i(θ) = Σ_v I_v |<φ_i|ψ_v(x+s_v, y+t_v, p_v)>|^2,
 
@@ -155,8 +154,7 @@ def probability(
 ) -> npt.NDArray[np.float64]:
     """Mode probabilities for an incoherent point-source distribution.
 
-    We assume measurement is 1D and w.l.o.g. in x-dimension. Implements the
-    measurement-channel probability
+    Implements the measurement-channel probability
 
         P_i(θ) = Σ_v I_v |<φ_i|ψ_v(x+s_v, y+t_v, p_v)>|^2,
 
@@ -264,20 +262,20 @@ def fisher_information_matrix_for_entire_distribution(  # noqa: C901
             prob_sum = np.zeros(number_of_point_source_distributions)
             for b in range(len(measurement_basis)):
                 prob = probability[:, b]
-                # Here to avoid division by 0, we know if P=0 then dP=0
-                mask = prob > 1e-16
-                if not np.any(mask):
-                    continue
+                # Clamp near-zero probabilities instead of dropping the channel:
+                # dP^2/P has a finite limit as P -> 0 (dP -> 0 with it), and masking
+                # the channel out makes the FI discontinuous close to the origin.
+                prob_safe = np.maximum(prob, 1e-16)
 
                 for param in range(4):
                     param_offset = param * number_of_point_sources
                     for second_param in range(2):
                         _idx = i if second_param == 0 else j
-                        der_remainder[2 * param + second_param][mask] += (
-                            derivatives_probability[mask, b, param_offset + _idx]
+                        der_remainder[2 * param + second_param] += (
+                            derivatives_probability[:, b, param_offset + _idx]
                         )
 
-                prob_sum[mask] += prob[mask]
+                prob_sum += prob
 
                 background_beta = background_noise[b] / poisson_rate_tau
 
@@ -287,20 +285,17 @@ def fisher_information_matrix_for_entire_distribution(  # noqa: C901
                         param2_offset = param2 * number_of_point_sources
 
                         fisher_information[
-                            mask, b, param1_offset + i, param2_offset + j
+                            :, b, param1_offset + i, param2_offset + j
                         ] = poisson_rate_tau * (
-                            derivatives_probability[mask, b, param1_offset + i]
-                            * derivatives_probability[mask, b, param2_offset + j]
-                            / (prob[mask] + background_beta)
+                            derivatives_probability[:, b, param1_offset + i]
+                            * derivatives_probability[:, b, param2_offset + j]
+                            / (prob_safe + background_beta)
                         )
 
             remainder_background_beta = (
                 background_noise[len(measurement_basis)] / poisson_rate_tau
             )
-            remainder_prob = 1 - prob_sum
-            remainder_mask = remainder_prob > 1e-16
-            if not np.any(remainder_mask):
-                continue
+            remainder_prob_safe = np.maximum(1 - prob_sum, 1e-16)
 
             for param1 in range(4):
                 for param2 in range(4):
@@ -311,14 +306,14 @@ def fisher_information_matrix_for_entire_distribution(  # noqa: C901
                     der2_idx = param2 * 2 + 1
 
                     fisher_information[
-                        remainder_mask,
+                        :,
                         n_measurement_basis,
                         param1_offset + i,
                         param2_offset + j,
                     ] = poisson_rate_tau * (
-                        der_remainder[der1_idx][remainder_mask]
-                        * der_remainder[der2_idx][remainder_mask]
-                        / (remainder_prob[remainder_mask] + remainder_background_beta)
+                        der_remainder[der1_idx]
+                        * der_remainder[der2_idx]
+                        / (remainder_prob_safe + remainder_background_beta)
                     )
 
     fi_matrices = []

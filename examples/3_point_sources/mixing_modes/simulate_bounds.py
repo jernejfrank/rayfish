@@ -99,6 +99,6 @@ if __name__ == "__main__":
     )
     coords = coords_result["coordinates"].reshape(N_GRIDS, N_GRIDS, 9)
     np.save(
-        "coordinates.npy",
+        ROOT_DIR / "coordinates.npy",
         coords,
     )

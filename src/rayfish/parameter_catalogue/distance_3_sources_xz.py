@@ -79,7 +79,7 @@ def coordinate_jacobian__no_intensity() -> npt.NDArray[np.float64]:
     Encodes the change of basis B_{α,b} = ∂θ_b/∂θ̃_α that collapses the source-coordinate
     (Q)FIM to the two parameters of interest, the crack width δx and depth δz,
 
-        δx := (δx_3 - δx_2) / 2,   δz := -δz_1,
+        δx := δx_3 - δx_2,   δz := -δz_1,
 
     via H̃ = B H B^T. Rows correspond to (δx, δz) and the 12 columns to the ordered
     source coordinates (s1,s2,s3, t1,t2,t3, p1,p2,p3) followed by the three intensity
@@ -102,7 +102,7 @@ def coordinate_jacobian__with_intensity(
     (Q)FIM to the three parameters of interest, the crack width δx, depth δz and an
     intensity parameter,
 
-        δx := (δx_3 - δx_2) / 2,   δz := -δz_1,
+        δx := δx_3 - δx_2,   δz := -δz_1,
 
     via H̃ = B H B^T. Rows correspond to (δx, δz, intensity) and the 12 columns to the
     ordered source coordinates (s1,s2,s3, t1,t2,t3, p1,p2,p3) followed by the three
@@ -118,7 +118,7 @@ def coordinate_jacobian__with_intensity(
         if i == target_point_source_idx:
             other = (
                 point_source_intensities[i + 1]
-                if i < len(point_source_intensities)
+                if i < len(point_source_intensities) - 1
                 else point_source_intensities[i - 1]
             )
             intensity_jacobian.append((len(point_source_intensities) - 1) * other**2)

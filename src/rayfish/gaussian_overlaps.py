@@ -117,16 +117,16 @@ def gamma_s(
     """Overlap of a Gaussian and derivative of another Gaussian in the x-dimension.
 
     Calculating the overlap of a Gaussian beam and derivative of the displacement
-    of the Gaussian beam in the x-dimension. The derivative acts on the first
-    Gaussian.
+    of the Gaussian beam in the x-dimension. The derivative acts on the second
+    Gaussian: <psi_1 | d/ds2 psi_2>.
 
     Args:
-       s1: displacing derivative of the first Gaussian on x-axis by x+s1
-       s2: displacing second Gaussian on x-axis by x+s2
-       t1: displacing derivative of the first Gaussian on y-axis by y+t1
-       t2: displacing second Gaussian on y-axis by y+t2
-       p1: displacing derivative of the first Gaussian on z-axis by z+p1
-       p2: displacing second Gaussian on z-axis by z+p2
+       s1: displacing the first (conjugated) Gaussian on x-axis by x+s1
+       s2: displacing the differentiated second Gaussian on x-axis by x+s2
+       t1: displacing the first (conjugated) Gaussian on y-axis by y+t1
+       t2: displacing the differentiated second Gaussian on y-axis by y+t2
+       p1: displacing the first (conjugated) Gaussian on z-axis by z+p1
+       p2: displacing the differentiated second Gaussian on z-axis by z+p2
        k: wave vector = 2 pi / wavelength the point source emits in
        zr: Rayleigh length. It is the distance along the propagation
            direction of a beam from the waist to the place where the area of
@@ -155,16 +155,16 @@ def gamma_t(
     """Overlap of a Gaussian and derivative of another Gaussian in the y-dimension.
 
     Calculating the overlap of a Gaussian beam and derivative of the displacement
-    of the Gaussian beam in the y-dimension. The derivative acts on the first
-    Gaussian.
+    of the Gaussian beam in the y-dimension. The derivative acts on the second
+    Gaussian: <psi_1 | d/dt2 psi_2>.
 
     Args:
-       s1: displacing derivative of the first Gaussian on x-axis by x+s1
-       s2: displacing second Gaussian on x-axis by x+s2
-       t1: displacing derivative of the first Gaussian on y-axis by y+t1
-       t2: displacing second Gaussian on y-axis by y+t2
-       p1: displacing derivative of the first Gaussian on z-axis by z+p1
-       p2: displacing second Gaussian on z-axis by z+p2
+       s1: displacing the first (conjugated) Gaussian on x-axis by x+s1
+       s2: displacing the differentiated second Gaussian on x-axis by x+s2
+       t1: displacing the first (conjugated) Gaussian on y-axis by y+t1
+       t2: displacing the differentiated second Gaussian on y-axis by y+t2
+       p1: displacing the first (conjugated) Gaussian on z-axis by z+p1
+       p2: displacing the differentiated second Gaussian on z-axis by z+p2
        k: wave vector = 2 pi / wavelength the point source emits in
        zr: Rayleigh length. It is the distance along the propagation
            direction of a beam from the waist to the place where the area of
@@ -193,16 +193,16 @@ def gamma_p(
     """Overlap of a Gaussian and derivative of another Gaussian in the z-dimension.
 
     Calculating the overlap of a Gaussian beam and derivative of the displacement
-    of the Gaussian beam in the z-dimension. The derivative acts on the first
-    Gaussian.
+    of the Gaussian beam in the z-dimension. The derivative acts on the second
+    Gaussian: <psi_1 | d/dp2 psi_2>.
 
     Args:
-       s1: displacing derivative of the first Gaussian on x-axis by x+s1
-       s2: displacing second Gaussian on x-axis by x+s2
-       t1: displacing derivative of the first Gaussian on y-axis by y+t1
-       t2: displacing second Gaussian on y-axis by y+t2
-       p1: displacing derivative of the first Gaussian on z-axis by z+p1
-       p2: displacing second Gaussian on z-axis by z+p2
+       s1: displacing the first (conjugated) Gaussian on x-axis by x+s1
+       s2: displacing the differentiated second Gaussian on x-axis by x+s2
+       t1: displacing the first (conjugated) Gaussian on y-axis by y+t1
+       t2: displacing the differentiated second Gaussian on y-axis by y+t2
+       p1: displacing the first (conjugated) Gaussian on z-axis by z+p1
+       p2: displacing the differentiated second Gaussian on z-axis by z+p2
        k: wave vector = 2 pi / wavelength the point source emits in
        zr: Rayleigh length. It is the distance along the propagation
            direction of a beam from the waist to the place where the area of
@@ -727,7 +727,7 @@ def derivate_s_inner_product_measurement_mode_point_source_overlap(
 
     return (
         prefactor
-        * np.sum(mode_y * normal_distribution_moments_y, axis=-1)
+        * np.sum(np.conj(mode_y) * normal_distribution_moments_y, axis=-1)
         * (term_1_ds + term_2_ds)
     )
 
@@ -774,7 +774,7 @@ def derivate_t_inner_product_measurement_mode_point_source_overlap(
     normal_distribution_moments_y = _calculate_moments(t, p, len(mode_y))
 
     term_1_dt = (-1j * t / (2j + p)) * np.sum(
-        mode_y * normal_distribution_moments_y, axis=-1
+        np.conj(mode_y) * normal_distribution_moments_y, axis=-1
     )
 
     term_2_dt = 0
@@ -783,7 +783,7 @@ def derivate_t_inner_product_measurement_mode_point_source_overlap(
 
     return (
         prefactor
-        * np.sum(mode_x * normal_distribution_moments_x, axis=-1)
+        * np.sum(np.conj(mode_x) * normal_distribution_moments_x, axis=-1)
         * (term_1_dt + term_2_dt)
     )
 
@@ -830,8 +830,8 @@ def derivate_p_inner_product_measurement_mode_point_source_overlap(
     normal_distribution_moments_x = _calculate_moments(s, p, len(mode_x))
     normal_distribution_moments_y = _calculate_moments(t, p, len(mode_y))
 
-    sum_mode_x = np.sum(mode_x * normal_distribution_moments_x, axis=-1)
-    sum_mode_y = np.sum(mode_y * normal_distribution_moments_y, axis=-1)
+    sum_mode_x = np.sum(np.conj(mode_x) * normal_distribution_moments_x, axis=-1)
+    sum_mode_y = np.sum(np.conj(mode_y) * normal_distribution_moments_y, axis=-1)
 
     der_non_sum_factors = (
         np.exp(-1j * k * zr * p)

@@ -10,10 +10,16 @@ from hamilton.execution import executors
 from loguru import logger
 
 import rayfish
-import rayfish.quantum_fisher_information as qfi
 from rayfish.parameter_catalogue import distance_3_sources_xz, intensity_distribution
 from rayfish.quantum_fisher_information import (
-    incoherent_sources as qfi_incoherent_sources,
+    common as qfi_common,
+)
+from rayfish.quantum_fisher_information import (
+    lyapunov_operator,
+    operator_matrices,
+)
+from rayfish.quantum_fisher_information import (
+    quantum_fisher_information as qfi_matrix,
 )
 
 ROOT_DIR = Path(__file__).parent
@@ -70,8 +76,10 @@ if __name__ == "__main__":
         driver.Builder()
         .with_modules(
             rayfish,
-            qfi,
-            qfi_incoherent_sources,
+            qfi_common,
+            operator_matrices,
+            lyapunov_operator,
+            qfi_matrix,
             distance_3_sources_xz,
             intensity_distribution,
         )

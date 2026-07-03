@@ -82,14 +82,17 @@ def mode_mixing_strength(mode_mixing_eps: float = 0.0) -> float:
 def _select_mode_set(
     modes: List[Dict[str, npt.NDArray[np.float64]]], mode_set: tuple
 ) -> List[Dict[str, npt.NDArray[np.float64]]]:
+    """Keeps the resolved modes in the caller's requested order.
+
+    The returned channels follow ``mode_set`` as given (not grid order), so downstream
+    per-channel results line up with the order the caller asked for.
+    """
     basis = []
     mode_order = round(len(modes) ** 0.5)
-    for i in range(mode_order):
-        for j in range(mode_order):
-            if (i, j) in mode_set:
-                mode_x = modes[i * mode_order + j]["x"]
-                mode_y = modes[i * mode_order + j]["y"]
-                basis.append({"x": mode_x, "y": mode_y})
+    for i, j in mode_set:
+        mode_x = modes[i * mode_order + j]["x"]
+        mode_y = modes[i * mode_order + j]["y"]
+        basis.append({"x": mode_x, "y": mode_y})
 
     return basis
 
