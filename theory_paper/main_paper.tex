@@ -198,17 +198,33 @@ while the density matrix has support only on the first block $\Delta$, $R_\Delta
 with $\openone_V$ the $V\times V$ identity matrix, and each derivative matrix becomes sparse with only two non-zero entries,
     $D_a^{\partial u,u} = D_a^{u,\partial u} = \frac{1}{V}$ (where the $\partial u$ superscript corresponds to the basis vector $\ket{\partial_{\theta_u^a} \psi_u}$).
 Solving for the QFIM Eq.~\eqref{eq:qfi_nonorthogonal} in this basis results in the closed-form solution (see Appendix~\ref{app:qfi_derivation} \cite{supposta})
+% \begin{align}
+%     H_{a,b} &= 2 \Re \langle{\gamma^b}| G_{\gamma^\dagger} L^a_\Delta G_\Delta |{\gamma^b}\rangle \nonumber\\
+%     &+ 4 \Re \langle{\gamma^a}|G_{\gamma^\dagger}|{\gamma^b}\rangle\langle{\gamma^b}|G_{\gamma^\dagger} G^{-1}_\Delta|{\gamma^a}\rangle,
+%     \label{eq:qfim_final}
+% \end{align}
+{\color{red}
 \begin{align}
-    H_{a,b} &= 2 \Re \langle{\gamma^b}| G_{\gamma^\dagger} L^a_\Delta G_\Delta |{\gamma^b}\rangle \nonumber\\
-    &+ 4 \Re \langle{\gamma^a}|G_{\gamma^\dagger}|{\gamma^b}\rangle\langle{\gamma^b}|G_{\gamma^\dagger} G^{-1}_\Delta|{\gamma^a}\rangle,
+    H_{a,b} &= \frac{1}{V} \big[ 2 \Re \langle{\gamma^b}| G_{\gamma^\dagger} L^a_\Delta G_\Delta |{\gamma^b}\rangle \nonumber\\
+    &+ 4 \Re \langle{\gamma^a}|G_{\gamma^\dagger}|{\gamma^b}\rangle\langle{\gamma^b}|G_{\gamma^\dagger} G^{-1}_\Delta|{\gamma^a}\rangle \nonumber \\
+    &+ 4 \, \delta_{u,u'} \Re \, (G_\tau)_{a,b} \big].
     \label{eq:qfim_final}
 \end{align}
-where $G^{-1}_\Delta$ is the inverse PSF overlap matrix, $\ket{\gamma^a}$ (resp. $\ket{\gamma^b}$) are the basis vectors encoding derivative matrices $D_{\gamma^{a}}$ (resp. $D_{\gamma^{b}}$), and $L^a_\Delta$ is defined by the reduced Lyapunov equation
+}
+% where $G^{-1}_\Delta$ is the inverse PSF overlap matrix, $\ket{\gamma^a}$ (resp. $\ket{\gamma^b}$) are the basis vectors encoding derivative matrices $D_{\gamma^{a}}$ (resp. $D_{\gamma^{b}}$), and $L^a_\Delta$ is defined by the reduced Lyapunov equation
+We write $G^{-1}_\Delta$ as the inverse PSF overlap matrix; {\color{red} $\delta_{u,u'}$ is the Kronecker delta, expressing that the last term only contributes to the quantum Fisher information for displacements $a$ and $b$ of the same source $u$. The $\ket{\gamma^a}$ (resp. $\ket{\gamma^b}$) are basis vectors encoding the rescaled derivative matrices $\Tilde{D}_{\gamma^{a}} = V D_{\gamma^{a}}$ (resp. $\Tilde{D}_{\gamma^{b}}$)}, and $L^a_\Delta$ is defined by the reduced Lyapunov equation
+% \begin{align}
+%     L^a_{\Delta} G_{\Delta} + G_{\Delta} L^a_{\Delta}  &= -2 (G_{\gamma}D_{\gamma^{a\dagger}}G_\Delta^{-1} + G_\Delta^{-1} D_{\gamma^a}G_{\gamma^\dagger}).
+%     \label{eq:L_delta_sylvester}
+% \end{align}
+{\color{red}
 \begin{align}
-    L^a_{\Delta} G_{\Delta} + G_{\Delta} L^a_{\Delta}  &= -2 (G_{\gamma}D_{\gamma^{a\dagger}}G_\Delta^{-1} + G_\Delta^{-1} D_{\gamma^a}G_{\gamma^\dagger}).
+    L^a_{\Delta} G_{\Delta} + G_{\Delta} L^a_{\Delta}  &= -2 (G_{\gamma}\Tilde{D}_{\gamma^{a\dagger}}G_\Delta^{-1} + G_\Delta^{-1} \Tilde{D}_{\gamma^a}G_{\gamma^\dagger}).
     \label{eq:L_delta_sylvester}
 \end{align}
-Since $G_\Delta$ is Hermitian and invertible, each $L_\Delta$ is unique and the corresponding SLD operators are Hermitian. The final expression for the QFIM Eq.~\eqref{eq:qfim_final} shows that the quantum Fisher information depends solely on the PSF overlap matrix $G_\Delta$ and its couplings to first-order derivatives  $G_{\gamma} $ (resp. $G_{\gamma^\dagger}$). %No spectral decomposition of the density operator is required.
+}
+Since $G_\Delta$ is Hermitian and invertible, each $L_\Delta$ is unique and the corresponding SLD operators are Hermitian. The final expression for the QFIM Eq.~\eqref{eq:qfim_final} shows that the quantum Fisher information depends on the PSF overlap matrix $G_\Delta$ and its couplings to first-order derivatives  $G_{\gamma} $ (resp. $G_{\gamma^\dagger}$). {\color{red}The tangent space overlaps $G_{\tau}$ affects the quantum Fisher information only for parameters displacing the \emph{same} source ($u = u'$) and coincides with the QFIM of $V$ isolated emitters, while all tangent overlaps between different sources cancel exactly.}
+%No spectral decomposition of the density operator is required.
 The ultimate precision bounds are therefore determined entirely by the local overlap geometry of the PSF manifold. For a Gaussian PSF, the derivative directions are proportional to Hermite-Gaussian functions of increasing order, which motivates the study of spatial mode sorting in the Hermite polynomial basis \cite{weisstein2002hermite} as an optimal measurement strategy \cite{starlight,rehacek2017optimal}.
 
 
@@ -489,22 +505,25 @@ Secondly, to derive the QFIM expression we will begin with the definition Eq.~\e
 \end{align}
 We can permute the arguments of a trace, substitute again for $L_\gamma, L_{\gamma^\dagger}$ and write out explicitly the derivative matrices
 \begin{align}
-    H_{a,b} &= \Re \bigg[
+    H_{a,b} &= {\color{red} \frac{1}{V} } \Re \bigg[
      \Tr (L^a_\Delta G_\Delta \ket{\gamma^b}\bra{\gamma^b} G_{\gamma^\dagger})
     +  \Tr (2 G^{-1}_\Delta\ket{\gamma^{a}}\bra{\gamma^{a}} G_{\gamma^\dagger} \ket{\gamma^b}\bra{\gamma^b} G_{\gamma^\dagger})
     +  \Tr (L^a_{\Delta} G_{\gamma} \ket{\gamma^{b\dagger}}\bra{\gamma^{b\dagger}} G_\Delta) \nonumber  \\
     &\quad\qquad + \Tr (2 \ket{\gamma^a}\bra{\gamma^a} G_\tau \ket{\gamma^{b\dagger}}\bra{\gamma^{b\dagger}})
-    +  \Tr (2\ket{\gamma^{a\dagger}}\bra{\gamma^{a\dagger}} G_\Delta \ket{\gamma^b}\bra{\gamma^b})
+    +  \Tr (2\ket{\gamma^{a\dagger}}\bra{\gamma^{a\dagger}} \ket{\gamma^b}\bra{\gamma^b} {\color{red} G_\tau })
     +  \Tr (2\ket{\gamma^{a\dagger}}\bra{\gamma^{a\dagger}}G^{-1}_\Delta G_{\gamma} \ket{\gamma^{b\dagger}}\bra{\gamma^{b\dagger}} G_{\gamma})
  \bigg] \nonumber \\
-    &= \Re \bigg[
+    &= {\color{red} \frac{1}{V} } \Re \bigg[
     \bra{\gamma^b} G_{\gamma^\dagger} L^a_\Delta G_\Delta\ket{\gamma^b}
     +  2 \bra{\gamma^{a}}G_{\gamma^\dagger}\ket{\gamma^b} \bra{\gamma^b} G_{\gamma^\dagger} G^{-1}_\Delta  \ket{\gamma^{a}}
-\nonumber    \\ & \quad\qquad+  \bra{\gamma^{b\dagger}} G_\Delta L^a_{\Delta} G_{\gamma} \ket{\gamma^{b\dagger}}  + 2\bra{\gamma^{b\dagger}} G_{\gamma} \ket{\gamma^{a\dagger}}\bra{\gamma^{a\dagger}}G^{-1}_\Delta G_{\gamma}\ket{\gamma^{b\dagger}} \bigg]\nonumber \\
-    &= 2\Re \bra{\gamma^b} G_{\gamma^\dagger} L^a_\Delta G_\Delta \ket{\gamma^b}
-    + 4 \Re \bra{\gamma^a}G_{\gamma^\dagger}\ket{\gamma^b}\bra{\gamma^b}G_{\gamma^\dagger} G^{-1}_\Delta\ket{\gamma^a},
+    {\color{red} + 2 \braket{\gamma^{b\dagger}}{\gamma^a} \bra{\gamma^a} G_\tau \ket{\gamma^{b\dagger}}}
+\nonumber    \\ & \quad\qquad+  \bra{\gamma^{b\dagger}} G_\Delta L^a_{\Delta} G_{\gamma} \ket{\gamma^{b\dagger}}
+    + {\color{red}2 \braket{\gamma^{a\dagger}}{\gamma^b} \bra{\gamma^b} G_\tau \ket{\gamma^{a\dagger}}}
+    + 2\bra{\gamma^{b\dagger}} G_{\gamma} \ket{\gamma^{a\dagger}}\bra{\gamma^{a\dagger}}G^{-1}_\Delta G_{\gamma}\ket{\gamma^{b\dagger}} \bigg]\nonumber \\
+    &= {\color{red} \frac{1}{V} \Big[ 4 \, \delta_{u,u'} \Re \, (G_\tau)_{a,b} } + 2\Re \bra{\gamma^b} G_{\gamma^\dagger} L^a_\Delta G_\Delta \ket{\gamma^b}
+    + 4 \Re \bra{\gamma^a}G_{\gamma^\dagger}\ket{\gamma^b}\bra{\gamma^b}G_{\gamma^\dagger} G^{-1}_\Delta\ket{\gamma^a} \Big],
 \end{align}
-where in the first step we use the sparsity to reduce the trace to an inner product and in the second step the Hermitian property of all the operators to combine terms.
+where in the first step we use the sparsity to reduce the traces to inner products and in the second step the Hermitian property of all the operators to combine {\color{red}conjugate pairs of terms. The contractions appearing in the two $G_\tau$ terms are overlaps of unit vectors in the PSF sector selecting the sources $u$ and $u'$ displaced by parameters $a$ and $b$, $\braket{\gamma^{b\dagger}}{\gamma^a} = \braket{\gamma^{a\dagger}}{\gamma^b} = \delta_{u,u'}$, while $\bra{\gamma^a} G_\tau \ket{\gamma^{b\dagger}} = (G_\tau)_{a,b}$. Tangent space overlaps therefore contribute only between parameters displacing the \emph{same} source.}
 
 \section{Classical Fisher Information for an arbitrary polynomial measurement basis\label{app:ms_incoherent}}
 To calculate the FIM for a mode measurement Eq.~\eqref{eq:FI_MS}, we first represent the object as an arbitrary discrete distribution of $V$ point sources
@@ -699,7 +718,14 @@ Exploiting the left--right symmetry of the three-source model, we parametrise th
 \begin{equation}
 r_c \equiv \frac{I_{\mathrm{mid}}}{I_{\mathrm{out}}},
 \end{equation}
-the brightness of the central (depth, axial) source relative to each of the two transverse (width, planar) sources, at fixed total budget $\sum_v I_v = 1$, so that $I_{\mathrm{mid}}=r_c/(r_c+2)$ and $I_{\mathrm{out}}=1/(r_c+2)$. Here $r_c>1$ brightens the axial source at the expense of the planar pair, $r_c<1$ does the reverse, and $r_c=1$ recovers the equal-brightness model. The closed-form QFIM of Appendix~\ref{app:qfi_derivation} and the mode-sorting Fisher information of Appendix~\ref{app:ms_incoherent} carry over with $1/V\to I_v$ threaded through the density matrix $R_\Delta=\mathrm{diag}(I_1,\dots,I_V)$ and the detection probabilities $P_{j,l}=\sum_v I_v\,\abs{\braket{\phi_{j,l}}{\psi_v}}^2$; both remain in closed form.
+the brightness of the central (depth, axial) source relative to each of the two transverse (width, planar) sources, at fixed total budget $\sum_v I_v = 1$, so that $I_{\mathrm{mid}}=r_c/(r_c+2)$ and $I_{\mathrm{out}}=1/(r_c+2)$. Here $r_c>1$ brightens the axial source at the expense of the planar pair, $r_c<1$ does the reverse, and $r_c=1$ recovers the equal-brightness model.
+% The closed-form QFIM of Appendix~\ref{app:qfi_derivation} and the mode-sorting Fisher information of Appendix~\ref{app:ms_incoherent} carry over with $1/V\to I_v$ threaded through the density matrix $R_\Delta=\mathrm{diag}(I_1,\dots,I_V)$ and the detection probabilities $P_{j,l}=\sum_v I_v\,\abs{\braket{\phi_{j,l}}{\psi_v}}^2$; both remain in closed form.
+{\color{red}The mode-sorting Fisher information of Appendix~\ref{app:ms_incoherent} carries over directly, with $1/V\to I_v$ in the detection probabilities $P_{j,l}=\sum_v I_v\,\abs{\braket{\phi_{j,l}}{\psi_v}}^2$. For the QFIM of Appendix~\ref{app:qfi_derivation} the substitution is less immediate. The intensities enter through the density matrix block $R_\Delta=\mathrm{diag}(I_1,\dots,I_V)$ and the derivative matrices $D_a^{\partial u,u} = D_a^{u,\partial u} = I_u$, so the rescaled derivative matrices $\Tilde{D}_a = R_\Delta^{-1} D_a$ retain unit entries and the cross blocks $L_\gamma = 2 G^{-1}_\Delta \Tilde{D}_\gamma$ are unchanged. However, since $R_\Delta$ is no longer proportional to the identity, it does not cancel from the reduced Lyapunov equation Eq.~\eqref{eq:L_delta_sylvester}, which becomes intensity-weighted,
+\begin{align}
+    L^a_{\Delta} G_{\Delta} R_\Delta + R_\Delta G_{\Delta} L^a_{\Delta}  &= -2 (R_\Delta G_{\gamma}\Tilde{D}_{\gamma^{a\dagger}}G_\Delta^{-1} + G_\Delta^{-1} \Tilde{D}_{\gamma^a}G_{\gamma^\dagger} R_\Delta),
+    \label{eq:L_delta_sylvester_weighted}
+\end{align}
+while the closed form Eq.~\eqref{eq:qfim_final} carries over with the prefactor $1/V \to I_{u'}$, where $u'$ is the source displaced by parameter $b$ (in the source-local first term $\delta_{u,u'}$ enforces $I_{u'}=I_u$). Both bounds therefore remain in closed form.}
 
 \paragraph{{\color{red}(i) Information versus contrast.}}
 Figure~\ref{fig:contrast_fi_crb} shows the quantum and mode-sorting Fisher information, and the associated Cram\'er-Rao bounds, as a function of $r_c$ for three representative $(\delta x,\delta z)$ pairs in the sub-Rayleigh regime. Both estimators vary smoothly with brightness and, crucially, track one another: raising $r_c$ increases the depth information and decreases the width information, and vice versa.
