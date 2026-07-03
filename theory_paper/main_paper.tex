@@ -192,7 +192,7 @@ Ordering the basis vectors as $\big\{|{\psi}\rangle$, $|{\partial_{\delta x_v} \
         X_{\gamma^\dagger} & X_\tau
     \end{pmatrix},
 \end{align}
-where $X_\Delta \in V \times V$ represents the PSF manifold geometry, $X_\tau \in 3V \times 3V$ the curvature structure (overlaps between tangent vectors), and $X_\gamma \in 3V \times V$ and its adjoint $X_{\gamma^\dagger}$ the first-order sensitivity (PSF–tangent couplings).
+where $X_\Delta \in V \times V$ represents the PSF manifold geometry, $X_\tau \in 3V \times 3V$ the curvature structure (overlaps between tangent vectors), and $X_\gamma \in V \times 3V$ and its adjoint $X_{\gamma^\dagger}$ the first-order sensitivity (PSF–tangent couplings).
 Assuming Gaussian beams Eq.~\eqref{def:psf}, the Gram matrix $G$ can be evaluated analytically (see Appendix~\ref{app:gaussian_overlaps} \cite{supposta}),
 while the density matrix has support only on the first block $\Delta$, $R_\Delta = \frac{1}{V} \openone_V$,
 with $\openone_V$ the $V\times V$ identity matrix, and each derivative matrix becomes sparse with only two non-zero entries,
@@ -239,7 +239,7 @@ We now apply our general methods to the concrete problem of analysing {\em surfa
 In our toy model, a crack is described by three point sources placed symmetrically on the $x$-axis, with the third (middle) one displaced along the $z$-axis [Fig.~\ref{fig:3source_layout}]. We relate the coordinates of the point sources to two parameters that characterise the problem, i.e., the width $\delta x$ and depth $\delta z$ of the crack,
 \begin{equation}
 \begin{aligned}
-    \delta x &\coloneqq {\delta x_2 - \delta x_1}, \quad     \delta z \coloneqq -\delta z_3.\
+    \delta x &\coloneqq {\delta x_2 - \delta x_1}, \quad     \delta z \coloneqq -\delta z_3.
 \end{aligned}
 \label{eq:3pt2paramcoords}
 \end{equation}
@@ -381,7 +381,6 @@ Applied to a minimal surface crack model, our analysis shows that specific spati
 
 Taken together, these results demonstrate that quantum-limited performance in surface metrology is, in principle, achievable with purely passive measurements in the image plane. More broadly, they show how quantum estimation and detection theory can be used not only to bound performance, but also to identify physically interpretable measurement bases tailored to specific quality control and surface analysis tasks.
 
-% {\color{red} Because our bounds depend only on point-spread-function overlaps and their derivatives, the framework applies unchanged to non-Gaussian, aberrated, or experimentally measured PSFs, for which the overlaps are evaluated numerically rather than in closed form. On the experimental side, the cross-talk analysis in the Supplemental Material indicates that the mode-sorting advantage is robust to realistic sorter imperfections, motivating a proof-of-principle demonstration.}
 {\color{red} Because our bounds depend only on point-spread-function overlaps and their derivatives, the framework applies unchanged to non-Gaussian, aberrated, or experimentally measured PSFs, for which the overlaps are evaluated numerically rather than in closed form. On the experimental side, Appendix~\ref{app:ms_errors} analyses the impact of nearest-neighbour mode cross-talk and an additive detector noise floor (from dark counts and background light) on the Fisher information. It is shown that the mode sorting remains robust to realistic imperfections, motivating a proof-of-principle demonstration.}
 
 
@@ -417,22 +416,22 @@ Here we show the explicit closed form expressions of the overlaps entering the G
 
 All overlaps share a common exponential factor
 \begin{align}
-    \psi_0 = \exp \left \{ (i \frac{(\delta_{x_v} - \delta_{x_u})^2 + (\delta_{y_v} - \delta_{y_u})^2)}{2(-2i + \delta_{z_v} - \delta_{z_u})} + i k z_R (\delta_{z_v} - \delta_{z_u}) \right \}.
+    \psi_0 = \exp \left \{ \frac{i \left ( (\delta_{x_v} - \delta_{x_u})^2 + (\delta_{y_v} - \delta_{y_u})^2 \right )}{2(-2i + \delta_{z_v} - \delta_{z_u})} + i k z_R (\delta_{z_v} - \delta_{z_u}) \right \}.
 \end{align}
 
 We have then
 \begin{align}
     \braket{\psi_v}{\psi_u} &= \frac{2 i}{2 i  - \delta_{z_v} + \delta_{z_u}} \psi_0 \\
-    \braket{\partial_{\delta_{x_v}}\psi_v}{\psi_u} &=  -2 \frac{\delta_{x_v} - \delta_{x_u}}{(2i - \delta_{z_v} + \delta_{z_u})^2} \psi_0\\
-    \braket{\partial_{\delta_{y_v}}\psi_v}{\psi_u} &=  -2 \frac{\delta_{y_v} - \delta_{y_u}}{(2i - \delta_{z_v} + \delta_{z_u})^2} \psi_0\\
-    \braket{\partial_{\delta_{z_v}}\psi_v}{\psi_u} &= \frac{-4 + (\delta_{x_v} - \delta_{x_u})^2 + (\delta_{y_v} - \delta_{y_u})^2 - 2 k z_R (-4 + (\delta_{z_v} - \delta_{z_u})^2) +  2i (\delta_{z_v} - \delta_{z_u})  (-1 + 4 k z_R)
+    \braket{\psi_v}{\partial_{\delta_{x_u}}\psi_u} &=  -2 \frac{\delta_{x_v} - \delta_{x_u}}{(2i - \delta_{z_v} + \delta_{z_u})^2} \psi_0\\
+    \braket{\psi_v}{\partial_{\delta_{y_u}}\psi_u} &=  -2 \frac{\delta_{y_v} - \delta_{y_u}}{(2i - \delta_{z_v} + \delta_{z_u})^2} \psi_0\\
+    \braket{\psi_v}{\partial_{\delta_{z_u}}\psi_u} &= \frac{-4 + (\delta_{x_v} - \delta_{x_u})^2 + (\delta_{y_v} - \delta_{y_u})^2 - 2 k z_R (-4 + (\delta_{z_v} - \delta_{z_u})^2) +  2i (\delta_{z_v} - \delta_{z_u})  (-1 + 4 k z_R)
     }{(-2i + \delta_{z_v} - \delta_{z_u})^3} \psi_0 \\
     \braket{\partial_{\delta_{x_v}}\psi_v}{\partial_{\delta_{x_u}}\psi_u} &= \frac{2i (-2 + (\delta_{x_v} - \delta_{x_u})^2 + i (\delta_{z_u} - \delta_{z_v}))}{(2i - \delta_{z_v} + \delta_{z_u})^3} \psi_0 \\
     \braket{\partial_{\delta_{x_v}}\psi_v}{\partial_{\delta_{y_u}}\psi_u} &= \frac{2i (\delta_{x_v} - \delta_{x_u}) (\delta_{y_v} - \delta_{y_u})}{ (2i - \delta_{z_v} + \delta_{z_u})^3} \psi_0 \\
-    \braket{\partial_{\delta_{x_v}}\psi_v}{\partial_{\delta_{z_u}}\psi_u} &= -\frac{(-1 + i \delta_{z_u})^3 (\delta_{x_v} - \delta_{x_u}) \psi_0}{(i + \delta_{z_u})^3 (2i - \delta_{z_v} + \delta_{z_u})^4} \\
+    \braket{\partial_{\delta_{x_v}}\psi_v}{\partial_{\delta_{z_u}}\psi_u} &= \frac{i (\delta_{x_v} - \delta_{x_u}) \psi_0}{(2i - \delta_{z_v} + \delta_{z_u})^4} \\
     &(-8 + (\delta_{x_v} - \delta_{x_u})^2 + (\delta_{y_v} - \delta_{y_u})^2  - 2 k z_R (-4 + (\delta_{z_v} - \delta_{z_u})^2) + 4i (\delta_{z_v} - \delta_{z_u}) (-1 + 2 k z_R)) \nonumber \\
     \braket{\partial_{\delta_{y_v}}\psi_v}{\partial_{\delta_{y_u}}\psi_u} &= 2i \frac{-2 + (\delta_{y_v} - \delta_{y_u})^2 + i (\delta_{z_u} - \delta_{z_v})}{ (2i - \delta_{z_v} + \delta_{z_u})^3} \psi_0\\
-    \braket{\partial_{\delta_{y_v}}\psi_i}{\partial_{\delta_{z_u}}\psi_u} &= - \frac{(-1 + i \delta_{z_u})^3 (\delta_{y_v} - \delta_{y_u}) \psi_0}{(i + \delta_{z_u})^3 (2i - \delta_{z_v} + \delta_{z_u})^4}  \\
+    \braket{\partial_{\delta_{y_v}}\psi_v}{\partial_{\delta_{z_u}}\psi_u} &= \frac{i (\delta_{y_v} - \delta_{y_u}) \psi_0}{(2i - \delta_{z_v} + \delta_{z_u})^4}  \\
     & (-8 + (\delta_{x_v} - \delta_{x_u})^2 + (\delta_{y_v} - \delta_{y_u})^2 - 2 k z_R (-4 + (\delta_{z_v} - \delta_{z_u})^2) + 4i (\delta_{z_v} - \delta_{z_u}) (-1 + 2 k z_R)) \nonumber \\
     \braket{\partial_{\delta_{z_v}}\psi_v}{\partial_{\delta_{z_u}}\psi_u} &= \frac{i \psi_0}{2 (-2i + \delta_{z_v} - \delta_{z_u})^5} \bigg(  \\
     & -32 + 8 (\delta_{z_v} - \delta_{z_u})^2 - (\delta_{x_v} - \delta_{x_u})^2 ((\delta_{x_v} - \delta_{x_u})^2 + 2 (-8 + (\delta_{y_v} - \delta_{y_u})^2)) -(\delta_{y_v} - \delta_{y_u})^2 (-16 + (\delta_{y_v} - \delta_{y_u})^2) \nonumber \\
@@ -532,7 +531,7 @@ To calculate the FIM for a mode measurement Eq.~\eqref{eq:FI_MS}, we first repre
 \end{align}
 with $\delta[x]$ the Dirac delta. Defining the object distribution via a sum of Dirac delta functions simplifies calculating the measurement channel probabilities to Eq.~\eqref{eq:prob_ms_general}.
 
-For each measurement channel contribution $\frac{1}{P_j(\theta)} \pdv{P_j(\theta)}{\theta_a}  \pdv{P_j(\theta)}$ to the FIM Eq.~\eqref{eq:FI_MS} we need to compute and sum the individual measurement mode probabilities for a single source $\abs{ \braket{\phi_{j,l}}{\psi_v(x + \delta x_v, y + \delta y_v, \delta z_v)} }^2$. However, due to construction, calculating the measurement mode sensitivity for a specific point source displacement only involves computing the single source measurement probability derivative
+For each measurement channel contribution $\frac{1}{P_j(\theta)} \pdv{P_j(\theta)}{\theta_a}  \pdv{P_j(\theta)}{\theta_b}$ to the FIM Eq.~\eqref{eq:FI_MS} we need to compute and sum the individual measurement mode probabilities for a single source $\abs{ \braket{\phi_{j,l}}{\psi_v(x + \delta x_v, y + \delta y_v, \delta z_v)} }^2$. However, due to construction, calculating the measurement mode sensitivity for a specific point source displacement only involves computing the single source measurement probability derivative
 \begin{align}
  \!\!   \pdv{P_{j,l}(\theta)}{\theta_v^a} &= \frac{1}{V} \pdv{}{\theta_v^a} \abs{\braket{\phi_{j,l}}{\psi(x + \delta x_v, y + \delta y_v, \delta z_v)}}^2.
  \label{eq:pdv_mode_dot_product}
@@ -586,22 +585,22 @@ The individual derivatives of the measurement mode overlap have the closed form 
 \begin{align}
     \frac{\partial}{\partial \delta_x} \braket{\phi_{j,l}}{\psi(x+\delta_x,y+\delta_y,\delta_z)} &= \frac{2i}{2i + \delta_z}  \exp{-ikz_R\delta_z} \exp{-\frac{i \delta_y^2}{2(2i +\delta_z)}} \sum_\xi^l d^*_\xi \mathbb{E}[y^\xi]\sum_\zeta c^*_\zeta  \frac{\partial}{\partial \delta_x} \left [ \exp{-\frac{i\delta_x^2}{2(2i +\delta_z)}}\mathbb{E}[x^\zeta] \right ] \nonumber \\
     &=  \frac{2}{(2i + \delta_z)^2}  \exp{-ikz_R\delta_z} \exp{-\frac{i (\delta_x^2 + \delta_y^2)}{2(2i +\delta_z)}} \left ( \sum_\xi^l d^*_\xi \mathbb{E}[y^\xi] \right ) \left [ \delta_x \sum_\zeta c^*_\zeta \mathbb{E}[x^\zeta] \right. \nonumber \\
-    & \left. + \sum_\zeta c^*_\zeta \sum^\zeta_\alpha \binom{\zeta}{\alpha} \alpha \mu_x^{\alpha-1} \sigma^{\frac{\zeta-\alpha}{2}}  \mathbb{E}[Z^{\zeta-\alpha}] \right ].
+    & \left. + \sum_\zeta c^*_\zeta \sum^\zeta_\alpha \binom{\zeta}{\alpha} \alpha \mu_x^{\alpha-1} (\sigma_z^2)^{\frac{\zeta-\alpha}{2}}  \mathbb{E}[Z^{\zeta-\alpha}] \right ].
 \end{align}
 Similarly, by symmetry, we get the expression for the derivative in the $y$-dimension
 \begin{align}
     \frac{\partial}{\partial \delta_y} \braket{\phi_{j,l}}{\psi(x+\delta_x,y+\delta_y,\delta_z)} &=  \frac{2}{(2i + \delta_z)^2}  \exp{-ikz_R\delta_z} \exp{-\frac{i (\delta_x^2 + \delta_y^2)}{2(2i +\delta_z)}} \left ( \sum_\zeta^j c^*_\zeta \mathbb{E}[x^\zeta] \right ) \left [ \delta_y \sum_\xi d^*_\xi \mathbb{E}[y^\xi] \right. \nonumber \\
-    & \left. + \sum_\xi d^*_\xi \sum^\xi_\beta \binom{\xi}{\beta} \beta \mu_y^{\beta-1} \sigma^{\frac{\xi-\beta}{2}}  \mathbb{E}[Z^{\xi-\beta}] \right ].
+    & \left. + \sum_\xi d^*_\xi \sum^\xi_\beta \binom{\xi}{\beta} \beta \mu_y^{\beta-1} (\sigma_z^2)^{\frac{\xi-\beta}{2}}  \mathbb{E}[Z^{\xi-\beta}] \right ].
 \end{align}
 Lastly, we have
 \begin{align}
     \frac{\partial}{\partial \delta_z} &\braket{\phi_{j,l}}{\psi(x+\delta_x,y+\delta_y,\delta_z)} = \nonumber \\
     &\sum_\zeta^j c^*_\zeta \mathbb{E}[x^\zeta]\sum_\xi^l d^*_\xi \mathbb{E}[y^\xi] \frac{\partial}{\partial \delta_z} \left [ \frac{2i}{2i + \delta_z}  \exp{-ikz_R\delta_z} \exp{-\frac{i (\delta_x^2 + \delta_y^2)}{2(2i +\delta_z)}}  \right] \nonumber \\
     &+ \frac{2i}{2i + \delta_z}  \exp{-ikz_R\delta_z} \exp{-\frac{i (\delta_x^2 + \delta_y^2)}{2(2i +\delta_z)}} \frac{\partial}{\partial \delta_z} \left[ \sum_\zeta^j c^*_\zeta \mathbb{E}[x^\zeta]\sum_\xi^l d^*_\xi \mathbb{E}[y^\xi] \right] \nonumber \\
-    &= \frac{4 - \delta_x^2 - \delta_y^2 -2i\delta_z + 2k z_R(2i+\delta_z)^2}{(2i + \delta_z)^3}\exp{-i k z_R \delta_z} \exp{-\frac{\delta_x^2 + \delta_y^2}{2(2i + \delta_z)}} \sum_\zeta^j c^*_\zeta \mathbb{E}[x^\zeta]\sum_\xi^l d^*_\xi \mathbb{E}[y^\xi] \nonumber \\
-    &+ \frac{2i}{2i + \delta_z} \exp{-i k z_R \delta_z} \exp{-\frac{\delta_x^2 + \delta_y^2}{2(2i + \delta_z)}} \nonumber \\
-    &\left [ \left ( \sum_\xi^l d_\xi^* \mathbb{E}[y^\xi] \right ) \sum_\zeta^j c^*_\zeta \sum_\alpha^\zeta \binom{\zeta}{\alpha} \frac{(\zeta - \alpha)!}{2^{\frac{\zeta-\alpha}{2}}(\frac{\zeta-\alpha}{2})!} \frac{i}{(2i+\delta_z)^2} \left ( \frac{\zeta - \alpha}{2} \mu_x^\alpha \sigma^{\frac{\zeta - \alpha}{2}-1} + \delta_x \alpha \mu_x^{\alpha-1}  \sigma^{\frac{\zeta - \alpha}{2}} \right ) \right ] \nonumber \\
-    &+ \left [ \left ( \sum_\zeta^j c_\zeta^* \mathbb{E}[x^\zeta] \right ) \sum_\xi^l d^*_\xi \sum_\beta^\xi \binom{\xi}{\beta} \frac{(\xi - \beta)!}{2^{\frac{\xi-\beta}{2}}(\frac{\xi-\beta}{2})!} \frac{i}{(2i+\delta_z)^2} \left ( \frac{\xi - \beta}{2} \mu_y^\beta \sigma^{\frac{\xi - \beta}{2}-1} + \delta_y \beta \mu_y^{\beta-1}  \sigma^{\frac{\xi - \beta}{2}} \right ) \right ].
+    &= \frac{4 - \delta_x^2 - \delta_y^2 -2i\delta_z + 2k z_R(2i+\delta_z)^2}{(2i + \delta_z)^3}\exp{-i k z_R \delta_z} \exp{-\frac{i(\delta_x^2 + \delta_y^2)}{2(2i + \delta_z)}} \sum_\zeta^j c^*_\zeta \mathbb{E}[x^\zeta]\sum_\xi^l d^*_\xi \mathbb{E}[y^\xi] \nonumber \\
+    &+ \frac{2i}{2i + \delta_z} \exp{-i k z_R \delta_z} \exp{-\frac{i(\delta_x^2 + \delta_y^2)}{2(2i + \delta_z)}} \nonumber \\
+    &\left [ \left ( \sum_\xi^l d_\xi^* \mathbb{E}[y^\xi] \right ) \sum_\zeta^j c^*_\zeta \sum_\alpha^\zeta \binom{\zeta}{\alpha} \frac{(\zeta - \alpha)!}{2^{\frac{\zeta-\alpha}{2}}(\frac{\zeta-\alpha}{2})!} \frac{i}{(2i+\delta_z)^2} \left ( \frac{\zeta - \alpha}{2} \mu_x^\alpha (\sigma_z^2)^{\frac{\zeta - \alpha}{2}-1} + \delta_x \alpha \mu_x^{\alpha-1}  (\sigma_z^2)^{\frac{\zeta - \alpha}{2}} \right ) \right ] \nonumber \\
+    &+ \left [ \left ( \sum_\zeta^j c_\zeta^* \mathbb{E}[x^\zeta] \right ) \sum_\xi^l d^*_\xi \sum_\beta^\xi \binom{\xi}{\beta} \frac{(\xi - \beta)!}{2^{\frac{\xi-\beta}{2}}(\frac{\xi-\beta}{2})!} \frac{i}{(2i+\delta_z)^2} \left ( \frac{\xi - \beta}{2} \mu_y^\beta (\sigma_z^2)^{\frac{\xi - \beta}{2}-1} + \delta_y \beta \mu_y^{\beta-1}  (\sigma_z^2)^{\frac{\xi - \beta}{2}} \right ) \right ].
 \end{align}
 
 As an example, the Fisher information matrix elements for the estimation of the depth and width parameters of a surface crack modelled as in Fig.~1 of the main text are plotted in Fig.~\ref{fig:supp4figs}
@@ -623,7 +622,7 @@ As an example, the Fisher information matrix elements for the estimation of the 
 
 \section{{\color{red}The remainder channel}\label{app:remainder}}
 {\color{red}
-A mode sorter resolves only a set $\mathcal{M}$ of Hermite-Gaussian modes. As these modes are complete, the unresolved light forms a single positive outcome $\Pi_{\rm rem}=\openone-\sum_{(j,l)\in\mathcal{M}}\Pi_{j,l}$, so $\{\Pi_{j,l}\}_{\mathcal{M}}\cup\{\Pi_{\rm rem}\}$ is a complete POVM with remainder probability
+A mode sorter resolves only a set $\mathcal{M}$ of Hermite-Gaussian modes. As the full Hermite-Gaussian basis is complete, the unresolved light forms a single positive outcome $\Pi_{\rm rem}=\openone-\sum_{(j,l)\in\mathcal{M}}\Pi_{j,l}$, so $\{\Pi_{j,l}\}_{\mathcal{M}}\cup\{\Pi_{\rm rem}\}$ is a complete POVM with remainder probability
 \begin{equation}
 P_{\rm rem}(\theta)=1-\sum_{(j,l)\in\mathcal{M}}P_{j,l}(\theta).
 \label{eq:rem_prob}
@@ -655,7 +654,6 @@ The leaked fraction $P_{\rm rem}$ measures the collected light that is not resol
 }
 
 
-% \section{Impact of Mode-Sorting Imperfections on the Classical Fisher Information\label{app:ms_errors}}
 \section{{\color{red}Mode-Sorting Bounds under Experimental Imperfections}\label{app:ms_errors}}
 {\color{red}
 A realistic mode-sorting measurement is subject to two distinct imperfections, which we treat in turn: (i) imperfect sorting, in which the device leaks amplitude between neighbouring Hermite-Gaussian orders (cross-talk), and (ii) a detector noise floor of $\theta$-independent counts arising from dark counts and background light. The former corrupts the measurement basis itself, whereas the latter adds a noise background to otherwise ideal channels; we show that the mode-sorting advantage survives both.}
