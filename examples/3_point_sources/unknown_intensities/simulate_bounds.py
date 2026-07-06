@@ -129,46 +129,63 @@ def simulate_bounds() -> None:
             inputs=input_,
             final_vars=[
                 "fisher_information_matrix_for_entire_distribution",
+                "fisher_information_matrix_using_density_derivatives",
+                "compatibility_matrix",
                 "covariance_matrix_for_entire_distribution",
                 "covariance_matrix_for_entire_distribution_nuisance_intensity",
                 "covariance_matrix_for_entire_distribution_spatial",
             ],
         )
 
-        qfi_ = np.real(
-            quantum_result["fisher_information_matrix_for_entire_distribution"].reshape(
-                N_GRIDS, N_GRIDS, 3, 3
-            )
-        )
+        qfi_ = quantum_result[
+            "fisher_information_matrix_for_entire_distribution"
+        ].reshape(N_GRIDS, N_GRIDS, 3, 3)
         np.save(
             ROOT_DIR / f"qfi_{contrast:.2f}.npy",
             qfi_,
         )
-        qfi_inv_ = np.real(
-            quantum_result["covariance_matrix_for_entire_distribution"].reshape(
-                N_GRIDS, N_GRIDS, 3, 3
-            )
+
+        qfi_dform_ = quantum_result[
+            "fisher_information_matrix_using_density_derivatives"
+        ].reshape(N_GRIDS, N_GRIDS, 3, 3)
+        np.save(
+            ROOT_DIR / f"qfi_dform_{contrast:.2f}.npy",
+            qfi_dform_,
+        )
+
+        compat_ = quantum_result["compatibility_matrix"].reshape(N_GRIDS, N_GRIDS, 3, 3)
+        np.save(
+            ROOT_DIR / f"compat_{contrast:.2f}.npy",
+            compat_,
+        )
+
+        qfi_inv_ = quantum_result["covariance_matrix_for_entire_distribution"].reshape(
+            N_GRIDS, N_GRIDS, 3, 3
         )
         np.save(
             ROOT_DIR / f"qfi_inv_{contrast:.2f}.npy",
             qfi_inv_,
         )
 
-        qfi_inv_nuis = np.real(
-            quantum_result[
-                "covariance_matrix_for_entire_distribution_nuisance_intensity"
-            ].reshape(N_GRIDS, N_GRIDS, 2, 2)
-        )
+        qfi_inv_nuis = quantum_result[
+            "covariance_matrix_for_entire_distribution_nuisance_intensity"
+        ].reshape(N_GRIDS, N_GRIDS, 2, 2)
         np.save(
             ROOT_DIR / f"qfi_inv_nuis_{contrast:.2f}.npy",
             qfi_inv_nuis,
         )
 
-        qfi_inv_spatial = np.real(
-            quantum_result["covariance_matrix_for_entire_distribution_spatial"].reshape(
-                N_GRIDS, N_GRIDS, 2, 2
-            )
+        qfi_nuis = quantum_result[
+            "fisher_information_matrix_nuisance_intensity"
+        ].reshape(N_GRIDS, N_GRIDS, 2, 2)
+        np.save(
+            ROOT_DIR / f"qfi_nuis_{contrast:.2f}.npy",
+            qfi_nuis,
         )
+
+        qfi_inv_spatial = quantum_result[
+            "covariance_matrix_for_entire_distribution_spatial"
+        ].reshape(N_GRIDS, N_GRIDS, 2, 2)
         np.save(
             ROOT_DIR / f"qfi_inv_spatial_{contrast:.2f}.npy",
             qfi_inv_spatial,

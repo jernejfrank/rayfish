@@ -80,7 +80,7 @@ def latexify(
         "axes.formatter.use_mathtext": True,
     }
 
-    matplotlib.rcParams.update(params)
+    matplotlib.rcParams.update(params)  # type: ignore
 
 
 def measurement_mode_field(
@@ -182,10 +182,11 @@ def plot_mode_mixing_sweep(
     mix_fn: Callable,
     mode_indices: list[int] | None = None,
     mode_degree: int | None = None,
-    extent: float = 4.0,
+    extent: float = 5.0,
     resolution: int = 160,
     intensity: bool = False,
     cmap: str | None = None,
+    gamma: float = 0.5,
 ) -> tuple[matplotlib.figure.Figure, npt.NDArray]:
     """Grid of modes (rows) versus mixing strength (columns).
 
@@ -193,6 +194,12 @@ def plot_mode_mixing_sweep(
     the mixing strength epsilon increases left to right, so cross-talk transferred into
     a mode is read along a single row. The amplitude colour scale is shared within each
     row so brightness changes across epsilon are comparable for that mode.
+
+    Amplitudes are displayed with a signed gamma compression,
+    ``sign(phi) * |phi / vmax|**gamma``: leaked components sit at a small fraction
+    of the dominant mode's peak, so on a linear scale (``gamma=1``) they are nearly
+    invisible; compressing the dynamic range makes the cross-talk readable while
+    keeping the sign structure and the zero point.
 
     Args:
         base_modes: the unmixed measurement basis (length ``mode_degree**2``).
@@ -205,6 +212,8 @@ def plot_mode_mixing_sweep(
         resolution: number of grid points per axis.
         intensity: plot ``|phi|^2`` instead of the signed amplitude.
         cmap: matplotlib colormap name; defaults to a diverging/intensity map.
+        gamma: exponent of the signed gamma compression; ``1`` is linear, smaller
+            values make weak leakage more prominent.
 
     Returns:
         The created ``(figure, axes)``, where ``axes`` is a 2D array of shape
@@ -225,7 +234,7 @@ def plot_mode_mixing_sweep(
     fig, axes = plt.subplots(
         n_rows,
         n_cols,
-        figsize=(1.7 * n_cols, 1.7 * n_rows),
+        figsize=(2.0 * n_cols, 2.0 * n_rows),
         squeeze=False,
     )
     for row, mode_idx in enumerate(mode_indices):
@@ -236,6 +245,7 @@ def plot_mode_mixing_sweep(
         data = [f**2 if intensity else f for f in fields]
         # Shared colour scale per row so the same mode is comparable across epsilon.
         row_vmax = max((np.max(np.abs(d)) for d in data), default=1.0) or 1.0
+        data = [np.sign(d) * np.abs(d / row_vmax) ** gamma * row_vmax for d in data]
         for col in range(n_cols):
             ax = axes[row, col]
             if intensity:
@@ -260,9 +270,21 @@ def plot_mode_mixing_sweep(
             ax.set_yticks([])
             if col == 0:
                 i, j = divmod(mode_idx, mode_degree)
-                ax.set_ylabel(f"({i},{j})", fontsize=10, rotation=0, labelpad=18)
+                ax.set_ylabel(f"({i},{j})", rotation=0, labelpad=40)
             if row == 0:
-                ax.set_title(rf"$\epsilon$={epsilons[col]:g}", fontsize=10)
+                eps = epsilons[col]
+                # same cross-talk (dB) scale as the FI-figure legends
+                ax.set_title("baseline" if eps == 0 else f"{eps_to_db(eps):.2f}")
+                if col == 0:
+                    # lone unit heading the title row, left of the row labels
+                    ax.text(
+                        -0.45,
+                        1.05,
+                        "dB",
+                        transform=ax.transAxes,
+                        ha="right",
+                        va="bottom",
+                    )
     fig.tight_layout()
     return fig, axes
 
@@ -305,8 +327,7 @@ def plot_individual_fi(
     norm = mcolors.Normalize(
         vmin=np.min(other_param_range), vmax=np.max(other_param_range)
     )
-    cmap = cm.get_cmap(color)
-    cmap = cmap(np.linspace(0.3, 1.0, 256))  # clip out the darkest 30%
+    cmap = matplotlib.colormaps[color](np.linspace(0.3, 1.0, 256))  # clip darkest 30%
     cmap = mcolors.ListedColormap(cmap)
 
     sm = cm.ScalarMappable(cmap=cmap, norm=norm)
@@ -337,7 +358,9 @@ def eps_to_db(eps: float) -> float:
 
 def _clipped_cmap(name: str) -> mcolors.ListedColormap:
     """Colormap with the darkest 30% clipped out (matches ``plot_individual_fi``)."""
-    return mcolors.ListedColormap(cm.get_cmap(name)(np.linspace(0.3, 1.0, 256)))
+    return mcolors.ListedColormap(
+        matplotlib.colormaps[name](np.linspace(0.3, 1.0, 256))
+    )
 
 
 def _rep_color(name: str, t: float = 0.85) -> tuple[float, float, float, float]:

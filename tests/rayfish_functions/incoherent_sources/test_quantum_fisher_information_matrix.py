@@ -531,7 +531,7 @@ def test_fisher_information_matrix(
     expected = mock_covariance_matrix
     n_dist = 1
 
-    actual = incoherent_sources.fisher_information_matrix_for_entire_distribution(
+    actual = incoherent_sources.fisher_information_matrix_using_density_derivatives(
         density_derivatives=mock_density_derivative,
         gramian=mock_gramian_scalar[None],
         lyapunov_operators=mock_lyapunov_operators[None],

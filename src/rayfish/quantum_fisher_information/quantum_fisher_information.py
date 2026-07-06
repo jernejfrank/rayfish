@@ -26,24 +26,26 @@ to discrete quantum imaging,” PRX Quantum 2, 020308 (2021).
 
 import numpy as np
 import numpy.typing as npt
+from hamilton.function_modifiers import extract_fields
 
 # Public API
 __all__ = (
-    "fisher_information_matrix_for_entire_distribution",
     "covariance_matrix_for_entire_distribution",
     "covariance_matrix_for_entire_distribution_nuisance_intensity",
     "covariance_matrix_for_entire_distribution_spatial",
+    "fisher_information_matrix_and_compatibility_matrix",
+    "fisher_information_matrix_using_density_derivatives",
 )
 
 
-def fisher_information_matrix_for_entire_distribution(
+def fisher_information_matrix_using_density_derivatives(
     density_derivatives: npt.NDArray[np.complex128],
     gramian: npt.NDArray[np.complex128],
     lyapunov_operators: npt.NDArray[np.complex128],
     coordinate_jacobian: npt.NDArray[np.float64],
     number_of_point_sources: int,
     number_of_point_source_distributions: int,
-) -> npt.NDArray[np.complex128]:
+) -> npt.NDArray[np.float64]:
     """Calculates the quantum Fisher information matrix from the Lyapunov operators.
 
     Implements the non-orthogonal-basis QFIM,
@@ -113,11 +115,99 @@ def fisher_information_matrix_for_entire_distribution(
         np.matmul(fi_full, np.transpose(coordinate_jacobian)),
     )
 
-    return fisher_information
+    return np.real(fisher_information)
+
+
+@extract_fields({
+    "fisher_information_matrix_for_entire_distribution": npt.NDArray[np.float64],
+    "compatibility_matrix": npt.NDArray[np.float64],
+})
+def fisher_information_matrix_and_compatibility_matrix(
+    density: npt.NDArray[np.float64],
+    gramian: npt.NDArray[np.complex128],
+    lyapunov_operators: npt.NDArray[np.complex128],
+    coordinate_jacobian: npt.NDArray[np.float64],
+    number_of_point_sources: int,
+) -> dict[str, npt.NDArray[np.float64]]:
+    """Calculates the quantum Fisher information matrix from the Lyapunov operators.
+
+    Implements the non-orthogonal-basis QFIM,
+
+        H_{a,b} = Re Tr(L_a G D_b G),
+
+    evaluated for every parameter pair and every point source distribution. The full
+    complex covariance between Lyapunov operators is the general entity encoding the
+    parameter estimation boundaries: its real part is the quantum Fisher information
+    matrix and its imaginary part the compatibility matrix for simultaneously estimating
+    parameters. The trace is evaluated as batched matrix products, sandwiching the
+    precomputed G D_b G with L_a over the whole distribution at once.
+
+    The Gaussian overlaps are calculated for displacements ψ(x+dx, y+dy, z+dz),
+    but the actual distributions might depend a on different parametrization,
+    i.e. ψ(x+s/2, y+t/2, z+p/2) + ψ(x-s/2, y-t/2, z-p/2), which we can use to
+    express our covariance matrix in the coordinate system (s,t,p). For that
+    we use the Jacobian of the coordinate transformation
+
+    B = ∂f(dx[s,t,p],dy[s,t,p],dz[s,t,p]) / ∂(s,t,p)
+
+    to do a change of basis of the covariance matrix
+
+    Cov(s,t,p) = B(s,t,p) Cov(dx[s,t,p],dy[s,t,p],dz[s,t,p]) T^B(s,t,p),
+
+    with T^B being the transpose. This transforms the (P,P) covariance matrix (P = 3N
+    for position only, or P = 4N with intensity) into the space of the parameters of
+    interest whose dimension is set by the leading dimension of `coordinate_jacobian`.
+
+    Args:
+        density: (4N,4N) array encoding the the density matrix for each parameter.
+        gramian: (M,4N,4N) array used for linear algebra
+            in a vector space spanned by a non-orthogonal basis, one per distribution.
+        lyapunov_operators: (M,P,4N,4N) array encoding the SLD operator of each
+            parameter for each distribution.
+        coordinate_jacobian: (*,P) array correcting the re-parametrization
+            of point source coordinates and collapsing the matrix for the parameters
+            of interest. The first dimension is dependent on the user input.
+        number_of_point_sources: how many point sources we
+            have to model the object.
+
+    Returns:
+        A (M,*,*) array of complex floats encoding precision boundaries for
+        parameters of interest that have been encoded into the `coordinate_jacobian`.
+    """
+    rg = density[None] @ gramian
+    grg = gramian @ rg
+    grgl_a = grg[:, None] @ lyapunov_operators
+
+    gl_b = gramian[:, None] @ lyapunov_operators
+
+    grgl_a_flat = grgl_a.reshape(
+        lyapunov_operators.shape[0],
+        lyapunov_operators.shape[1],
+        4 * number_of_point_sources * 4 * number_of_point_sources,
+    )
+
+    gl_b_flat = np.transpose(gl_b, axes=(0, 1, 3, 2)).reshape(
+        lyapunov_operators.shape[0],
+        lyapunov_operators.shape[1],
+        4 * number_of_point_sources * 4 * number_of_point_sources,
+    )
+
+    fi_full = grgl_a_flat @ np.transpose(gl_b_flat, (0, 2, 1))
+
+    fisher_information = coordinate_jacobian @ (
+        fi_full @ np.transpose(coordinate_jacobian)
+    )
+
+    return {
+        "fisher_information_matrix_for_entire_distribution": np.real(
+            fisher_information
+        ),
+        "compatibility_matrix": np.imag(fisher_information),
+    }
 
 
 def covariance_matrix_for_entire_distribution(
-    fisher_information_matrix_for_entire_distribution: npt.NDArray[np.complex128],
+    fisher_information_matrix_for_entire_distribution: npt.NDArray[np.float64],
 ) -> npt.NDArray[np.float64]:
     """The covariance matrix calculated as the inverse of the fisher information."""
     cov_matrices = np.zeros_like(
@@ -141,7 +231,7 @@ def covariance_matrix_for_entire_distribution(
 
 def covariance_matrix_for_entire_distribution_nuisance_intensity(
     number_of_spatial_params: int,
-    fisher_information_matrix_for_entire_distribution: npt.NDArray[np.complex128],
+    fisher_information_matrix_for_entire_distribution: npt.NDArray[np.float64],
 ) -> npt.NDArray[np.float64]:
     """Spatial covariance with the intensity parameters marginalized out.
 
@@ -209,7 +299,7 @@ def covariance_matrix_for_entire_distribution_nuisance_intensity(
 
 
 def covariance_matrix_for_entire_distribution_spatial(
-    fisher_information_matrix_for_entire_distribution: npt.NDArray[np.complex128],
+    fisher_information_matrix_for_entire_distribution: npt.NDArray[np.float64],
     number_of_spatial_params: int,
 ) -> npt.NDArray[np.float64]:
     """Spatial covariance restricted to the spatial Fisher information block.
