@@ -11,92 +11,75 @@ Gaussian beam. With the above relative length scale this looks like:
 sqrt[1/pi] (i / (z+dz+i))
 exp[-i ((x+dx)^2 + (y+dy)^2) / (2 (z+dz+i))] exp[-i k zr (z+dz)]
 
-We calculate the following overlaps:
+We calculate the following overlaps, which populate the Gram matrix blocks G_Δ, G_γ
+and G_τ:
 delta: <ψ(x+dx_1, y+dy_1, z+dz_1)|ψ(x+dx_2, y+dy_2, z+dz_2)>
 gamma_µ: <∂_µ ψ(x+dx_1, y+dy_1, z+dz_1)|ψ(x+dx_2, y+dy_2, z+dz_2)> ; µ=dx_1, dy_1, dz_1
 tau_µn: <∂_µ ψ(x+dx_1, y+dy_1, z+dz_1)|∂_n ψ(x+dx_2, y+dy_2, z+dz_2)> ;
     µ=dx_1, dy_1, dz_1 ; n=dx_2, dy_2, dz_2
-"""
 
-from functools import wraps
+The measurement-mode overlaps further down implement the PSF-adapted Hermite expansion
+via the recursive Gaussian moments.
+"""
 
 import numpy as np
 import numpy.typing as npt
-from beartype.typing import Callable, Dict
+from beartype.typing import Dict
 from scipy.special import comb, factorial
 
 # Public API
 __all__ = (
     "delta",
-    "gamma_s",
-    "gamma_t",
-    "gamma_p",
-    "tau_ss",
-    "tau_st",
-    "tau_sp",
-    "tau_tt",
-    "tau_tp",
-    "tau_pp",
-    "inner_product_measurement_mode_point_source_overlap",
-    "probability_measurement_mode_point_source_overlap",
-    "derivate_s_inner_product_measurement_mode_point_source_overlap",
-    "derivate_t_inner_product_measurement_mode_point_source_overlap",
     "derivate_p_inner_product_measurement_mode_point_source_overlap",
-    "derivate_s_probability_measurement_mode_point_source_overlap",
-    "derivate_t_probability_measurement_mode_point_source_overlap",
     "derivate_p_probability_measurement_mode_point_source_overlap",
-    "probability_measurement_di_point_source_overlap",
+    "derivate_s_inner_product_measurement_mode_point_source_overlap",
+    "derivate_s_probability_measurement_mode_point_source_overlap",
+    "derivate_t_inner_product_measurement_mode_point_source_overlap",
+    "derivate_t_probability_measurement_mode_point_source_overlap",
+    "derivative_p_probability_measurement_di_point_source_overlap",
     "derivative_s_probability_measurement_di_point_source_overlap",
     "derivative_t_probability_measurement_di_point_source_overlap",
-    "derivative_p_probability_measurement_di_point_source_overlap",
+    "gamma_p",
+    "gamma_s",
+    "gamma_t",
+    "inner_product_measurement_mode_point_source_overlap",
+    "probability_measurement_di_point_source_overlap",
+    "probability_measurement_mode_point_source_overlap",
+    "tau_pp",
+    "tau_sp",
+    "tau_ss",
+    "tau_st",
+    "tau_tp",
+    "tau_tt",
 )
 
 
-def _vectorize(f: Callable) -> Callable:
-    """Helper function to vectorize the overlaps.
-
-    This allows us to pass in single parameters or a family of
-    point source distributions and take advantage of numpy's
-    vectorization features to speed up calculations.
-    """
-    vf = np.vectorize(f, otypes=[np.complex128], excluded=["k", "zr"])
-
-    @wraps(vf)
-    def newfunc(*args: float, **kwargs: float) -> complex:
-        return vf(*args, **kwargs)[()]
-
-    # newfunc.__name__ = f.__name__
-    # newfunc.__qualname__ = f.__qualname__
-    return newfunc
-
-
 def _exp_common_factor(
-    s1: float,
-    s2: float,
-    t1: float,
-    t2: float,
-    p1: float,
-    p2: float,
+    s1: npt.NDArray[np.float64],
+    s2: npt.NDArray[np.float64],
+    t1: npt.NDArray[np.float64],
+    t2: npt.NDArray[np.float64],
+    p1: npt.NDArray[np.float64],
+    p2: npt.NDArray[np.float64],
     k: float,
     zr: float,
-) -> complex:
+) -> npt.NDArray[np.complex128]:
     return np.exp(
         (1j * ((s1 - s2) ** 2 + (t1 - t2) ** 2)) / (2 * (-2j + p1 - p2))
         + 1j * k * zr * (p1 - p2)
     )
 
 
-@_vectorize
 def delta(
-    s1: float,
-    s2: float,
-    t1: float,
-    t2: float,
-    p1: float,
-    p2: float,
+    s1: npt.NDArray[np.float64],
+    s2: npt.NDArray[np.float64],
+    t1: npt.NDArray[np.float64],
+    t2: npt.NDArray[np.float64],
+    p1: npt.NDArray[np.float64],
+    p2: npt.NDArray[np.float64],
     k: float,
     zr: float,
-) -> complex:
+) -> npt.NDArray[np.complex128]:
     """Calculating the overlap of two displaced Gaussian beams.
 
     Args:
@@ -109,7 +92,7 @@ def delta(
         k: wave vector = 2 pi / wavelength the point source emits in
         zr: Rayleigh length. It is the distance along the propagation
             direction of a beam from the waist to the place where the area of
-            1the cross section is doubled.
+            the cross section is doubled.
 
     Returns:
        In general a complex number. The integral has a closed form expression
@@ -121,33 +104,33 @@ def delta(
     )
 
 
-@_vectorize
 def gamma_s(
-    s1: float,
-    s2: float,
-    t1: float,
-    t2: float,
-    p1: float,
-    p2: float,
+    s1: npt.NDArray[np.float64],
+    s2: npt.NDArray[np.float64],
+    t1: npt.NDArray[np.float64],
+    t2: npt.NDArray[np.float64],
+    p1: npt.NDArray[np.float64],
+    p2: npt.NDArray[np.float64],
     k: float,
     zr: float,
-) -> complex:
+) -> npt.NDArray[np.complex128]:
     """Overlap of a Gaussian and derivative of another Gaussian in the x-dimension.
 
     Calculating the overlap of a Gaussian beam and derivative of the displacement
-    of the Gaussian beam in the x-dimension.
+    of the Gaussian beam in the x-dimension. The derivative acts on the second
+    Gaussian: <psi_1 | d/ds2 psi_2>.
 
     Args:
-       s1: displacing first Gaussian on x-axis by x+s1
-       s2: displacing derivative of the Gaussian on x-axis by x+s2
-       t1: displacing first Gaussian on y-axis by y+t1
-       t2: displacing derivative of the Gaussian on y-axis by y+t2
-       p1: displacing first Gaussian on z-axis by z+p1
-       p2: displacing derivative of the Gaussian on z-axis by z+p2
+       s1: displacing the first (conjugated) Gaussian on x-axis by x+s1
+       s2: displacing the differentiated second Gaussian on x-axis by x+s2
+       t1: displacing the first (conjugated) Gaussian on y-axis by y+t1
+       t2: displacing the differentiated second Gaussian on y-axis by y+t2
+       p1: displacing the first (conjugated) Gaussian on z-axis by z+p1
+       p2: displacing the differentiated second Gaussian on z-axis by z+p2
        k: wave vector = 2 pi / wavelength the point source emits in
        zr: Rayleigh length. It is the distance along the propagation
            direction of a beam from the waist to the place where the area of
-           1the cross section is doubled.
+           the cross section is doubled.
 
     Returns:
       In general a complex number. The integral has a closed form expression
@@ -159,33 +142,33 @@ def gamma_s(
     )
 
 
-@_vectorize
 def gamma_t(
-    s1: float,
-    s2: float,
-    t1: float,
-    t2: float,
-    p1: float,
-    p2: float,
+    s1: npt.NDArray[np.float64],
+    s2: npt.NDArray[np.float64],
+    t1: npt.NDArray[np.float64],
+    t2: npt.NDArray[np.float64],
+    p1: npt.NDArray[np.float64],
+    p2: npt.NDArray[np.float64],
     k: float,
     zr: float,
-) -> complex:
+) -> npt.NDArray[np.complex128]:
     """Overlap of a Gaussian and derivative of another Gaussian in the y-dimension.
 
     Calculating the overlap of a Gaussian beam and derivative of the displacement
-    of the Gaussian beam in the y-dimension.
+    of the Gaussian beam in the y-dimension. The derivative acts on the second
+    Gaussian: <psi_1 | d/dt2 psi_2>.
 
     Args:
-       s1: displacing first Gaussian on x-axis by x+s1
-       s2: displacing derivative of the Gaussian on x-axis by x+s2
-       t1: displacing first Gaussian on y-axis by y+t1
-       t2: displacing derivative of the Gaussian on y-axis by y+t2
-       p1: displacing first Gaussian on z-axis by z+p1
-       p2: displacing derivative of the Gaussian on z-axis by z+p2
+       s1: displacing the first (conjugated) Gaussian on x-axis by x+s1
+       s2: displacing the differentiated second Gaussian on x-axis by x+s2
+       t1: displacing the first (conjugated) Gaussian on y-axis by y+t1
+       t2: displacing the differentiated second Gaussian on y-axis by y+t2
+       p1: displacing the first (conjugated) Gaussian on z-axis by z+p1
+       p2: displacing the differentiated second Gaussian on z-axis by z+p2
        k: wave vector = 2 pi / wavelength the point source emits in
        zr: Rayleigh length. It is the distance along the propagation
            direction of a beam from the waist to the place where the area of
-           1the cross section is doubled.
+           the cross section is doubled.
 
     Returns:
       In general a complex number. The integral has a closed form expression
@@ -197,33 +180,33 @@ def gamma_t(
     )
 
 
-@_vectorize
 def gamma_p(
-    s1: float,
-    s2: float,
-    t1: float,
-    t2: float,
-    p1: float,
-    p2: float,
+    s1: npt.NDArray[np.float64],
+    s2: npt.NDArray[np.float64],
+    t1: npt.NDArray[np.float64],
+    t2: npt.NDArray[np.float64],
+    p1: npt.NDArray[np.float64],
+    p2: npt.NDArray[np.float64],
     k: float,
     zr: float,
-) -> complex:
+) -> npt.NDArray[np.complex128]:
     """Overlap of a Gaussian and derivative of another Gaussian in the z-dimension.
 
     Calculating the overlap of a Gaussian beam and derivative of the displacement
-    of the Gaussian beam in the z-dimension.
+    of the Gaussian beam in the z-dimension. The derivative acts on the second
+    Gaussian: <psi_1 | d/dp2 psi_2>.
 
     Args:
-       s1: displacing first Gaussian on x-axis by x+s1
-       s2: displacing derivative of the Gaussian on x-axis by x+s2
-       t1: displacing first Gaussian on y-axis by y+t1
-       t2: displacing derivative of the Gaussian on y-axis by y+t2
-       p1: displacing first Gaussian on z-axis by z+p1
-       p2: displacing derivative of the Gaussian on z-axis by z+p2
+       s1: displacing the first (conjugated) Gaussian on x-axis by x+s1
+       s2: displacing the differentiated second Gaussian on x-axis by x+s2
+       t1: displacing the first (conjugated) Gaussian on y-axis by y+t1
+       t2: displacing the differentiated second Gaussian on y-axis by y+t2
+       p1: displacing the first (conjugated) Gaussian on z-axis by z+p1
+       p2: displacing the differentiated second Gaussian on z-axis by z+p2
        k: wave vector = 2 pi / wavelength the point source emits in
        zr: Rayleigh length. It is the distance along the propagation
            direction of a beam from the waist to the place where the area of
-           1the cross section is doubled.
+           the cross section is doubled.
 
     Returns:
       In general a complex number. The integral has a closed form expression
@@ -241,17 +224,16 @@ def gamma_p(
     )
 
 
-@_vectorize
 def tau_ss(
-    s1: float,
-    s2: float,
-    t1: float,
-    t2: float,
-    p1: float,
-    p2: float,
+    s1: npt.NDArray[np.float64],
+    s2: npt.NDArray[np.float64],
+    t1: npt.NDArray[np.float64],
+    t2: npt.NDArray[np.float64],
+    p1: npt.NDArray[np.float64],
+    p2: npt.NDArray[np.float64],
     k: float,
     zr: float,
-) -> complex:
+) -> npt.NDArray[np.complex128]:
     """Overlap between Gaussian derivatives in x-dimension.
 
     Calculating the overlap between two Gaussian beam derivatives of the
@@ -267,7 +249,7 @@ def tau_ss(
        k: wave vector = 2 pi / wavelength the point source emits in
        zr: Rayleigh length. It is the distance along the propagation
            direction of a beam from the waist to the place where the area of
-           1the cross section is doubled.
+           the cross section is doubled.
 
     Returns:
       In general a complex number. The integral has a closed form expression
@@ -279,17 +261,16 @@ def tau_ss(
     )
 
 
-@_vectorize
 def tau_st(
-    s1: float,
-    s2: float,
-    t1: float,
-    t2: float,
-    p1: float,
-    p2: float,
+    s1: npt.NDArray[np.float64],
+    s2: npt.NDArray[np.float64],
+    t1: npt.NDArray[np.float64],
+    t2: npt.NDArray[np.float64],
+    p1: npt.NDArray[np.float64],
+    p2: npt.NDArray[np.float64],
     k: float,
     zr: float,
-) -> complex:
+) -> npt.NDArray[np.complex128]:
     """Overlap between Gaussian derivatives in x- and y-dimension.
 
     Calculating the overlap between two derivatives of two Gaussian beams.
@@ -306,7 +287,7 @@ def tau_st(
        k: wave vector = 2 pi / wavelength the point source emits in
        zr: Rayleigh length. It is the distance along the propagation
            direction of a beam from the waist to the place where the area of
-           1the cross section is doubled.
+           the cross section is doubled.
 
     Returns:
       In general a complex number. The integral has a closed form expression
@@ -318,17 +299,16 @@ def tau_st(
     )
 
 
-@_vectorize
 def tau_sp(
-    s1: float,
-    s2: float,
-    t1: float,
-    t2: float,
-    p1: float,
-    p2: float,
+    s1: npt.NDArray[np.float64],
+    s2: npt.NDArray[np.float64],
+    t1: npt.NDArray[np.float64],
+    t2: npt.NDArray[np.float64],
+    p1: npt.NDArray[np.float64],
+    p2: npt.NDArray[np.float64],
     k: float,
     zr: float,
-) -> complex:
+) -> npt.NDArray[np.complex128]:
     """Overlap between Gaussian derivatives in x- and z-dimension.
 
     Calculating the overlap between two derivatives of two Gaussian beams.
@@ -345,7 +325,7 @@ def tau_sp(
        k: wave vector = 2 pi / wavelength the point source emits in
        zr: Rayleigh length. It is the distance along the propagation
            direction of a beam from the waist to the place where the area of
-           1the cross section is doubled.
+           the cross section is doubled.
 
     Returns:
       In general a complex number. The integral has a closed form expression
@@ -368,17 +348,16 @@ def tau_sp(
     )
 
 
-@_vectorize
 def tau_tt(
-    s1: float,
-    s2: float,
-    t1: float,
-    t2: float,
-    p1: float,
-    p2: float,
+    s1: npt.NDArray[np.float64],
+    s2: npt.NDArray[np.float64],
+    t1: npt.NDArray[np.float64],
+    t2: npt.NDArray[np.float64],
+    p1: npt.NDArray[np.float64],
+    p2: npt.NDArray[np.float64],
     k: float,
     zr: float,
-) -> complex:
+) -> npt.NDArray[np.complex128]:
     """Overlap between Gaussian derivatives in y-dimension.
 
     Calculating the overlap between two Gaussian beam derivatives of the
@@ -394,7 +373,7 @@ def tau_tt(
        k: wave vector = 2 pi / wavelength the point source emits in
        zr: Rayleigh length. It is the distance along the propagation
            direction of a beam from the waist to the place where the area of
-           1the cross section is doubled.
+           the cross section is doubled.
 
     Returns:
       In general a complex number. The integral has a closed form expression
@@ -406,17 +385,16 @@ def tau_tt(
     )
 
 
-@_vectorize
 def tau_tp(
-    s1: float,
-    s2: float,
-    t1: float,
-    t2: float,
-    p1: float,
-    p2: float,
+    s1: npt.NDArray[np.float64],
+    s2: npt.NDArray[np.float64],
+    t1: npt.NDArray[np.float64],
+    t2: npt.NDArray[np.float64],
+    p1: npt.NDArray[np.float64],
+    p2: npt.NDArray[np.float64],
     k: float,
     zr: float,
-) -> complex:
+) -> npt.NDArray[np.complex128]:
     """Overlap between Gaussian derivatives in y- and z-dimension.
 
     Calculating the overlap between two derivatives of two Gaussian beams.
@@ -433,7 +411,7 @@ def tau_tp(
        k: wave vector = 2 pi / wavelength the point source emits in
        zr: Rayleigh length. It is the distance along the propagation
            direction of a beam from the waist to the place where the area of
-           1the cross section is doubled.
+           the cross section is doubled.
 
     Returns:
       In general a complex number. The integral has a closed form expression
@@ -456,17 +434,16 @@ def tau_tp(
     )
 
 
-@_vectorize
 def tau_pp(
-    s1: float,
-    s2: float,
-    t1: float,
-    t2: float,
-    p1: float,
-    p2: float,
+    s1: npt.NDArray[np.float64],
+    s2: npt.NDArray[np.float64],
+    t1: npt.NDArray[np.float64],
+    t2: npt.NDArray[np.float64],
+    p1: npt.NDArray[np.float64],
+    p2: npt.NDArray[np.float64],
     k: float,
     zr: float,
-) -> complex:
+) -> npt.NDArray[np.complex128]:
     """Overlap between Gaussian derivatives in z-dimension.
 
     Calculating the overlap between two Gaussian beam derivatives of the
@@ -482,7 +459,7 @@ def tau_pp(
        k: wave vector = 2 pi / wavelength the point source emits in
        zr: Rayleigh length. It is the distance along the propagation
            direction of a beam from the waist to the place where the area of
-           1the cross section is doubled.
+           the cross section is doubled.
 
     Returns:
       In general a complex number. The integral has a closed form expression
@@ -526,35 +503,37 @@ def tau_pp(
 
 
 def _calculate_moments(
-    dxy: float, dz: float, mode_order: int
+    dxy: npt.NDArray[np.float64], dz: npt.NDArray[np.float64], mode_order: int
 ) -> npt.NDArray[np.complex128]:
     """Helper function to recursively calculate Gaussian moments."""
     mean = -1j * dxy / (2 * 1j + dz)
     variance = (1j + dz) / (2 * 1j + dz)
 
-    moments = np.zeros(mode_order, dtype=np.complex128)
-    moments[0] = 1
+    moments = np.zeros((*np.shape(dxy), mode_order), dtype=np.complex128)
+    moments[..., 0] += 1
 
     # Catching edge case for 0-mode
-    if len(moments) < 2:
+    if mode_order < 2:
         return moments
 
-    moments[1] = mean
+    moments[..., 1] += mean
     for i in range(2, mode_order):
-        moments[i] = mean * moments[i - 1] + (i - 1) * variance * moments[i - 2]
+        moments[..., i] = (
+            mean * moments[..., i - 1] + (i - 1) * variance * moments[..., i - 2]
+        )
 
     return moments
 
 
 def _calculate_moments_derivative_dxy(
-    dxy: float, dz: float, mode_order: int
-) -> complex:
+    dxy: npt.NDArray[np.float64], dz: npt.NDArray[np.float64], mode_order: int
+) -> npt.NDArray[np.complex128]:
     """Helper function to calculate derivative w.r.t. dx or dy of Gaussian moments."""
     mean = -1j * dxy / (2j + dz)
     dmean = -1j / (2j + dz)
     variance = (1j + dz) / (2j + dz)
 
-    result = 0
+    result = np.zeros_like(dxy, dtype=np.complex128)
     for j in range(mode_order + 1):
         if (mode_order - j) % 2 == 0 and j > 0:
             result += (
@@ -572,14 +551,16 @@ def _calculate_moments_derivative_dxy(
     return result
 
 
-def _calculate_moments_derivative_dz(dxy: float, dz: float, mode_order: int) -> complex:
+def _calculate_moments_derivative_dz(
+    dxy: npt.NDArray[np.float64], dz: npt.NDArray[np.float64], mode_order: int
+) -> npt.NDArray[np.complex128]:
     """Helper function to calculate derivative w.r.t. dz of Gaussian moments."""
     mean = -1j * dxy / (2j + dz)
     dmean = 1j * dxy / (2j + dz) ** 2
     variance = (1j + dz) / (2 * 1j + dz)
     dvariance = 1j / (2j + dz) ** 2
 
-    result = 0
+    result = np.zeros_like(dxy, dtype=np.complex128)
     for j in range(0, mode_order + 1):
         if (mode_order - j) % 2 == 0:
             first_part = comb(mode_order, j) * (
@@ -602,15 +583,14 @@ def _calculate_moments_derivative_dz(dxy: float, dz: float, mode_order: int) -> 
     return result
 
 
-@_vectorize
 def inner_product_measurement_mode_point_source_overlap(
-    s: float,
-    t: float,
-    p: float,
+    s: npt.NDArray[np.float64],
+    t: npt.NDArray[np.float64],
+    p: npt.NDArray[np.float64],
     k: float,
     zr: float,
     mode_polynomial_coefficients: Dict[str, npt.NDArray[np.float64]],
-) -> complex:
+) -> npt.NDArray[np.complex128]:
     """Calculates overlap between measurement mode and point source.
 
     We assume the measurement mode is of the form phi(x,y) = g_m(x) f_n(y) psi(x,y,0),
@@ -618,13 +598,13 @@ def inner_product_measurement_mode_point_source_overlap(
     is the Gaussian distribution matching the point-spread function of the system.
 
     Args:
-       s: displacing derivative of the first Gaussian on x-axis by x+s1
-       t: displacing derivative of the first Gaussian on y-axis by y+t1
-       p: displacing derivative of the first Gaussian on z-axis by z+p1
+       s: displacing the point source on the x-axis by x+s
+       t: displacing the point source on the y-axis by y+t
+       p: displacing the point source on the z-axis by z+p
        k: wave vector = 2 pi / wavelength the point source emits in
        zr: Rayleigh length. It is the distance along the propagation
            direction of a beam from the waist to the place where the area of
-           1the cross section is doubled.
+           the cross section is doubled.
        mode_polynomial_coefficients: Array of coefficients that defines the modes
             in the x-dim and y-dim such dim1 equals g_m(x) and dim2 equals f_n(y)
             coefficients.
@@ -647,18 +627,19 @@ def inner_product_measurement_mode_point_source_overlap(
     normal_distribution_moments_y = _calculate_moments(t, p, len(mode_y))
     return (
         prefactor
-        * np.sum(np.conj(mode_x) * normal_distribution_moments_x)
-        * np.sum(np.conj(mode_y) * normal_distribution_moments_y)
+        * np.sum(np.conj(mode_x) * normal_distribution_moments_x, axis=-1)
+        * np.sum(np.conj(mode_y) * normal_distribution_moments_y, axis=-1)
     )
 
 
-@_vectorize
 def probability_measurement_mode_point_source_overlap(
-    s: float,
-    t: float,
-    p: float,
+    s: npt.NDArray[np.float64],
+    t: npt.NDArray[np.float64],
+    p: npt.NDArray[np.float64],
+    k: float,
+    zr: float,
     mode_polynomial_coefficients: Dict[str, npt.NDArray[np.float64]],
-) -> float:
+) -> npt.NDArray[np.complex128]:
     """Calculates absolute value of overlap between measurement mode and point source.
 
     We assume the measurement mode is of the form phi(x,y) = g_m(x) f_n(y) psi(x,y,0),
@@ -666,13 +647,13 @@ def probability_measurement_mode_point_source_overlap(
     is the Gaussian distribution matching the point-spread function of the system.
 
     Args:
-       s: displacing derivative of the first Gaussian on x-axis by x+s1
-       t: displacing derivative of the first Gaussian on y-axis by y+t1
-       p: displacing derivative of the first Gaussian on z-axis by z+p1
+       s: displacing the point source on the x-axis by x+s
+       t: displacing the point source on the y-axis by y+t
+       p: displacing the point source on the z-axis by z+p
        k: wave vector = 2 pi / wavelength the point source emits in
        zr: Rayleigh length. It is the distance along the propagation
            direction of a beam from the waist to the place where the area of
-           1the cross section is doubled.
+           the cross section is doubled.
        mode_polynomial_coefficients: Array of coefficients that defines the modes
             in the x-dim and y-dim such dim1 equals g_m(x) and dim2 equals f_n(y)
             coefficients.
@@ -690,20 +671,19 @@ def probability_measurement_mode_point_source_overlap(
     normal_distribution_moments_y = _calculate_moments(t, p, len(mode_y))
     return np.real(
         prefactor
-        * np.abs(np.sum(np.conj(mode_x) * normal_distribution_moments_x)) ** 2
-        * np.abs(np.sum(np.conj(mode_y) * normal_distribution_moments_y)) ** 2
+        * np.abs(np.sum(np.conj(mode_x) * normal_distribution_moments_x, axis=-1)) ** 2
+        * np.abs(np.sum(np.conj(mode_y) * normal_distribution_moments_y, axis=-1)) ** 2
     )
 
 
-@_vectorize
 def derivate_s_inner_product_measurement_mode_point_source_overlap(
-    s: float,
-    t: float,
-    p: float,
+    s: npt.NDArray[np.float64],
+    t: npt.NDArray[np.float64],
+    p: npt.NDArray[np.float64],
     k: float,
     zr: float,
     mode_polynomial_coefficients: Dict[str, npt.NDArray[np.float64]],
-) -> complex:
+) -> npt.NDArray[np.complex128]:
     """Calculates derivative w.r.t. s of the measurement mode and point source overlap.
 
     We assume the measurement mode is of the form phi(x,y) = g_m(x) f_n(y) psi(x,y,0),
@@ -711,13 +691,13 @@ def derivate_s_inner_product_measurement_mode_point_source_overlap(
     is the Gaussian distribution matching the point-spread function of the system.
 
     Args:
-       s: displacing derivative of the first Gaussian on x-axis by x+s1
-       t: displacing derivative of the first Gaussian on y-axis by y+t1
-       p: displacing derivative of the first Gaussian on z-axis by z+p1
+       s: displacing the point source on the x-axis by x+s
+       t: displacing the point source on the y-axis by y+t
+       p: displacing the point source on the z-axis by z+p
        k: wave vector = 2 pi / wavelength the point source emits in
        zr: Rayleigh length. It is the distance along the propagation
            direction of a beam from the waist to the place where the area of
-           1the cross section is doubled.
+           the cross section is doubled.
        mode_polynomial_coefficients: Array of coefficients that defines the modes
             in the x-dim and y-dim such dim1 equals g_m(x) and dim2 equals f_n(y)
             coefficients.
@@ -738,7 +718,7 @@ def derivate_s_inner_product_measurement_mode_point_source_overlap(
     normal_distribution_moments_y = _calculate_moments(t, p, len(mode_y))
 
     term_1_ds = (-1j * s / (2j + p)) * np.sum(
-        np.conj(mode_x) * normal_distribution_moments_x
+        np.conj(mode_x) * normal_distribution_moments_x, axis=-1
     )
 
     term_2_ds = 0
@@ -747,20 +727,19 @@ def derivate_s_inner_product_measurement_mode_point_source_overlap(
 
     return (
         prefactor
-        * np.sum(mode_y * normal_distribution_moments_y)
+        * np.sum(np.conj(mode_y) * normal_distribution_moments_y, axis=-1)
         * (term_1_ds + term_2_ds)
     )
 
 
-@_vectorize
 def derivate_t_inner_product_measurement_mode_point_source_overlap(
-    s: float,
-    t: float,
-    p: float,
+    s: npt.NDArray[np.float64],
+    t: npt.NDArray[np.float64],
+    p: npt.NDArray[np.float64],
     k: float,
     zr: float,
     mode_polynomial_coefficients: Dict[str, npt.NDArray[np.float64]],
-) -> complex:
+) -> npt.NDArray[np.complex128]:
     """Calculates derivative w.r.t. t of the measurement mode and point source overlap.
 
     We assume the measurement mode is of the form phi(x,y) = g_m(x) f_n(y) psi(x,y,0),
@@ -768,13 +747,13 @@ def derivate_t_inner_product_measurement_mode_point_source_overlap(
     is the Gaussian distribution matching the point-spread function of the system.
 
     Args:
-       s: displacing derivative of the first Gaussian on x-axis by x+s1
-       t: displacing derivative of the first Gaussian on y-axis by y+t1
-       p: displacing derivative of the first Gaussian on z-axis by z+p1
+       s: displacing the point source on the x-axis by x+s
+       t: displacing the point source on the y-axis by y+t
+       p: displacing the point source on the z-axis by z+p
        k: wave vector = 2 pi / wavelength the point source emits in
        zr: Rayleigh length. It is the distance along the propagation
            direction of a beam from the waist to the place where the area of
-           1the cross section is doubled.
+           the cross section is doubled.
        mode_polynomial_coefficients: Array of coefficients that defines the modes
             in the x-dim and y-dim such dim1 equals g_m(x) and dim2 equals f_n(y)
             coefficients.
@@ -794,7 +773,9 @@ def derivate_t_inner_product_measurement_mode_point_source_overlap(
     normal_distribution_moments_x = _calculate_moments(s, p, len(mode_x))
     normal_distribution_moments_y = _calculate_moments(t, p, len(mode_y))
 
-    term_1_dt = (-1j * t / (2j + p)) * np.sum(mode_y * normal_distribution_moments_y)
+    term_1_dt = (-1j * t / (2j + p)) * np.sum(
+        np.conj(mode_y) * normal_distribution_moments_y, axis=-1
+    )
 
     term_2_dt = 0
     for mode_order, di in enumerate(mode_y):
@@ -802,20 +783,19 @@ def derivate_t_inner_product_measurement_mode_point_source_overlap(
 
     return (
         prefactor
-        * np.sum(mode_x * normal_distribution_moments_x)
+        * np.sum(np.conj(mode_x) * normal_distribution_moments_x, axis=-1)
         * (term_1_dt + term_2_dt)
     )
 
 
-@_vectorize
 def derivate_p_inner_product_measurement_mode_point_source_overlap(
-    s: float,
-    t: float,
-    p: float,
+    s: npt.NDArray[np.float64],
+    t: npt.NDArray[np.float64],
+    p: npt.NDArray[np.float64],
     k: float,
     zr: float,
     mode_polynomial_coefficients: Dict[str, npt.NDArray[np.float64]],
-) -> complex:
+) -> npt.NDArray[np.complex128]:
     """Calculates derivative w.r.t. p of the measurement mode and point source overlap.
 
     We assume the measurement mode is of the form phi(x,y) = g_m(x) f_n(y) psi(x,y,0),
@@ -823,13 +803,13 @@ def derivate_p_inner_product_measurement_mode_point_source_overlap(
     is the Gaussian distribution matching the point-spread function of the system.
 
     Args:
-       s: displacing derivative of the first Gaussian on x-axis by x+s1
-       t: displacing derivative of the first Gaussian on y-axis by y+t1
-       p: displacing derivative of the first Gaussian on z-axis by z+p1
+       s: displacing the point source on the x-axis by x+s
+       t: displacing the point source on the y-axis by y+t
+       p: displacing the point source on the z-axis by z+p
        k: wave vector = 2 pi / wavelength the point source emits in
        zr: Rayleigh length. It is the distance along the propagation
            direction of a beam from the waist to the place where the area of
-           1the cross section is doubled.
+           the cross section is doubled.
        mode_polynomial_coefficients: Array of coefficients that defines the modes
             in the x-dim and y-dim such dim1 equals g_m(x) and dim2 equals f_n(y)
             coefficients.
@@ -850,8 +830,8 @@ def derivate_p_inner_product_measurement_mode_point_source_overlap(
     normal_distribution_moments_x = _calculate_moments(s, p, len(mode_x))
     normal_distribution_moments_y = _calculate_moments(t, p, len(mode_y))
 
-    sum_mode_x = np.sum(mode_x * normal_distribution_moments_x)
-    sum_mode_y = np.sum(mode_y * normal_distribution_moments_y)
+    sum_mode_x = np.sum(np.conj(mode_x) * normal_distribution_moments_x, axis=-1)
+    sum_mode_y = np.sum(np.conj(mode_y) * normal_distribution_moments_y, axis=-1)
 
     der_non_sum_factors = (
         np.exp(-1j * k * zr * p)
@@ -877,15 +857,14 @@ def derivate_p_inner_product_measurement_mode_point_source_overlap(
     )
 
 
-@_vectorize
 def derivate_s_probability_measurement_mode_point_source_overlap(
-    s: float,
-    t: float,
-    p: float,
+    s: npt.NDArray[np.float64],
+    t: npt.NDArray[np.float64],
+    p: npt.NDArray[np.float64],
     k: float,
     zr: float,
     mode_polynomial_coefficients: Dict[str, npt.NDArray[np.float64]],
-) -> float:
+) -> npt.NDArray[np.complex128]:
     """Calculates derivative w.r.t. s of the probability mode and point source overlap.
 
     We decompose the probability into the product of the inner product overlap and its
@@ -893,13 +872,13 @@ def derivate_s_probability_measurement_mode_point_source_overlap(
     and complex conjugation can be interchanged.
 
     Args:
-       s: displacing derivative of the first Gaussian on x-axis by x+s1
-       t: displacing derivative of the first Gaussian on y-axis by y+t1
-       p: displacing derivative of the first Gaussian on z-axis by z+p1
+       s: displacing the point source on the x-axis by x+s
+       t: displacing the point source on the y-axis by y+t
+       p: displacing the point source on the z-axis by z+p
        k: wave vector = 2 pi / wavelength the point source emits in
        zr: Rayleigh length. It is the distance along the propagation
            direction of a beam from the waist to the place where the area of
-           1the cross section is doubled.
+           the cross section is doubled.
        mode_polynomial_coefficients: Array of coefficients that defines the modes
             in the x-dim and y-dim such dim1 equals g_m(x) and dim2 equals f_n(y)
             coefficients.
@@ -933,15 +912,14 @@ def derivate_s_probability_measurement_mode_point_source_overlap(
     )
 
 
-@_vectorize
 def derivate_t_probability_measurement_mode_point_source_overlap(
-    s: float,
-    t: float,
-    p: float,
+    s: npt.NDArray[np.float64],
+    t: npt.NDArray[np.float64],
+    p: npt.NDArray[np.float64],
     k: float,
     zr: float,
     mode_polynomial_coefficients: Dict[str, npt.NDArray[np.float64]],
-) -> float:
+) -> npt.NDArray[np.complex128]:
     """Calculates derivative w.r.t. t of the probability mode and point source overlap.
 
     We decompose the probability into the product of the inner product overlap and its
@@ -949,13 +927,13 @@ def derivate_t_probability_measurement_mode_point_source_overlap(
     and complex conjugation can be interchanged.
 
     Args:
-       s: displacing derivative of the first Gaussian on x-axis by x+s1
-       t: displacing derivative of the first Gaussian on y-axis by y+t1
-       p: displacing derivative of the first Gaussian on z-axis by z+p1
+       s: displacing the point source on the x-axis by x+s
+       t: displacing the point source on the y-axis by y+t
+       p: displacing the point source on the z-axis by z+p
        k: wave vector = 2 pi / wavelength the point source emits in
        zr: Rayleigh length. It is the distance along the propagation
            direction of a beam from the waist to the place where the area of
-           1the cross section is doubled.
+           the cross section is doubled.
        mode_polynomial_coefficients: Array of coefficients that defines the modes
             in the x-dim and y-dim such dim1 equals g_m(x) and dim2 equals f_n(y)
             coefficients.
@@ -989,15 +967,14 @@ def derivate_t_probability_measurement_mode_point_source_overlap(
     )
 
 
-@_vectorize
 def derivate_p_probability_measurement_mode_point_source_overlap(
-    s: float,
-    t: float,
-    p: float,
+    s: npt.NDArray[np.float64],
+    t: npt.NDArray[np.float64],
+    p: npt.NDArray[np.float64],
     k: float,
     zr: float,
     mode_polynomial_coefficients: Dict[str, npt.NDArray[np.float64]],
-) -> float:
+) -> npt.NDArray[np.complex128]:
     """Calculates derivative w.r.t. p of the probability mode and point source overlap.
 
     We decompose the probability into the product of the inner product overlap and its
@@ -1005,13 +982,13 @@ def derivate_p_probability_measurement_mode_point_source_overlap(
     and complex conjugation can be interchanged.
 
     Args:
-       s: displacing derivative of the first Gaussian on x-axis by x+s1
-       t: displacing derivative of the first Gaussian on y-axis by y+t1
-       p: displacing derivative of the first Gaussian on z-axis by z+p1
+       s: displacing the point source on the x-axis by x+s
+       t: displacing the point source on the y-axis by y+t
+       p: displacing the point source on the z-axis by z+p
        k: wave vector = 2 pi / wavelength the point source emits in
        zr: Rayleigh length. It is the distance along the propagation
            direction of a beam from the waist to the place where the area of
-           1the cross section is doubled.
+           the cross section is doubled.
        mode_polynomial_coefficients: Array of coefficients that defines the modes
             in the x-dim and y-dim such dim1 equals g_m(x) and dim2 equals f_n(y)
             coefficients.
@@ -1045,7 +1022,6 @@ def derivate_p_probability_measurement_mode_point_source_overlap(
     )
 
 
-# @_vectorize
 def probability_measurement_di_point_source_overlap(
     x: npt.NDArray[np.float64],
     y: npt.NDArray[np.float64],
@@ -1083,7 +1059,6 @@ def probability_measurement_di_point_source_overlap(
     return np.real(prefactor * np.exp(exp))
 
 
-# @_vectorize
 def derivative_s_probability_measurement_di_point_source_overlap(
     x: npt.NDArray[np.float64],
     y: npt.NDArray[np.float64],
@@ -1119,7 +1094,6 @@ def derivative_s_probability_measurement_di_point_source_overlap(
     return np.real(prefactor * probability)
 
 
-# @_vectorize
 def derivative_t_probability_measurement_di_point_source_overlap(
     x: npt.NDArray[np.float64],
     y: npt.NDArray[np.float64],
@@ -1155,7 +1129,6 @@ def derivative_t_probability_measurement_di_point_source_overlap(
     return np.real(prefactor * probability)
 
 
-# @_vectorize
 def derivative_p_probability_measurement_di_point_source_overlap(
     x: npt.NDArray[np.float64],
     y: npt.NDArray[np.float64],

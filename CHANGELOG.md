@@ -7,58 +7,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+
+## [0.3.0] - 2026-07-03
+
 ### Added
-- Classical fisher information matrix calculation for arbitrary seperable x-y polynomials
-- Hermite-Gaussian basis as an example to check validity
-- Added 2 pt sources for only 1D x distance estimation
-- Added 3pt sources only x-z dim
-- Visualization helper for figure plots
-- covariance matrix as inverse of the fisher information
+- Classical Fisher information matrix for arbitrary separable x-y polynomial mode
+  bases via closed-form Gaussian overlaps and derivatives
+- Hermite-Gaussian x-y measurement basis with configurable mode degree and
+  mode-set filtering
+- Remainder channel bucketing all unresolved light, completing the resolved
+  modes to a valid POVM
+- Detector noise floor (dark counts / background light) in the mode-sorting
+  Fisher information, `J = τ² Σ ∂P∂P / (τP + b)`
+- Nearest-neighbour mode cross-talk model: Givens-rotation chain applied to the
+  x- and y-mode indices independently
+- Direct-imaging (DI) benchmark via numerical quadrature of the image-plane
+  intensity distribution
+- Arbitrary point-source intensity distributions (equal-intensity fallback and
+  single-source contrast parametrization)
+- Intensity as an estimated or nuisance parameter: 4N-parameter catalogue
+  Jacobians, Schur-complement nuisance covariance, and spatial-block covariance
+- Parameter catalogues for 2 sources (x separation) and 3 sources (x-z crack
+  model)
+- Visualization helpers shipped as `rayfish.visualize_helpers` behind the
+  `viz` extra
 
 ### Changed
-- renamed 2 pt sources to be specific its x-y dimension
-- old covariance matrix renamed to fisher information
-
-### Deprecated
-
-### Removed
+- QFI computation vectorized over point-source distributions
+- Renamed 2-point-source catalogue to be specific about its x-dimension
+- Old covariance matrix renamed to Fisher information
+- Examples reorganized per scenario (hello_world; 3-source ideal_main_figures,
+  bucket_vs_mode_cutoff, mixing_modes, background_noise,
+  ideal_unequal_intensities, unknown_intensities)
+- Package version read from installed metadata instead of a bundled VERSION
+  file (fixes clean wheel installs)
 
 ### Fixed
+- Missing conjugation of complex mode coefficients in the derivative overlap
+  closed forms (real-valued bases, e.g. Hermite-Gaussian, were unaffected)
+- DI probability derivatives extended to the 4N parameter layout used by the
+  catalogue Jacobians
+- Schur complement in the nuisance covariance now takes the real part of the
+  full QFIM instead of silently casting a complex result
+- Near-zero mode probabilities are clamped instead of dropped, keeping the
+  Fisher information continuous close to the origin
+- Mode-set filtering preserves the caller's requested channel ordering
 - Normalisation for classical FI
 - Number of simulations gets extracted from coordinates shape
-
-### Security
-
-
-## [0.4.0] - 2025-12-01
-
-### Added
-- backend with RayfishApp to wire all DAGs and easier to plot data
-- sqlite database to persist simulation results
-- pydantic models for input verification
-
-### Changed
-- streamlit UI refactored to delegate execution to backend
-- examples refactored from manual DAGs to using RayfishApp api
-- minor typos and naming conventions fixed / tests updated
-
-### Security
-- injecting sql queries directly via strings since it is a local database
-
-
-## [0.3.0] - 2024-12-01
-
-### Added
-- streamlit dashboard webapp to run in local mode
-- automatic building of Hamilton driver based on scenario
-- on-demand computation using input/output
-- plotting helpers for transforming numpy results to pandas dataframes that are used in plotly
-
-### Changed
-- package structure redesign to have `src` as root
-
-### Removed
-- removed unnecessary packages that are not used
 
 
 ## [0.2.0] - 2024-10-03

@@ -25,7 +25,7 @@ __all__ = (
 )
 
 # Parameter order
-# [s1,s2,...,sN,t1,t2,...,tN,,p1,p2,...,pN]
+# [s1,s2,...,sN,t1,t2,...,tN,p1,p2,...,pN]
 
 
 class LengthError(Exception):

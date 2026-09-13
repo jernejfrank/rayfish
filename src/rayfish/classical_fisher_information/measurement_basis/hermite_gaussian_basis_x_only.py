@@ -1,7 +1,9 @@
-"""Hermite Gaussian measurement basis.
+"""Hermite Gaussian measurement basis (x-only variant).
 
-The basis phi(x,y)_{j,l} = H_j(x) H_0(y) exp{-(x^2 + y^2)/2} / sqrt{pi 2^j j!},
-is normalized to match the point spread function of the imaging system.
+The basis phi(x,y)_{j,0} = H_j(x) H_0(y) exp{-(x^2 + y^2)/2} / sqrt{pi 2^j j!},
+is normalized to match the point spread function of the imaging system. This is the
+1D (width-only) restriction of the PSF-adapted mode basis used for the mode-sorting
+Fisher information, keeping only the y=0 modes.
 """
 
 from __future__ import annotations

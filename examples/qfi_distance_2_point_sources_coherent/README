@@ -1,9 +1,0 @@
-# Example of RayFish for coherent point sources
-
-We demonstrate the ability of RayFish on the example of estimating the distance between two point sources in x- and z-dimensions.
-
-The estimation error depends on the relative phase between the two point sources.
-
-
-## visualize_qfi
-The notebook `visualize_qfi` contains the necessary execution block to obtain the results. Below there's the plot with the results.
