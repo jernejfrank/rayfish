@@ -1,6 +1,5 @@
 # rayfish
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![python](https://img.shields.io/badge/Python-3.13-blue)](https://www.python.org)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
@@ -8,8 +7,17 @@
 
 Estimating parameters for discrete quantum imaging.
 
-- **Github repository**: <https://github.com/jernejfrank/rayfish/>
-<!-- - **Documentation** <https://jernejfrank.github.io/rayfish/> -->
+## Associated Publication
+
+This repository contains numerical simulation code associated with the following publication:
+
+**J. Frank, G. Brumpton, T. Tufarelli, G. Adesso, and S. Piano**,  
+*Quantum Limits of Passive Optical Surface Metrology and Defect Detection* (2026).
+
+**Paper:** [arXiv:2603.10796](https://arxiv.org/abs/2603.10796)  
+**DOI:** [10.48550/arXiv.2603.10796](https://doi.org/10.48550/arXiv.2603.10796)
+
+If you use this code in your research, please cite the publication above.
 
 ## Usage
 For now we need to manually install the package. Clone the repo and do a local installation from source.
@@ -66,8 +74,8 @@ git checkout -b feat/some-feature
 git push origin HEAD
 ```
 
-3. Open a [pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests):
+3. Open a [pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests)
 
-## TODO
-* Use [Material for MkDocs](https://squidfunk.github.io/mkdocs-material/) for documentation
-* Build package and publish to pypi
+## License
+
+This project is licensed under the Apache License, Version 2.0. See the [LICENSE](LICENSE) file for details.
